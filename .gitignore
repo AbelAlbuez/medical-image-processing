@@ -1,0 +1,13 @@
+# Entornos virtuales
+class-filter-image/venv/
+venv/
+.venv/
+env/
+
+# Resultados y datos grandes (límite GitHub 100 MB)
+class-filter-image/result/
+# Archivos NIfTI sin comprimir (suelen ser muy grandes)
+class-filter-image/samples/*.nii
+
+# macOS
+.DS_Store
