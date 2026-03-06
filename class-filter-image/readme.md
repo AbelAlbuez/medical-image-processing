@@ -45,6 +45,10 @@ Con el venv activado:
 pip install -r requirenments.txt
 ```
 
+### 4. Descargar imágenes de muestra (samples)
+
+Las imágenes de ejemplo (p. ej. `CTACardio.nii`, `MRBrainTumor1_3.nii`, `MRHead.nii.gz`, `USProstate_1.nii`) no están en el repositorio por su tamaño. Debes descargarlas desde **3D Slicer** (Sample Data) y colocarlas en la carpeta `samples/` de este proyecto para poder ejecutar los ejemplos del readme.
+
 ## Ejecutar el proyecto
 
 ### Filtro de media (`mean.py`)
