@@ -10,7 +10,7 @@ args = parser.parse_args()
 
 InputPixelType = itk.UC
 OutputPixelType = itk.F
-Dimension = 2
+Dimension = 3
 
 InputImageType = itk.Image[InputPixelType, Dimension]
 OutputImageType = itk.Image[OutputPixelType, Dimension]

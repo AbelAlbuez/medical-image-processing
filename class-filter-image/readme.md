@@ -67,7 +67,7 @@ python ./src/mean.py samples/CTACardio.nii ./result/sample.nii 3
 
 ### Filtro de gradiente (`gradient.py`)
 
-Calcula la magnitud del gradiente (imagen 2D). Argumentos: imagen de entrada, imagen de salida.
+Calcula la magnitud del gradiente (imagen 3D). Argumentos: imagen de entrada, imagen de salida.
 
 ```bash
 python ./src/gradient.py <input_image> <output_image>
@@ -106,7 +106,7 @@ El script **`run_all_filters.py`** es un *runner* que ejecuta automáticamente l
 python run_all_filters.py
 ```
 
-**Nota:** Los filtros `median`, `gradient` e `histogram` están definidos para imágenes 2D en los scripts actuales; si las muestras son volúmenes 3D, esos experimentos pueden fallar. El filtro `mean` es 3D y procesará correctamente los NIfTI 3D. El análisis detallado de cada filtro y sus parámetros está en **`FILTER_ANALYSIS.md`**.
+El análisis detallado de cada filtro y sus parámetros está en **`FILTER_ANALYSIS.md`**. Todos los filtros están configurados para imágenes 3D (volúmenes NIfTI).
 
 ## Estructura del proyecto
 
@@ -119,9 +119,9 @@ class-filter-image/
 ├── venv/                    # entorno virtual (no versionar)
 ├── src/
 │   ├── mean.py              # filtro de media (3D)
-│   ├── median.py            # filtro de mediana (2D)
-│   ├── gradient.py          # filtro de magnitud del gradiente (2D)
-│   ├── histogram.py         # equalización adaptativa del histograma (2D)
+│   ├── median.py            # filtro de mediana (3D)
+│   ├── gradient.py          # filtro de magnitud del gradiente (3D)
+│   ├── histogram.py         # equalización adaptativa del histograma (3D)
 │   └── histogram_plot.py    # visualización del histograma
 ├── samples/                 # imágenes de ejemplo (descargar desde 3D Slicer)
 │   ├── CTACardio.nii

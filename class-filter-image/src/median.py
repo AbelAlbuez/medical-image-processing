@@ -10,7 +10,7 @@ parser.add_argument("radius", type=int)
 args = parser.parse_args()
 
 PixelType = itk.UC
-Dimension = 2
+Dimension = 3
 
 ImageType = itk.Image[PixelType, Dimension]
 

@@ -13,7 +13,7 @@ parser.add_argument("beta", type=float)
 parser.add_argument("radius", type=int)
 args = parser.parse_args()
 
-Dimension = 2
+Dimension = 3
 
 PixelType = itk.ctype("unsigned char")
 ImageType = itk.Image[PixelType, Dimension]
