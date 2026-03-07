@@ -79,20 +79,51 @@ python ./src/gradient.py <input_image> <output_image>
 python ./src/gradient.py samples/some_slice.png ./result/gradient_output.nii
 ```
 
+### Ejecutar todos los filtros (experimentos) — `run_all_filters.py`
+
+El script **`run_all_filters.py`** es un *runner* que ejecuta automáticamente los filtros de `src/` sobre todas las imágenes en `samples/`, sin modificar la lógica de los scripts existentes (los invoca por línea de comandos con `subprocess`).
+
+**Qué hace:**
+
+- Recorre todos los archivos en `samples/` (extensiones `.nii` y `.nii.gz`).
+- Para cada imagen, ejecuta:
+  - **Gradient** (sin parámetros) → una salida por imagen.
+  - **Mean** con radios 2, 3 y 4 → tres salidas por imagen.
+  - **Median** con radios 2, 3 y 4 → tres salidas por imagen.
+  - **Adaptive histogram** (histogram.py) con varias combinaciones de alpha, beta y radius → varias salidas por imagen.
+- Guarda los resultados en carpetas separadas bajo `result/`:
+  - `result/gradient_results/`
+  - `result/mean_results/`
+  - `result/median_results/`
+  - `result/adaptive_histogram_results/`
+- Los nombres de salida siguen un patrón claro, por ejemplo:
+  - `CTACardio_gradient.nii`, `MRHead_mean_r3.nii`, `USProstate_1_hist_a0.5_b0.5_r3.nii`.
+- Crea las carpetas si no existen, escribe logs en consola y, si un experimento falla, continúa con el resto y al final muestra un resumen de éxitos y fallos.
+
+**Cómo ejecutarlo** (con el venv activado, desde la raíz del proyecto):
+
+```bash
+python run_all_filters.py
+```
+
+**Nota:** Los filtros `median`, `gradient` e `histogram` están definidos para imágenes 2D en los scripts actuales; si las muestras son volúmenes 3D, esos experimentos pueden fallar. El filtro `mean` es 3D y procesará correctamente los NIfTI 3D. El análisis detallado de cada filtro y sus parámetros está en **`FILTER_ANALYSIS.md`**.
+
 ## Estructura del proyecto
 
 ```
 class-filter-image/
 ├── readme.md
 ├── requirenments.txt
+├── run_all_filters.py       # runner de experimentos (ejecuta todos los filtros sobre samples/)
+├── FILTER_ANALYSIS.md       # análisis de filtros ITK y propuesta de experimentación
 ├── venv/                    # entorno virtual (no versionar)
 ├── src/
 │   ├── mean.py              # filtro de media (3D)
-│   ├── median.py            # filtro de mediana
+│   ├── median.py            # filtro de mediana (2D)
 │   ├── gradient.py          # filtro de magnitud del gradiente (2D)
-│   ├── histogram.py         # histograma de imagen
+│   ├── histogram.py         # equalización adaptativa del histograma (2D)
 │   └── histogram_plot.py    # visualización del histograma
-├── samples/                 # imágenes de ejemplo
+├── samples/                 # imágenes de ejemplo (descargar desde 3D Slicer)
 │   ├── CTACardio.nii
 │   ├── MRBrainTumor1_3.nii
 │   ├── MRHead.nii.gz
@@ -103,7 +134,10 @@ class-filter-image/
 │   ├── MeanFilteringOfAnImage/
 │   └── MedianFilteringOfAnImage/
 └── result/                  # imágenes de salida
-    └── sample.nii
+    ├── gradient_results/
+    ├── mean_results/
+    ├── median_results/
+    └── adaptive_histogram_results/
 ```
 
 ## Dependencias principales
