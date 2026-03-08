@@ -8,20 +8,19 @@ parser.add_argument("input_image")
 parser.add_argument("output_image")
 args = parser.parse_args()
 
-InputPixelType = itk.UC
-OutputPixelType = itk.F
+# ITK Python solo tiene instanciado el filtro con mismo tipo entrada/salida (UC->UC, F->F, etc.)
+PixelType = itk.UC
 Dimension = 3
 
-InputImageType = itk.Image[InputPixelType, Dimension]
-OutputImageType = itk.Image[OutputPixelType, Dimension]
+ImageType = itk.Image[PixelType, Dimension]
 
-reader = itk.ImageFileReader[InputImageType].New()
+reader = itk.ImageFileReader[ImageType].New()
 reader.SetFileName(args.input_image)
 
-gradientFilter = itk.GradientMagnitudeImageFilter[InputImageType, OutputImageType].New()
+gradientFilter = itk.GradientMagnitudeImageFilter[ImageType, ImageType].New()
 gradientFilter.SetInput(reader.GetOutput())
 
-writer = itk.ImageFileWriter[OutputImageType].New()
+writer = itk.ImageFileWriter[ImageType].New()
 writer.SetFileName(args.output_image)
 writer.SetInput(gradientFilter.GetOutput())
 

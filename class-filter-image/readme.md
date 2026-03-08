@@ -99,6 +99,7 @@ El script **`run_all_filters.py`** es un *runner* que ejecuta automáticamente l
 - Los nombres de salida siguen un patrón claro, por ejemplo:
   - `CTACardio_gradient.nii`, `MRHead_mean_r3.nii`, `USProstate_1_hist_a0.5_b0.5_r3.nii`.
 - Crea las carpetas si no existen, escribe logs en consola y, si un experimento falla, continúa con el resto y al final muestra un resumen de éxitos y fallos.
+- **Comparaciones PNG:** Tras ejecutar los filtros, genera figuras de comparación (corte axial central) en `comparison_results/`: **mean** (Original | r2 | r3 | r4), **median** (Original | r2 | r3 | r4), **gradient** (Original | Gradient), **adaptive_histogram** (Original | algunas combinaciones alpha/beta/radius). Ejemplo: `comparison_results/median/CTACardio_comparison.png`.
 
 **Cómo ejecutarlo** (con el venv activado, desde la raíz del proyecto):
 
@@ -133,11 +134,17 @@ class-filter-image/
 │   ├── ComputeGradientMagnitude/
 │   ├── MeanFilteringOfAnImage/
 │   └── MedianFilteringOfAnImage/
-└── result/                  # imágenes de salida
-    ├── gradient_results/
-    ├── mean_results/
-    ├── median_results/
-    └── adaptive_histogram_results/
+├── result/                  # imágenes de salida
+│   ├── gradient_results/
+│   ├── mean_results/
+│   ├── median_results/
+│   └── adaptive_histogram_results/
+├── comparison_results/      # PNG de comparación por filtro
+│   ├── mean/
+│   ├── median/
+│   ├── gradient/
+│   └── adaptive_histogram/
+└── comparison_visualizer.py  # generación de figuras de comparación
 ```
 
 ## Dependencias principales

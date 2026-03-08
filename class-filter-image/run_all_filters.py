@@ -4,10 +4,11 @@ Runner de experimentos: ejecuta los filtros en src/ sobre las imágenes en sampl
 mediante subprocess (CLI). No modifica ni importa la lógica de los scripts en src.
 """
 
-import os
 import subprocess
 import sys
 from pathlib import Path
+
+from comparison_visualizer import generate_all_comparisons
 
 # -----------------------------------------------------------------------------
 # Configuración (rutas relativas al directorio del script / raíz del proyecto)
@@ -18,6 +19,7 @@ PROJECT_ROOT = SCRIPT_DIR
 SAMPLES_DIR = PROJECT_ROOT / "samples"
 SRC_DIR = PROJECT_ROOT / "src"
 RESULT_BASE = PROJECT_ROOT / "result"
+COMPARISON_BASE = PROJECT_ROOT / "comparison_results"
 
 # Parámetros experimentales sugeridos (ver FILTER_ANALYSIS.md)
 MEAN_RADII = [2, 3, 4]
@@ -205,6 +207,26 @@ def main() -> None:
                             f"hist a={alpha} b={beta} r={r} | {inp.name} | {err}"
                         )
                         print(f"    ERROR: {err}")
+
+    # --- Comparaciones PNG (mean, median, gradient, adaptive_histogram) ---
+    try:
+        # Subconjunto de combinaciones para la figura de histogram (evitar demasiadas columnas)
+        hist_combos = [
+            (0.5, 0.5, 3),
+            (0.5, 0.5, 5),
+            (0.3, 0.5, 3),
+        ]
+        generate_all_comparisons(
+            SAMPLES_DIR,
+            RESULT_BASE,
+            COMPARISON_BASE,
+            mean_radii=MEAN_RADII,
+            median_radii=MEDIAN_RADII,
+            histogram_combos=hist_combos,
+            dpi=200,
+        )
+    except Exception as e:
+        print(f"  [comparison] Error generating comparisons: {e}")
 
     # --- Resumen ---
     print()
