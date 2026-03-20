@@ -6,6 +6,7 @@ env/
 
 # Resultados y datos grandes (límite GitHub 100 MB)
 class-filter-image/result/
+class-filter-image/comparison_results/
 # Archivos NIfTI sin comprimir (suelen ser muy grandes)
 class-filter-image/samples/*.nii
 
