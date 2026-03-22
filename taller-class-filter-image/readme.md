@@ -1,22 +1,25 @@
-# Procesamiento de imágenes médicas — Filtros clásicos
+# Procesamiento de imágenes médicas — Filtros clásicos (taller)
 
 **Autores:** Abel Albuez, Victoria Acero, Santiago Gil  
 **Institución:** Pontificia Universidad Javeriana  
-**Curso:** Procesamiento de imágenes médicas
+**Curso:** Procesamiento de imágenes médicas  
+
+**Repositorio:** https://github.com/AbelAlbuez/medical-image-processing
 
 ## Resumen
 
-Proyecto académico que implementa tres filtros de procesamiento de imágenes médicas sobre volúmenes 3D NIfTI usando ITK (Insight Toolkit). El trabajo se centra en métodos clásicos (no basados en aprendizaje profundo): filtro mediana, filtro Wiener adaptativo y mediana adaptativa, con un script runner que ejecuta todos los filtros sobre las imágenes de la carpeta `samples/` y genera paneles de comparación en PNG.
+Proyecto académico sobre volúmenes 3D NIfTI con **ITK** y **NumPy**: filtro de **mediana** clásico, **mediana adaptativa** (aproximación ITK o implementación NumPy con `--no-itk`), **inyección de ruido** (sal y pimienta, Gaussiano, mixto), modo **`--experiment`** con varias combinaciones y figuras PNG de comparación. Enfoque en procesamiento clásico (sin aprendizaje profundo). El script **`comparison_median.py`** genera un panel Original / mediana / adaptativa.
 
 ## Requisitos
 
 - Python 3.x  
 - pip  
-- **Dependencias:** `itk>=5.4.5`, `numpy`, `matplotlib`, `jupyter`
+- **Dependencias:** `itk>=5.4.5`, `numpy`, `matplotlib` (ver `requirenments.txt`)  
+- Opcional: **`tqdm`** (barra de progreso en `--experiment`)
 
 ## Configuración
 
-**Crear y activar el entorno virtual**
+**Crear el entorno virtual**
 
 ```bash
 python3 -m venv venv
@@ -28,81 +31,126 @@ python3 -m venv venv
 source venv/bin/activate
 ```
 
-**Windows (cmd):** `venv\Scripts\activate.bat`  
-**Windows (PowerShell):** `venv\Scripts\Activate.ps1`
+**Windows (cmd):**
 
-**Instalar dependencias:**
+```cmd
+venv\Scripts\activate.bat
+```
+
+**Windows (PowerShell):**
+
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+**Instalar dependencias** (el archivo se llama `requirenments.txt`, con la ortografía indicada):
 
 ```bash
-pip install -r requirements.txt
+pip install -r requirenments.txt
+```
+
+```bash
+# opcional
+pip install tqdm
 ```
 
 ## Imágenes de prueba
 
-Las imágenes deben descargarse desde **3D Slicer → Sample Data** y colocarse en la carpeta `samples/`. Se utilizan volúmenes NIfTI (`.nii` o `.nii.gz`), por ejemplo: `CTACardio.nii`, `MRBrainTumor1_3.nii`, `MRHead.nii.gz`, `USProstate_1.nii`.
+Coloca los volúmenes NIfTI (`.nii` o `.nii.gz`) en la carpeta **`Images/`**. Los scripts resuelven también por nombre de archivo dentro de `Images/` si no pasas una ruta absoluta. Puedes usar datos de **3D Slicer → Sample Data** u otros volúmenes compatibles.
 
 ## Uso
 
-### Filtros individuales (CLI)
+### `median.py` (MedianImageFilter, 3D)
 
-**Filtro mediana (ITK MedianImageFilter):**
-
-```bash
-python src/median.py <entrada.nii> <salida.nii> <radius>
-```
-
-**Filtro Wiener adaptativo:**
+Orden de argumentos: entrada, radio, salida opcional. Si omites la salida o no es una ruta absoluta, se guarda en `output/median/<base>_median_r{radius}.nii`.
 
 ```bash
-python src/wiener.py <entrada.nii> <salida.nii> --window M N
+python src/median.py <entrada> <radius>
+python src/median.py <entrada> <radius> <salida_absoluta.nii>
 ```
 
-**Mediana adaptativa:**
+### `adaptive-median.py` (mediana adaptativa, sección 2.2.2)
+
+Nombre del archivo: **`adaptive-median.py`** (con guion).
 
 ```bash
-python src/adaptive_median.py <entrada.nii> [salida.nii] [--max-window Smax]
+# salida por defecto en output/adaptive-median/
+python src/adaptive-median.py <entrada>
+
+python src/adaptive-median.py <entrada> <salida.nii> --max-window 7
+
+# ruido + filtro
+python src/adaptive-median.py <entrada> --noise-type salt_pepper --noise-density 0.1 --max-window 7
+
+# implementación NumPy (más lenta en volúmenes grandes)
+python src/adaptive-median.py <entrada> --no-itk
+
+# las 12 combinaciones del experimento + PNG resumen (recomendado ITK, sin --no-itk)
+python src/adaptive-median.py <entrada> --experiment
 ```
 
-### Ejecución en lote
+| Argumento | Descripción |
+|-----------|-------------|
+| `input_image` | Posicional; también se busca en `Images/` |
+| `output_image` | Opcional; por defecto `output/adaptive-median/<base>_adaptive_median.nii` |
+| `--max-window` | `Smax` (impar; por defecto 7) |
+| `--no-itk` | Usa NumPy en lugar de la aproximación ITK |
+| `--noise-type` | `none`, `salt_pepper`, `gaussian`, `mixed` |
+| `--noise-density` | Fracción sal/pimienta (por defecto 0.1) |
+| `--noise-sigma` | σ Gaussiano (por defecto 10.0) |
+| `--experiment` | Ejecuta todas las combinaciones predefinidas y genera PNG individuales + resumen |
+
+### `comparison_median.py`
 
 ```bash
-python run_all_filters.py
+python src/comparison_median.py <entrada> [--radius 3] [--max-window 7] [--no-itk]
 ```
 
-Ejecuta los tres filtros sobre todas las imágenes en `samples/` mediante subproceso (CLI), guarda resultados en `result/` (subcarpetas por filtro) y genera figuras de comparación (corte axial: Original vs variantes filtradas) en `comparison_results/`.
+Genera `output/comparison_results/<base>_comparison.png` (Original | mediana | adaptativa).
 
-## Filtros implementados
+### Wiener adaptativo
 
-| Filtro | Script | Parámetros | Descripción |
-|--------|--------|------------|-------------|
-| **Mediana** | `src/median.py` | `radius` (int) | MedianImageFilter ITK. Mayor radio → más suavizado y reducción de ruido tipo sal y pimienta. |
-| **Wiener adaptativo** | `src/wiener.py` | Ventana M×N | Filtro en dominio de la frecuencia; comportamiento según media y varianza local. |
-| **Mediana adaptativa** | `src/adaptive_median.py` | Ventana inicial, Smax | Mediana con ventana dinámica; mejor que mediana fija ante ruido impulsivo denso y mejor preservación de bordes. |
+**🚧 En desarrollo** — el script `wiener.py` aún no está en este repositorio.
 
 ## Salidas
 
-- **`result/`** — Volúmenes filtrados en subcarpetas por filtro (`median_results/`, `wiener_results/`, `adaptive_median_results/`). Nombres del tipo `<base>_median_r3.nii`, `<base>_wiener.nii`, `<base>_adaptive_median.nii`.
-- **`comparison_results/`** — PNG por filtro (p. ej. `median/`, `wiener/`, `adaptive_median/`) con figuras de comparación (Original | variantes) a 200 DPI para informes.
+Las carpetas se crean al ejecutar los scripts:
+
+```
+output/
+├── median/                 # resultados de median.py
+├── adaptive-median/        # resultados de adaptive-median.py
+└── comparison_results/     # PNG de adaptive-median (incl. modo --experiment) y comparison_median.py
+```
+
+Con **`--experiment`**: varios `*_adaptive_median.nii` en `output/adaptive-median/`, PNG por combinación y `*_experiment_summary.png` en `output/comparison_results/`.
+
+## Filtros y scripts
+
+| Filtro / herramienta | Script | Parámetros (resumen) | Descripción |
+|----------------------|--------|----------------------|-------------|
+| **Mediana** | `src/median.py` | `input_image`, `radius`, `output_image` opcional | `MedianImageFilter` ITK 3D. Mayor radio → más suavizado y menos ruido tipo sal y pimienta. |
+| **Mediana adaptativa** | `src/adaptive-median.py` | Ver tabla de argumentos arriba | Aproximación ITK (mediana en plano + preservación de bordes por gradiente) o algoritmo NumPy (Ali 2018); ruido sintético y modo experimento. |
+| **Comparación visual** | `src/comparison_median.py` | `input_image`, `--radius`, `--max-window`, `--no-itk` | Panel de tres columnas para informes. |
+| **Wiener adaptativo** | `wiener.py` | — | **🚧 Pendiente** — no incluido aún. |
 
 ## Estructura del proyecto
 
 ```
 taller-class-filter-image/
-├── README.md
-├── requirements.txt
-├── run_all_filters.py
+├── readme.md
+├── requirenments.txt
+├── .gitignore
+├── Images/                    # volúmenes NIfTI de prueba
 ├── src/
 │   ├── median.py
-│   ├── wiener.py
-│   └── adaptive_median.py
-├── samples/           # Imágenes NIfTI (descargar desde 3D Slicer)
-├── result/
-│   ├── median_results/
-│   ├── wiener_results/
-│   └── adaptive_median_results/
-├── comparison_results/
-│   ├── median/
-│   ├── wiener/
-│   └── adaptive_median/
+│   ├── adaptive-median.py
+│   └── comparison_median.py
+├── output/                    # generado al ejecutar (median, adaptive-median, comparison_results)
 └── venv/
 ```
+
+## Tecnologías
+
+- **Python** 3.x · **ITK** · **NumPy** · **Matplotlib**  
+- **Documento del taller:** `taller_filtros_mediana.docx` (en el repositorio raíz del curso, si está versionado)
