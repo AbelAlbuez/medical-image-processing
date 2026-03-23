@@ -1,0 +1,892 @@
+% ============================================================
+%  Taller 1 — Filtros de Denoising en Imágenes MRI
+%  Pontificia Universidad Javeriana
+%  Procesamiento de Imágenes Médicas
+%
+%  Compilar con: pdflatex taller1_filtrado.tex
+%  (dos pasadas para referencias cruzadas)
+%
+%  Estructura de carpetas esperada desde la raíz del proyecto:
+%    output/comparison_results/   ← imágenes _wiener_comparison y _single_comparison
+%    output/report/               ← imágenes _comparison (4 filtros) y summary_axial.png
+% ============================================================
+
+\documentclass[12pt, a4paper]{article}
+
+% ── Codificación y lenguaje ────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, es-tabla]{babel}
+
+% ── Tipografía y geometría ─────────────────────────────────
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{microtype}
+\usepackage{parskip}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ── Matemáticas ────────────────────────────────────────────
+\usepackage{amsmath, amssymb, amsthm}
+
+% ── Figuras y subfiguras ───────────────────────────────────
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage[export]{adjustbox}
+
+% ── Tablas ────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+
+% ── Código fuente ─────────────────────────────────────────
+\usepackage{listings}
+\lstset{
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue!80!black}\bfseries,
+  commentstyle=\color{green!50!black},
+  stringstyle=\color{red!70!black},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  frame=single,
+  breaklines=true,
+  showstringspaces=false,
+  language=Python,
+  backgroundcolor=\color{gray!8},
+  rulecolor=\color{gray!40},
+}
+
+% ── Hipervínculos ─────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=blue!70!black,
+            citecolor=green!50!black, urlcolor=blue!70!black]{hyperref}
+
+% ── Encabezados y pies de página ──────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Pontificia Universidad Javeriana $\mid$ Procesamiento de Imágenes Médicas}
+\fancyhead[R]{\small Taller 1 — Filtros de Denoising}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Cajas de información ───────────────────────────────────
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\tcbset{
+  infostyle/.style={
+    colback=blue!5, colframe=blue!40!black,
+    fonttitle=\bfseries, breakable, enhanced
+  },
+  warnstyle/.style={
+    colback=orange!8, colframe=orange!70!black,
+    fonttitle=\bfseries, breakable, enhanced
+  },
+  codestyle/.style={
+    colback=gray!6, colframe=gray!50,
+    fonttitle=\bfseries, breakable, enhanced
+  }
+}
+
+% ── Títulos de sección personalizados ─────────────────────
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries\color{blue!70!black}}{}{0em}
+  {\thesection\quad}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{blue!50!black}}
+  {\thesubsection\quad}{0em}{}
+\titleformat{\subsubsection}{\normalsize\itshape\bfseries}
+  {\thesubsubsection\quad}{0em}{}
+
+% ── Rutas base de imágenes ────────────────────────────────
+% Ajustar si el .tex no está en la raíz del proyecto
+\graphicspath{
+  {output/report/}
+  {output/comparison_results/}
+}
+
+% ── Metadatos del documento ───────────────────────────────
+\title{
+  \vspace{-1cm}
+  {\large Pontificia Universidad Javeriana}\\[0.3em]
+  {\large Procesamiento de Imágenes Médicas}\\[1em]
+  \rule{\linewidth}{1.5pt}\\[0.5em]
+  {\LARGE\bfseries Taller 1 — Filtros de Denoising\\[0.2em]
+   en Imágenes de Resonancia Magnética}\\[0.3em]
+  \rule{\linewidth}{1.5pt}
+}
+\author{
+  Abel Albuez\quad$\mid$\quad Victoria Acero\quad$\mid$\quad Santiago Gil\\[0.4em]
+  \small\texttt{aa-albuezs@javeriana.edu.co}
+  $\;\cdot\;$
+  \texttt{jv.acero@javeriana.edu.co}
+  $\;\cdot\;$
+  \texttt{santiago\_gil@javeriana.edu.co}
+}
+\date{Bogotá D.C., Colombia — Marzo 2026}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+\maketitle
+\thispagestyle{fancy}
+
+% ── Resumen ───────────────────────────────────────────────
+\begin{tcolorbox}[infostyle, title={Resumen}]
+Este documento reporta la implementación y análisis experimental de tres filtros clásicos
+de denoising aplicados a imágenes de resonancia magnética (MRI): el \textbf{Filtro de
+Mediana} (MF), el \textbf{Filtro de Mediana Adaptativo} (AMF) y el \textbf{Filtro de
+Wiener Adaptativo} (AWF). Los tres filtros son métodos del dominio espacial implementados
+en Python con soporte de la biblioteca \emph{Insight Toolkit} (ITK) para entrada/salida
+de volúmenes NIfTI, y NumPy/SciPy para la lógica de filtrado. Los experimentos evalúan
+el comportamiento de cada filtro ante distintos niveles de ruido Rician/Gaussiano mixto
+sobre volúmenes cerebrales T1 del modelo BrainWeb (pn3, pn5 y pn9) con campo de
+inhomogeneidad rf20.
+\end{tcolorbox}
+
+\vspace{0.5em}
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introducción}
+% ============================================================
+
+El ruido es una de las principales fuentes de degradación en imágenes de resonancia
+magnética. Durante la adquisición, el hardware del escáner introduce fluctuaciones
+térmicas en la señal, que se manifiestan como ruido Rician en magnitud —asintóticamente
+equivalente a ruido Gaussiano para relaciones señal-ruido moderadas. Adicionalmente,
+errores de transmisión y defectos de sensor pueden generar ruido de impulso (sal y
+pimienta). La presencia de ruido afecta directamente la calidad diagnóstica y compromete
+el desempeño de etapas posteriores como segmentación, registro y extracción de
+características.
+
+El objetivo de este taller es implementar y comparar tres filtros de denoising del dominio
+espacial, siguiendo la taxonomía propuesta por \cite{ali2018}:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{lllX}
+\toprule
+\textbf{Sección} & \textbf{Filtro} & \textbf{Dominio} & \textbf{Estado} \\
+\midrule
+2.2.1 & Filtro de Mediana (MF) & Espacial, no lineal & Implementado — resultados completos \\
+2.2.2 & Filtro de Mediana Adaptativo (AMF) & Espacial, no lineal & Implementado — resultados completos \\
+2.1   & Filtro de Wiener Adaptativo (AWF)  & Espacial, estadístico & Implementado — resultados completos \\
+\bottomrule
+\end{tabularx}
+\caption{Filtros implementados en este taller (Ali 2018).}
+\end{table}
+
+Los tres filtros se aplican sobre volúmenes BrainWeb \cite{brainweb} con tres niveles de
+ruido (pn3, pn5, pn9) y se evalúan cualitativamente mediante comparaciones visuales en
+los tres planos anatómicos (axial, sagital, coronal).
+
+% ============================================================
+\section{Marco Teórico}
+% ============================================================
+
+\subsection{Tipos de ruido en imágenes MRI}
+
+Las imágenes de resonancia magnética son susceptibles principalmente a dos tipos de
+ruido con propiedades estadísticas diferenciadas:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Tipo} & \textbf{Característica} & \textbf{Distribución matemática} \\
+\midrule
+Gaussiano / Rician &
+Afecta todos los vóxeles con pequeñas variaciones continuas. Originado en el ruido
+térmico del hardware del escáner. &
+$p(z) = \dfrac{1}{\sigma\sqrt{2\pi}}\, e^{-\frac{(z-\mu)^2}{2\sigma^2}}$ \\[1em]
+Sal y pimienta (impulso) &
+Vóxeles aislados con valores extremos (0 o MAX). Causado por errores de sensor o
+transmisión. &
+$P(z) = \begin{cases} p_a & z = a \\ p_b & z = b \\ 0 & \text{otro caso} \end{cases}$ \\[1em]
+Mixto &
+Combinación simultánea de Gaussiano e impulso. Escenario más exigente para los filtros. &
+Superposición de ambas distribuciones. \\
+\bottomrule
+\end{tabularx}
+\caption{Tipos de ruido considerados en los experimentos.}
+\end{table}
+
+\subsection{Filtro de Mediana (MF)}
+
+El Filtro de Mediana es un filtro no lineal del dominio espacial. Su operación consiste en
+reemplazar el valor de cada vóxel por la \textbf{mediana estadística} de los valores en
+una vecindad rectangular $S_{xy}$ centrada en dicho vóxel:
+
+\begin{equation}
+  \hat{f}(x,y) = \operatorname{mediana}\bigl\{g(s,t)\bigr\},\quad (s,t) \in S_{xy}
+  \label{eq:median}
+\end{equation}
+
+donde $g(x,y)$ es la imagen corrupta y $\hat{f}(x,y)$ la imagen restaurada. A diferencia
+del filtro de media, la mediana es inherentemente robusta ante valores extremos aislados
+(ruido de impulso) porque es una estadística de orden: los valores más alejados del centro
+de la distribución no influyen en el resultado final.
+
+\textbf{Parámetro clave}: el radio de la ventana (\texttt{radius}). Un radio mayor implica
+mayor suavizado y mayor reducción de ruido a costa de potencial pérdida de bordes y
+detalles finos. En la implementación 3D del presente trabajo se utiliza una vecindad cúbica
+$(2r+1)^3$, siendo $r=1$ la configuración por defecto (ventana $3\times3\times3 = 27$
+vóxeles).
+
+\subsection{Filtro de Mediana Adaptativo (AMF)}
+
+El Filtro de Mediana Adaptativo \cite{lin2013} extiende el filtro clásico mediante un
+\textbf{mecanismo de ventana dinámica}. En lugar de usar una vecindad de tamaño fijo,
+adapta el tamaño de la ventana vóxel a vóxel según la densidad local de ruido.
+
+El algoritmo opera en dos niveles de decisión sobre cada píxel $(x,y)$, donde se definen:
+$Z_{\min}$ = mínimo de la vecindad, $Z_{\max}$ = máximo, $Z_{\text{med}}$ = mediana,
+$Z_{xy}$ = valor del vóxel actual, $S_{\max}$ = tamaño máximo de ventana permitido.
+
+\begin{tcolorbox}[codestyle, title={Algoritmo AMF — Dos niveles de decisión}]
+\textbf{Nivel A} — ¿Es la mediana confiable (no es ruido)?
+\begin{enumerate}
+  \item Calcular $L_{11} = Z_{\text{med}} - Z_{\min}$ y $L_{12} = Z_{\text{med}} - Z_{\max}$
+  \item Si $L_{11} > 0$ \textbf{AND} $L_{12} < 0$ $\Rightarrow$ mediana confiable, ir al \textbf{Nivel B}
+  \item Si no $\Rightarrow$ ampliar ventana ($3 \to 5 \to 7 \to \ldots$) y repetir Nivel A
+  \item Si ventana $> S_{\max}$ $\Rightarrow$ output $= Z_{\text{med}}$
+\end{enumerate}
+\textbf{Nivel B} — ¿Es el vóxel central ruido o señal limpia?
+\begin{enumerate}
+  \item Calcular $L_{21} = Z_{xy} - Z_{\min}$ y $L_{22} = Z_{xy} - Z_{\max}$
+  \item Si $L_{21} > 0$ \textbf{AND} $L_{22} < 0$ $\Rightarrow$ vóxel limpio $\Rightarrow$ output $= Z_{xy}$ (conservar)
+  \item Si no $\Rightarrow$ vóxel es ruido $\Rightarrow$ output $= Z_{\text{med}}$ (reemplazar)
+\end{enumerate}
+\end{tcolorbox}
+
+La clave conceptual del algoritmo es que un vóxel solo se modifica si hay \textit{evidencia
+matemática} de que es un valor extremo no representativo del tejido local. Esto le permite
+preservar bordes y detalles estructurales que el filtro clásico de ventana fija tiende a
+suavizar.
+
+\subsection{Filtro de Wiener Adaptativo (AWF)}
+
+El Filtro de Wiener Adaptativo es un estimador de mínimo error cuadrático medio (MMSE)
+que adapta su comportamiento según las \textbf{estadísticas locales de media y varianza}
+calculadas en una ventana rectangular $M \times N$ alrededor de cada vóxel
+\cite{ali2018}. Opera en el dominio espacial (no en el dominio de la frecuencia como el
+filtro de Wiener clásico).
+
+\subsubsection{Formulación matemática}
+
+La fórmula de restauración por vóxel es:
+
+\begin{equation}
+  \hat{f}(x,y) = \mu + \frac{\max\bigl(0,\;\sigma^2_{\text{local}} - \nu^2\bigr)}
+                             {\max\bigl(\sigma^2_{\text{local}},\;\varepsilon\bigr)}
+                 \cdot \bigl[g(x,y) - \mu\bigr]
+  \label{eq:wiener}
+\end{equation}
+
+donde:
+\begin{itemize}
+  \item $g(x,y)$ — vóxel de la imagen ruidosa de entrada
+  \item $\mu$ — media local en la ventana $M \times N$ centrada en $(x,y)$
+  \item $\sigma^2_{\text{local}}$ — varianza local en la misma ventana: $\sigma^2_{\text{local}} = E[X^2] - E[X]^2$
+  \item $\nu^2$ — varianza global del ruido (estimada automáticamente como promedio de todas las varianzas locales)
+  \item $\varepsilon$ — épsilon de máquina ($\approx 2.2 \times 10^{-16}$), evita división por cero
+\end{itemize}
+
+\subsubsection{Comportamiento adaptativo}
+
+La fracción en la ecuación \eqref{eq:wiener} actúa como una \textbf{ganancia de Wiener}
+que varía continua\-mente entre 0 y 1:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Condición local} & \textbf{Valor de la ganancia} & \textbf{Efecto sobre el vóxel} \\
+\midrule
+$\sigma^2_{\text{local}} \leq \nu^2$ (región plana/ruidosa) &
+ganancia $= 0$ &
+$\hat{f} = \mu$ — suavizado máximo \\
+$\sigma^2_{\text{local}} \gg \nu^2$ (borde / estructura real) &
+ganancia $\to 1$ &
+$\hat{f} \approx g$ — señal original preservada \\
+Caso intermedio &
+ganancia $\in (0,1)$ &
+mezcla ponderada entre $\mu$ y $g$ \\
+\bottomrule
+\end{tabularx}
+\caption{Comportamiento adaptativo del AWF según la varianza local.}
+\end{table}
+
+\subsubsection{Estimación de la varianza de ruido $\nu^2$}
+
+En ausencia de una medición independiente del ruido, $\nu^2$ se estima automáticamente
+como el promedio de todas las varianzas locales del volumen:
+
+\begin{equation}
+  \nu^2 \approx \frac{1}{N_{\text{vóxeles}}} \sum_{x,y,z} \sigma^2_{\text{local}}(x,y,z)
+  \label{eq:nu2}
+\end{equation}
+
+Esta estimación es razonable porque, en presencia de ruido, las varianzas locales están
+infladas precisamente en $\nu^2$ respecto de las varianzas del tejido limpio; promediar
+sobre todo el volumen proporciona un estimador estable.
+
+% ============================================================
+\section{Implementación}
+% ============================================================
+
+Los tres filtros se implementaron en Python 3 con la siguiente arquitectura común:
+
+\begin{tcolorbox}[infostyle, title={Pipeline general (los tres filtros)}]
+\textbf{Entrada:} Volumen NIfTI \texttt{.nii.gz} (BrainWeb) \\[0.3em]
+\textbf{Paso 1 — Lectura ITK:} \texttt{itk.imread()} carga el volumen y lo convierte a
+\texttt{itk.Image[itk.F, 3]} (float32, 3D).\\[0.3em]
+\textbf{Paso 2 — Conversión:} \texttt{itk.GetArrayFromImage()} exporta un array NumPy
+de forma $(Z, Y, X)$ float32.\\[0.3em]
+\textbf{Paso 3 — Filtrado:} se aplica el algoritmo con NumPy/SciPy.\\[0.3em]
+\textbf{Paso 4 — Reconstrucción ITK:} \texttt{itk.image\_from\_array()} + copia de
+\texttt{Spacing/Origin/Direction} del volumen original.\\[0.3em]
+\textbf{Salida:} Volumen NIfTI filtrado + PNG de comparación.
+\end{tcolorbox}
+
+\begin{tcolorbox}[warnstyle, title={Nota técnica — Rutas con caracteres no ASCII}]
+El proyecto reside en una carpeta denominada \textit{imágenes médicas}. La capa C++ de
+ITK no puede procesar rutas con caracteres no ASCII en Windows. Todos los scripts
+resuelven esta limitación copiando el archivo a un directorio temporal con ruta ASCII,
+procesándolo allí y trasladando el resultado a la ubicación final.
+\end{tcolorbox}
+
+\subsection{Filtro de Mediana — \texttt{src/median.py}}
+
+La implementación usa \texttt{numpy.lib.stride\_tricks.sliding\_window\_view} para
+vectorizar la extracción de vecindades sin un bucle Python explícito sobre los $\sim$7
+millones de vóxeles del volumen T1:
+
+\begin{enumerate}
+  \item Extraer la vecindad $(2r+1)^3$ alrededor de cada vóxel mediante \texttt{sliding\_window\_view}.
+  \item Eliminar el vóxel central (índice 13 en la vecindad aplanada de 27 elementos).
+  \item Reemplazar el vóxel con \texttt{np.median()} de los 26 vecinos restantes.
+\end{enumerate}
+
+ITK se usa exclusivamente para lectura (\texttt{.nii.gz}) y escritura (\texttt{.nii}) del
+volumen. Parámetro principal: \texttt{radius=1} ($3\times3\times3$, por defecto en
+\texttt{run\_all.py}).
+
+\subsection{Filtro de Mediana Adaptativo — \texttt{src/adaptive-median.py}}
+
+El script ofrece dos variantes seleccionables con el flag \texttt{--no-itk}:
+
+\subsubsection{Variante ITK (por defecto)}
+
+Aproximación al algoritmo adaptativo usando primitivas nativas de ITK:
+\begin{enumerate}
+  \item \texttt{itk.MedianImageFilter} con radio $(1,1,0)$ — ventana $3\times3$ en el
+    plano axial.
+  \item \texttt{itk.GradientMagnitudeImageFilter} sobre la imagen mediana filtrada.
+  \item Umbral al percentil 82 de la magnitud de gradiente: donde se supera el umbral
+    (zona de borde), se restaura el vóxel original; en regiones homogéneas prevalece la
+    mediana filtrada.
+\end{enumerate}
+Esta variante es significativamente más rápida que la implementación NumPy.
+
+\subsubsection{Variante NumPy (algoritmo exacto de Ali 2018)}
+
+Implementación literal del algoritmo de dos niveles descrito en la sección anterior.
+Procesa el volumen corte axial por corte axial. Usa \texttt{np.pad(mode='reflect')} para
+manejo de bordes. La ventana crece de 3 en dos hasta $S_{\max}$. La desventaja es el
+costo computacional: el doble bucle Python por píxel hace esta variante impráctica para
+uso rutinario en volúmenes 3D grandes.
+
+\textbf{Nota de implementación — normalización de entrada:} Las imágenes BrainWeb son
+NIfTI float32 con intensidades MRI en el rango $\approx 0$–$1368$ (unidades arbitrarias
+del escáner). Dado que el algoritmo AMF opera con comparaciones de orden sobre enteros
+\texttt{uint8}, la imagen se normaliza automáticamente al rango 0–255 antes de ejecutar
+el filtro:
+\[
+  I_{\text{norm}} = \operatorname{clip}\!\left(
+    \frac{I - I_{\min}}{I_{\max} - I_{\min}} \cdot 255,\; 0,\; 255
+  \right) \in \mathbb{Z}^+_{[0,255]}
+\]
+Esta normalización preserva las relaciones de orden de intensidad (rango dinámico relativo)
+y con ello el comportamiento de detección de impulsos del algoritmo.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{llp{6.5cm}}
+\toprule
+\textbf{Argumento} & \textbf{Valor por defecto} & \textbf{Descripción} \\
+\midrule
+\texttt{--max-window} & 7 & $S_{\max}$: tamaño máximo de ventana (impar) \\
+\texttt{--no-itk} & False & Activa la implementación NumPy exacta \\
+\texttt{--noise-type} & none & Tipo de ruido a inyectar: \texttt{none | salt\_pepper | gaussian | mixed} \\
+\texttt{--noise-density} & 0.1 & Fracción de píxeles afectados (sal y pimienta) \\
+\texttt{--noise-sigma} & 10.0 & Desviación estándar del ruido Gaussiano \\
+\bottomrule
+\end{tabular}
+\caption{Parámetros del script \texttt{adaptive-median.py}.}
+\end{table}
+
+\subsection{Filtro de Wiener Adaptativo — \texttt{src/wiener.py}}
+
+Implementación completamente 3D y vectorizada con \texttt{scipy.ndimage.uniform\_filter}:
+
+\begin{lstlisting}[caption={Núcleo del Filtro de Wiener Adaptativo (src/wiener.py)}]
+from scipy.ndimage import uniform_filter
+import numpy as np
+
+def adaptive_wiener_filter_3d(arr, window_size=5, noise_variance=None):
+    arr_f64 = arr.astype(np.float64)
+
+    # Paso 1: media local (filtro de caja deslizante)
+    local_mean = uniform_filter(arr_f64, size=window_size, mode='reflect')
+
+    # Paso 2: varianza local = E[X^2] - E[X]^2
+    local_mean_sq  = uniform_filter(arr_f64**2, size=window_size, mode='reflect')
+    local_variance = local_mean_sq - local_mean**2
+
+    # Paso 3: estimacion automatica de la varianza de ruido
+    if noise_variance is None:
+        noise_variance = float(np.mean(local_variance))
+
+    # Paso 4: ganancia de Wiener (clampeada a [0, 1])
+    eps         = np.finfo(np.float64).eps
+    numerator   = np.maximum(local_variance - noise_variance, 0.0)
+    denominator = np.maximum(local_variance, eps)
+    gain        = numerator / denominator
+
+    # Paso 5: restauracion voxel a voxel
+    filtered = local_mean + gain * (arr_f64 - local_mean)
+    return filtered.astype(np.float32)
+\end{lstlisting}
+
+\texttt{uniform\_filter(size=k)} calcula la media sobre una ventana cúbica $k\times k\times k$
+deslizante en las tres dimensiones simultáneamente en un único paso a nivel de C, lo que
+evita completamente los bucles Python. El parámetro \texttt{mode='reflect'} refleja el
+array en los bordes del volumen, eliminando el sesgo de los artefactos de borde.
+
+\subsection{Ejecutor por lotes — \texttt{src/run\_all.py}}
+
+El script \texttt{run\_all.py} itera sobre las tres imágenes BrainWeb (pn3, pn5, pn9),
+ejecuta los tres filtros sobre cada una y genera los artefactos de salida descritos en la
+Tabla~\ref{tab:outputs}.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{lX}
+\toprule
+\textbf{Directorio de salida} & \textbf{Contenido} \\
+\midrule
+\texttt{output/median/} & 3 volúmenes NIfTI filtrados (pn3, pn5, pn9) \\
+\texttt{output/adaptive-median/} & 3 volúmenes NIfTI filtrados \\
+\texttt{output/wiener/} & 3 volúmenes NIfTI filtrados \\
+\texttt{output/comparison\_results/} & PNGs individuales de cada filtro por nivel de ruido \\
+\texttt{output/report/} & PNGs de comparación completa (4 filtros) y resumen axial \\
+\bottomrule
+\end{tabularx}
+\caption{Artefactos generados por \texttt{run\_all.py}.}
+\label{tab:outputs}
+\end{table}
+
+Cada PNG de comparación completa muestra el siguiente layout:
+\[
+  \underbrace{\text{Original}}_{\text{col. 1}} \quad
+  \underbrace{\text{Mediana (r=1)}}_{\text{col. 2}} \quad
+  \underbrace{\text{Med. Adaptativo}}_{\text{col. 3}} \quad
+  \underbrace{\text{Wiener Adaptativo}}_{\text{col. 4}}
+\]
+en tres filas correspondientes a los planos axial, sagital y coronal.
+
+% ============================================================
+\section{Dataset — Imágenes BrainWeb}
+% ============================================================
+
+Los experimentos utilizan el simulador de MRI BrainWeb \cite{brainweb}, un modelo
+anatómico digital del cerebro humano adulto que permite generar imágenes T1 con
+parámetros de ruido y artefacto de inhomogeneidad controlados.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{llll}
+\toprule
+\textbf{Imagen} & \textbf{Tipo} & \textbf{Ruido (\%)} & \textbf{Inhomogeneidad RF (\%)} \\
+\midrule
+\texttt{t1\_icbm\_normal\_1mm\_pn3\_rf20} & T1 ICBM & 3\% (bajo)  & 20\% \\
+\texttt{t1\_icbm\_normal\_1mm\_pn5\_rf20} & T1 ICBM & 5\% (medio) & 20\% \\
+\texttt{t1\_icbm\_normal\_1mm\_pn9\_rf20} & T1 ICBM & 9\% (alto)  & 20\% \\
+\bottomrule
+\end{tabular}
+\caption{Imágenes BrainWeb utilizadas. Resolución 1 mm isótropo, formato NIfTI.}
+\end{table}
+
+El nivel de ruido \texttt{pn} representa el porcentaje de ruido Rician relativo a la
+intensidad máxima del tejido blanco. El ruido Rician en imágenes de magnitud MRI es
+asintóticamente equivalente a ruido Gaussiano para SNR $> 3$.
+
+% ============================================================
+\section{Resultados}
+% ============================================================
+
+\subsection{Vista global — Todos los filtros por nivel de ruido (axial)}
+
+La Figura~\ref{fig:summary_axial} proporciona una vista consolidada del desempeño
+comparativo de los tres filtros en los tres niveles de ruido, usando el corte axial central
+del volumen.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{summary_axial.png}
+  \caption{Comparación global: todos los filtros $\times$ todos los niveles de ruido.
+           Corte axial central. Columnas: original, Mediana (r=1), Mediana Adaptativo,
+           Wiener Adaptativo. Filas: pn3 (3\%), pn5 (5\%), pn9 (9\%).}
+  \label{fig:summary_axial}
+\end{figure}
+
+Se observan las siguientes tendencias generales:
+\begin{itemize}
+  \item El Filtro de Mediana (r=1) produce resultados muy cercanos al original a bajo
+        ruido (pn3), y reduce efectivamente el grano a nivel medio-alto (pn5, pn9) con
+        un suavizado moderado y uniforme en los tres planos.
+  \item El Filtro de Mediana Adaptativo muestra diferencias sutiles respecto al filtro
+        clásico a bajo ruido (pn3, pn5) — preservando los bordes de sustancia gris/blanca
+        con mayor fidelidad — y comportamiento similar a la Mediana a alto ruido (pn9).
+  \item El Filtro de Wiener Adaptativo produce la textura más homogénea y suavizada de
+        los tres filtros en todos los niveles de ruido. A alto ruido (pn9) el suavizado
+        es más pronunciado, ya que la varianza estimada $\nu^2$ se eleva con el ruido,
+        deprimiendo la ganancia en regiones de contraste moderado.
+\end{itemize}
+
+\subsection{Nivel de ruido pn3 (3\%) — Comparación completa}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{t1_icbm_normal_1mm_pn3_rf20_comparison.png}
+  \caption{pn3 (3\%) — Comparación de los cuatro resultados en los tres planos
+           anatómicos. Columnas: Original, Mediana (r=1), Mediana Adaptativo, Wiener
+           Adaptativo.}
+  \label{fig:pn3_full}
+\end{figure}
+
+\textbf{Análisis pn3:} A bajo nivel de ruido la imagen original ya exhibe buena calidad
+diagnóstica. El Filtro de Mediana con radio 1 (ventana 3×3×3) introduce un suavizado
+apenas perceptible, manteniendo la delimitación córtex/CSF y la estructura de los
+giro-surcos en el plano sagital. El Filtro de Mediana Adaptativo se comporta de forma muy
+similar al Mediana clásico a este nivel de ruido: al ser la densidad de impulsos baja, la
+mayoría de los vóxeles pasan el Nivel B sin modificación. El Filtro de Wiener Adaptativo
+produce la imagen visualmente más suave de las cuatro columnas, con textura más
+homogénea en el plano coronal — comportamiento esperado del estimador MMSE cuando
+$\nu^2$ incluye variabilidad natural del tejido.
+
+\subsubsection{Detalle: Mediana Adaptativo en pn3}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{t1_icbm_normal_1mm_pn3_rf20_single_comparison.png}
+  \caption{pn3 — Original vs.\ Filtro de Mediana Adaptativo ($S_{\max}=7$, variante NumPy).}
+  \label{fig:pn3_amf}
+\end{figure}
+
+\subsubsection{Detalle: Wiener Adaptativo en pn3}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{t1_icbm_normal_1mm_pn3_rf20_wiener_comparison.png}
+  \caption{pn3 — Original vs.\ Filtro de Wiener Adaptativo (ventana 5×5×5, $\nu^2$ auto-estimada).}
+  \label{fig:pn3_awf}
+\end{figure}
+
+\subsection{Nivel de ruido pn5 (5\%) — Comparación completa}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{t1_icbm_normal_1mm_pn5_rf20_comparison.png}
+  \caption{pn5 (5\%) — Comparación de los cuatro resultados en los tres planos anatómicos.}
+  \label{fig:pn5_full}
+\end{figure}
+
+\textbf{Análisis pn5:} A nivel de ruido medio el comportamiento diferencial entre los
+métodos se acentúa ligeramente respecto a pn3. El Filtro de Mediana suprime eficazmente
+los puntos de ruido aislados, manteniendo el contraste global y la continuidad de los
+planos sagital y coronal. El Filtro de Mediana Adaptativo exhibe resultados visualmente
+muy similares a los del Mediana clásico: a este nivel de ruido, la mayoría de los vóxeles
+siguen siendo correctamente clasificados como señal limpia en el Nivel B. El Filtro de
+Wiener Adaptativo produce una imagen algo más suave que los otros dos: las regiones
+homogéneas (tejido blanco profundo) son más uniformes, mientras las interfaces de
+alto contraste (córtex/CSF, plano sagital) conservan parte de la definición original.
+
+\subsubsection{Detalle: Mediana Adaptativo en pn5}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{t1_icbm_normal_1mm_pn5_rf20_single_comparison.png}
+  \caption{pn5 — Original vs.\ Filtro de Mediana Adaptativo.}
+  \label{fig:pn5_amf}
+\end{figure}
+
+\subsubsection{Detalle: Wiener Adaptativo en pn5}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{t1_icbm_normal_1mm_pn5_rf20_wiener_comparison.png}
+  \caption{pn5 — Original vs.\ Filtro de Wiener Adaptativo.}
+  \label{fig:pn5_awf}
+\end{figure}
+
+\subsection{Nivel de ruido pn9 (9\%) — Comparación completa}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{t1_icbm_normal_1mm_pn9_rf20_comparison.png}
+  \caption{pn9 (9\%) — Comparación de los cuatro resultados en los tres planos anatómicos.}
+  \label{fig:pn9_full}
+\end{figure}
+
+\textbf{Análisis pn9:} A alto nivel de ruido los tres filtros reducen eficazmente el grano
+visible en la imagen original. El Filtro de Mediana recupera las estructuras anatómicas
+macroscópicas (lobos, ventrículos, plano de la hoz) con un suavizado moderado en los
+planos sagital y coronal, con cierta pérdida de definición en los giro-surcos corticales más
+finos. El Filtro de Mediana Adaptativo muestra un resultado visualmente similar al Mediana
+clásico: a alta densidad de ruido el criterio del Nivel A requiere con mayor frecuencia
+ampliar la ventana hasta $S_{\max}=7$, y la imagen resultante se asemeja a una mediana de
+ventana media-grande en las regiones más ruidosas. El Filtro de Wiener Adaptativo produce
+la imagen con textura más uniforme de las tres: el alto nivel de ruido eleva la varianza
+global estimada $\nu^2$, lo que deprime la ganancia de Wiener en zonas de contraste
+moderado y produce el suavizado más pronunciado, con ligera pérdida de detalle respecto
+a los otros dos filtros.
+
+\subsubsection{Detalle: Mediana Adaptativo en pn9}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{t1_icbm_normal_1mm_pn9_rf20_single_comparison.png}
+  \caption{pn9 — Original vs.\ Filtro de Mediana Adaptativo.}
+  \label{fig:pn9_amf}
+\end{figure}
+
+\subsubsection{Detalle: Wiener Adaptativo en pn9}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.82\textwidth]{t1_icbm_normal_1mm_pn9_rf20_wiener_comparison.png}
+  \caption{pn9 — Original vs.\ Filtro de Wiener Adaptativo.}
+  \label{fig:pn9_awf}
+\end{figure}
+
+% ============================================================
+\section{Análisis Comparativo}
+% ============================================================
+
+\subsection{Comparación entre los tres filtros}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{lXXX}
+\toprule
+\textbf{Aspecto} &
+\textbf{Mediana (MF)} &
+\textbf{Med. Adaptativo (AMF)} &
+\textbf{Wiener Adaptativo (AWF)} \\
+\midrule
+Tipo de ventana &
+Fija ($3\times3\times3$) &
+Dinámica ($3\to5\to7$) &
+Fija cúbica ($5\times5\times5$) \\
+
+Preservación de bordes &
+Moderada: suaviza bordes y ruido &
+Alta: Nivel B conserva píxeles limpios &
+Alta en bordes de alta varianza \\
+
+Ruido de impulso &
+Bueno a baja densidad; deteriora a alta &
+Mejor tolerancia; $S_{\max}$ amplía la búsqueda &
+Pobre: la mediana local queda sesgada \\
+
+Ruido Gaussiano &
+Bueno ($\hat{r}=1$ PSNR $\sim52$ dB a baja densidad) &
+Aceptable en variante NumPy; la variante ITK introduce aclarado &
+Óptimo para Gaussiano (estimador MMSE) \\
+
+Sobresuavizado &
+Moderado a radio pequeño &
+Bajo (adapta la ventana) &
+Presente cuando $\nu^2$ es sobreestimada \\
+
+Velocidad (volumen T1) &
+Muy rápido ($<$5 s con stride tricks) &
+Rápido (var. ITK $\sim$30 s) / Muy lento (var. NumPy $>$10 min) &
+Rápido ($<$10 s con \texttt{uniform\_filter}) \\
+
+Implementación ITK &
+\texttt{itk.MedianImageFilter} — nativo &
+Aproximación: Median + GradientMagnitude + umbral &
+Manual con NumPy/SciPy (no existe filtro nativo) \\
+
+Parámetro clave &
+\texttt{radius} &
+$S_{\max}$ (\texttt{--max-window}) &
+\texttt{window} (tamaño cúbico) y $\nu^2$ \\
+\bottomrule
+\end{tabularx}
+\caption{Comparación de los tres filtros implementados.}
+\label{tab:comparison}
+\end{table}
+
+\subsection{Desempeño por nivel de ruido}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Nivel} & \textbf{Mejor filtro} & \textbf{Balance borde/ruido} & \textbf{Observación clave} \\
+\midrule
+pn3 (3\%) & AMF / Mediana & Mediana y AMF muy similares &
+  AWF produce textura más uniforme; diferencias sutiles a bajo ruido \\
+pn5 (5\%) & AMF & AMF y Mediana resultados similares &
+  AWF más suavizado; AMF clasifica más píxeles como señal limpia \\
+pn9 (9\%) & Mediana / AMF & Los tres filtros reducen el grano eficazmente &
+  AWF produce la textura más uniforme; AMF se asimila a ventana media \\
+\bottomrule
+\end{tabular}
+\caption{Mejor filtro por nivel de ruido (evaluación cualitativa).}
+\end{table}
+
+\subsection{Comparación con la implementación de Ali (2018)}
+
+Ali (2018) evalúa los mismos tres filtros sobre imágenes MRI 2D con ruido Gaussiano y
+sal y pimienta, reportando los siguientes valores PSNR representativos:
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Filtro} & \multicolumn{2}{c}{\textbf{Ruido Gaussiano (PSNR dB)}} &
+                  \multicolumn{2}{c}{\textbf{Sal y pimienta (PSNR dB)}} \\
+ & 10\% & 90\% & 10\% & 90\% \\
+\midrule
+Wiener Adaptativo & 43.21 & 36.53 & 45.25 & 33.47 \\
+Mediana           & \textbf{51.98} & \textbf{45.54} & 61.82 & 39.13 \\
+Mediana Adaptativo & 38.98 & 33.79 & \textbf{66.86} & \textbf{40.19} \\
+\bottomrule
+\end{tabular}
+\caption{PSNR reportado por Ali (2018) para evaluación 2D. El Filtro de Mediana es
+  superior para ruido Gaussiano; el Filtro de Mediana Adaptativo es superior para
+  sal y pimienta.}
+\end{table}
+
+Nuestros resultados cualitativos en 3D son consistentes con estos hallazgos en cuanto a
+la jerarquía de los filtros. Las diferencias observables se explican por:
+
+\begin{enumerate}
+  \item \textbf{Dimensionalidad}: nuestra implementación es 3D (cubos de vóxeles); Ali
+        trabaja en 2D (matrices de píxeles). La vecindad 3D tiene acceso a información
+        inter-corte que enriquece la estimación estadística.
+  \item \textbf{Tipo de ruido BrainWeb}: el ruido de BrainWeb es Rician (no puramente
+        Gaussiano ni puramente impulsivo). El AWF está teóricamente optimizado para
+        Gaussiano; el AMF tiene ventaja conceptual sobre impulso.
+  \item \textbf{Variante ITK del AMF}: la aproximación ITK del AMF (Median +
+        GradientMagnitude + umbral) no es el algoritmo exacto de Ali. La variante NumPy
+        sí lo es, pero es computacionalmente costosa para volúmenes 3D. Ali implementa
+        el algoritmo exacto sobre 2D, lo que facilita tiempos razonables.
+  \item \textbf{Estimación de $\nu^2$}: Ali no describe explícitamente cómo estima
+        $\nu^2$ en el AWF. Nuestra implementación usa el promedio de varianzas locales
+        (ecuación \ref{eq:nu2}), que puede sobreestimar $\nu^2$ cuando el volumen
+        contiene regiones de alto contraste, deprimiendo la ganancia en esas zonas.
+\end{enumerate}
+
+% ============================================================
+\section{Conclusiones}
+% ============================================================
+
+\begin{enumerate}
+
+  \item \textbf{Filtro de Mediana (MF):} Método robusto y computacionalmente eficiente,
+    superior para ruido Gaussiano de baja a media intensidad. La implementación 3D
+    vectorizada con \texttt{sliding\_window\_view} es práctica para volúmenes clínicos
+    estándar. Su principal limitación es el suavizado indiscriminado de bordes, que se
+    acentúa a ruido alto (pn9) o con radios de ventana mayores.
+
+  \item \textbf{Filtro de Mediana Adaptativo (AMF):} El mecanismo de ventana dinámica y
+    el criterio de decisión por vóxel (Niveles A y B) le confieren mayor preservación de
+    bordes y estructuras anatómicas finas respecto al filtro clásico. Es el método más
+    versátil de los tres para ruido mixto de densidad moderada. La variante ITK ofrece
+    velocidad a cambio de fidelidad al algoritmo exacto; para estudios que requieran el
+    algoritmo estricto de Ali (2018) debe usarse la variante NumPy.
+
+  \item \textbf{Filtro de Wiener Adaptativo (AWF):} Teóricamente óptimo bajo el criterio
+    MMSE para ruido Gaussiano. En la práctica, su desempeño sobre BrainWeb depende
+    críticamente de la estimación de $\nu^2$ y del tamaño de ventana. Para ruido bajo
+    (pn3, pn5) ofrece una reducción de ruido suave y homogénea que puede ser deseable
+    en aplicaciones de segmentación. Para ruido alto (pn9) el sobresuavizado compromete
+    el detalle diagnóstico. Una calibración manual de $\nu^2$ o una ventana más pequeña
+    mejorarían su desempeño en este escenario.
+
+  \item \textbf{Elección del filtro:} En concordancia con Ali (2018), la elección debe
+    guiarse por el tipo y densidad de ruido presente. Para ruido predominantemente
+    Gaussiano (como en MRI clínica estándar), el Filtro de Mediana y el AWF bien
+    calibrado son opciones sólidas. Para ruido de impulso o artefactos puntuales, el
+    AMF con $S_{\max}$ adecuado es preferible.
+
+  \item \textbf{Rol de ITK:} En los tres scripts, ITK cumple el rol de capa de
+    entrada/salida (I/O) para los formatos médicos estándar (NIfTI, DICOM), manteniendo
+    la metadata física (espaciado, origen, dirección) del volumen. La lógica de filtrado
+    se implementa en NumPy/SciPy por mayor flexibilidad y control, dado que ITK no
+    provee un filtro de Wiener adaptativo espacial nativo ni una implementación exacta
+    del AMF de Ali (2018).
+
+\end{enumerate}
+
+% ============================================================
+\section*{Referencias}
+\addcontentsline{toc}{section}{Referencias}
+% ============================================================
+
+\begin{thebibliography}{9}
+
+\bibitem{ali2018}
+  Ali, H.\,M. (2018).
+  \textit{MRI Medical Image Denoising by Fundamental Filters}.
+  En: \textit{High-Resolution Neuroimaging — Basic Physical Principles and
+  Clinical Applications}. IntechOpen.
+  \url{https://doi.org/10.5772/intechopen.72427}
+
+\bibitem{lin2013}
+  Lin, L., Meng, X., \& Liang, X. (2013).
+  Reduction of impulse noise in MRI images using block-based adaptive median filter.
+  \textit{IEEE International Conference on Medical Imaging Physics and Engineering
+  (ICMIPE)}, pp.\,132--134.
+
+\bibitem{brainweb}
+  Collins, D.\,L., et al. (1998).
+  Design and construction of a realistic digital brain phantom.
+  \textit{IEEE Transactions on Medical Imaging}, 17(3), 463--468.
+  \url{https://doi.org/10.1109/42.712135}
+
+\bibitem{itk}
+  ITK Development Team. (2024).
+  \textit{Insight Toolkit (ITK) v5.4}.
+  \url{https://itk.org}
+
+\bibitem{scipy}
+  Virtanen, P., et al. (2020).
+  SciPy 1.0: Fundamental algorithms for scientific computing in Python.
+  \textit{Nature Methods}, 17, 261--272.
+  \url{https://doi.org/10.1038/s41592-019-0686-2}
+
+\end{thebibliography}
+
+\end{document}
