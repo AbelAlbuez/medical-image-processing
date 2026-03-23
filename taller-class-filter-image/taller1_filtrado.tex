@@ -406,6 +406,19 @@ manejo de bordes. La ventana crece de 3 en dos hasta $S_{\max}$. La desventaja e
 costo computacional: el doble bucle Python por píxel hace esta variante impráctica para
 uso rutinario en volúmenes 3D grandes.
 
+\textbf{Nota de implementación — normalización de entrada:} Las imágenes BrainWeb son
+NIfTI float32 con intensidades MRI en el rango $\approx 0$–$1368$ (unidades arbitrarias
+del escáner). Dado que el algoritmo AMF opera con comparaciones de orden sobre enteros
+\texttt{uint8}, la imagen se normaliza automáticamente al rango 0–255 antes de ejecutar
+el filtro:
+\[
+  I_{\text{norm}} = \operatorname{clip}\!\left(
+    \frac{I - I_{\min}}{I_{\max} - I_{\min}} \cdot 255,\; 0,\; 255
+  \right) \in \mathbb{Z}^+_{[0,255]}
+\]
+Esta normalización preserva las relaciones de orden de intensidad (rango dinámico relativo)
+y con ello el comportamiento de detección de impulsos del algoritmo.
+
 \begin{table}[H]
 \centering
 \renewcommand{\arraystretch}{1.3}
@@ -542,13 +555,16 @@ del volumen.
 
 Se observan las siguientes tendencias generales:
 \begin{itemize}
-  \item El Filtro de Mediana produce la imagen más nítida en pn3 y pn5, pero introduce
-        un efecto de desenfoque notable en pn9.
-  \item El Filtro de Mediana Adaptativo preserva mejor los bordes a bajo ruido y mantiene
-        mayor detalle visible a alto ruido que el filtro de mediana clásico.
-  \item El Filtro de Wiener Adaptativo produce una textura suave y homogénea a bajo y
-        medio ruido, pero pierde detalle fino. A alto ruido (pn9) el efecto de suavizado
-        es excesivo para la ventana 5×5×5 utilizada.
+  \item El Filtro de Mediana (r=1) produce resultados muy cercanos al original a bajo
+        ruido (pn3), y reduce efectivamente el grano a nivel medio-alto (pn5, pn9) con
+        un suavizado moderado y uniforme en los tres planos.
+  \item El Filtro de Mediana Adaptativo muestra diferencias sutiles respecto al filtro
+        clásico a bajo ruido (pn3, pn5) — preservando los bordes de sustancia gris/blanca
+        con mayor fidelidad — y comportamiento similar a la Mediana a alto ruido (pn9).
+  \item El Filtro de Wiener Adaptativo produce la textura más homogénea y suavizada de
+        los tres filtros en todos los niveles de ruido. A alto ruido (pn9) el suavizado
+        es más pronunciado, ya que la varianza estimada $\nu^2$ se eleva con el ruido,
+        deprimiendo la ganancia en regiones de contraste moderado.
 \end{itemize}
 
 \subsection{Nivel de ruido pn3 (3\%) — Comparación completa}
@@ -563,11 +579,14 @@ Se observan las siguientes tendencias generales:
 \end{figure}
 
 \textbf{Análisis pn3:} A bajo nivel de ruido la imagen original ya exhibe buena calidad
-diagnóstica. El Filtro de Mediana introduce un suavizado perceptible en las giro-surcos
-cerebrales visibles en el plano sagital. El Filtro de Mediana Adaptativo conserva en mayor
-medida los bordes de sustancia gris/blanca. El Filtro de Wiener Adaptativo produce la
-imagen visualmente más suave, con pérdida de textura fina en el plano coronal — un indicio
-de sobresuavizado para este nivel de ruido con ventana 5×5×5.
+diagnóstica. El Filtro de Mediana con radio 1 (ventana 3×3×3) introduce un suavizado
+apenas perceptible, manteniendo la delimitación córtex/CSF y la estructura de los
+giro-surcos en el plano sagital. El Filtro de Mediana Adaptativo se comporta de forma muy
+similar al Mediana clásico a este nivel de ruido: al ser la densidad de impulsos baja, la
+mayoría de los vóxeles pasan el Nivel B sin modificación. El Filtro de Wiener Adaptativo
+produce la imagen visualmente más suave de las cuatro columnas, con textura más
+homogénea en el plano coronal — comportamiento esperado del estimador MMSE cuando
+$\nu^2$ incluye variabilidad natural del tejido.
 
 \subsubsection{Detalle: Mediana Adaptativo en pn3}
 
@@ -596,14 +615,15 @@ de sobresuavizado para este nivel de ruido con ventana 5×5×5.
   \label{fig:pn5_full}
 \end{figure}
 
-\textbf{Análisis pn5:} A nivel de ruido medio el contraste entre los métodos se vuelve más
-evidente. El Filtro de Mediana suprime efectivamente los puntos de ruido aislados que
-comienzan a ser visibles, manteniendo contraste global. El Filtro de Mediana Adaptativo
-muestra un balance favorable: suprime el ruido sin difuminar la delimitación córtex/CSF. El
-Filtro de Wiener Adaptativo exhibe claramente su comportamiento de borde en el plano
-sagital: las regiones de alta varianza (interfaces tejido/CSF) son preservadas con mayor
-contraste, mientras las regiones homogéneas (tejido blanco profundo) son suavizadas de
-manera efectiva.
+\textbf{Análisis pn5:} A nivel de ruido medio el comportamiento diferencial entre los
+métodos se acentúa ligeramente respecto a pn3. El Filtro de Mediana suprime eficazmente
+los puntos de ruido aislados, manteniendo el contraste global y la continuidad de los
+planos sagital y coronal. El Filtro de Mediana Adaptativo exhibe resultados visualmente
+muy similares a los del Mediana clásico: a este nivel de ruido, la mayoría de los vóxeles
+siguen siendo correctamente clasificados como señal limpia en el Nivel B. El Filtro de
+Wiener Adaptativo produce una imagen algo más suave que los otros dos: las regiones
+homogéneas (tejido blanco profundo) son más uniformes, mientras las interfaces de
+alto contraste (córtex/CSF, plano sagital) conservan parte de la definición original.
 
 \subsubsection{Detalle: Mediana Adaptativo en pn5}
 
@@ -632,16 +652,18 @@ manera efectiva.
   \label{fig:pn9_full}
 \end{figure}
 
-\textbf{Análisis pn9:} A alto nivel de ruido el desempeño de los tres filtros se diferencia
-claramente. El Filtro de Mediana logra recuperar estructuras anatómicas macroscópicas
-(lobos, ventrículos) pero introduce artefactos de desenfoque severos en los planos sagital y
-coronal — visible en la pérdida de definición de los giro-surcos y en la uniformización de la
-textura cortical. El Filtro de Mediana Adaptativo mantiene más detalle que el Mediana
-clásico, aunque a esta densidad de ruido la ventana máxima $S_{\max}=7$ comienza a ser
-insuficiente para garantizar una mediana confiable en toda la imagen. El Filtro de Wiener
-Adaptativo produce la imagen más suave de las tres pero con pérdida de detalle más
-pronunciada: el suavizado global es excesivo y la varianza estimada $\nu^2$ se ve elevada
-por el alto nivel de ruido, lo que deprime la ganancia en regiones de contraste moderado.
+\textbf{Análisis pn9:} A alto nivel de ruido los tres filtros reducen eficazmente el grano
+visible en la imagen original. El Filtro de Mediana recupera las estructuras anatómicas
+macroscópicas (lobos, ventrículos, plano de la hoz) con un suavizado moderado en los
+planos sagital y coronal, con cierta pérdida de definición en los giro-surcos corticales más
+finos. El Filtro de Mediana Adaptativo muestra un resultado visualmente similar al Mediana
+clásico: a alta densidad de ruido el criterio del Nivel A requiere con mayor frecuencia
+ampliar la ventana hasta $S_{\max}=7$, y la imagen resultante se asemeja a una mediana de
+ventana media-grande en las regiones más ruidosas. El Filtro de Wiener Adaptativo produce
+la imagen con textura más uniforme de las tres: el alto nivel de ruido eleva la varianza
+global estimada $\nu^2$, lo que deprime la ganancia de Wiener en zonas de contraste
+moderado y produce el suavizado más pronunciado, con ligera pérdida de detalle respecto
+a los otros dos filtros.
 
 \subsubsection{Detalle: Mediana Adaptativo en pn9}
 
@@ -731,12 +753,12 @@ $S_{\max}$ (\texttt{--max-window}) &
 \toprule
 \textbf{Nivel} & \textbf{Mejor filtro} & \textbf{Balance borde/ruido} & \textbf{Observación clave} \\
 \midrule
-pn3 (3\%) & AWF / AMF & AMF superior en bordes &
-  AWF sobresuaviza textura fina \\
-pn5 (5\%) & AMF & AMF mejor balance global &
-  Mediana introduce desenfoque leve \\
-pn9 (9\%) & Mediana & Mediana recupera estructura macro &
-  AWF pierde detalle; AMF limitado por $S_{\max}$ \\
+pn3 (3\%) & AMF / Mediana & Mediana y AMF muy similares &
+  AWF produce textura más uniforme; diferencias sutiles a bajo ruido \\
+pn5 (5\%) & AMF & AMF y Mediana resultados similares &
+  AWF más suavizado; AMF clasifica más píxeles como señal limpia \\
+pn9 (9\%) & Mediana / AMF & Los tres filtros reducen el grano eficazmente &
+  AWF produce la textura más uniforme; AMF se asimila a ventana media \\
 \bottomrule
 \end{tabular}
 \caption{Mejor filtro por nivel de ruido (evaluación cualitativa).}

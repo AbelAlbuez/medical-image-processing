@@ -129,18 +129,13 @@ def _itk_safe_output(p: Path) -> str:
 
 def load_as_float(filepath: str) -> itk.Image:
     """
-    Lee cualquier imagen médica 3D y convierte los píxeles a float32 mediante
-    CastImageFilter. Imprime en consola el tamaño y espaciado del volumen.
+    Lee cualquier imagen médica 3D directamente como float32. Usa itk.imread
+    con tipo itk.F para que ITK convierta automáticamente cualquier tipo nativo
+    del archivo (uint8, uint16, float32, etc.) a float32, preservando el rango
+    completo de intensidades sin recorte. Imprime tamaño y espaciado en consola.
     """
     safe = _itk_safe_path(Path(filepath))
-    reader = itk.ImageFileReader[itk.Image[itk.UC, DIMENSION]].New()
-    reader.SetFileName(safe)
-    reader.Update()
-    raw = reader.GetOutput()
-    cast = itk.CastImageFilter[itk.Image[itk.UC, DIMENSION], IMAGE_TYPE].New()
-    cast.SetInput(raw)
-    cast.Update()
-    img = cast.GetOutput()
+    img = itk.imread(safe, itk.F)
     size = list(img.GetLargestPossibleRegion().GetSize())
     spacing = [round(s, 4) for s in img.GetSpacing()]
     print(f"    Cargado : {filepath}")

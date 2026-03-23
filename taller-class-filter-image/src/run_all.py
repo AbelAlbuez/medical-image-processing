@@ -80,12 +80,22 @@ def _itk_safe(p: Path) -> str:
 
 
 def _load(path: Path) -> np.ndarray:
-    """Carga un volumen NIfTI como array NumPy uint8 con forma (Z, Y, X)."""
-    ImageType = itk.Image[itk.UC, 3]
-    reader = itk.ImageFileReader[ImageType].New()
-    reader.SetFileName(_itk_safe(path))
-    reader.Update()
-    return itk.array_from_image(reader.GetOutput())
+    """
+    Carga un volumen NIfTI como array NumPy uint8 con forma (Z, Y, X).
+    Auto-detecta el tipo de píxel del archivo: si es float32 (ej: salida de
+    median.py con itk.imwrite), normaliza el rango al espacio 0-255 antes de
+    convertir a uint8 para visualización uniforme.
+    """
+    img = itk.imread(_itk_safe(path))
+    arr = itk.array_from_image(img)
+    if arr.dtype == np.uint8:
+        return arr
+    # Normalizar tipos flotantes a 0-255 para visualización correcta en matplotlib
+    arr_f = arr.astype(np.float32)
+    vmin, vmax = float(arr_f.min()), float(arr_f.max())
+    if vmax > vmin:
+        arr_f = (arr_f - vmin) / (vmax - vmin) * 255.0
+    return np.clip(arr_f, 0, 255).astype(np.uint8)
 
 
 # ---------------------------------------------------------------------------

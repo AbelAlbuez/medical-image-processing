@@ -597,10 +597,21 @@ def main() -> None:
     else:
         out_path = default_output_path(input_path)
 
-    # Cargar imagen de entrada como uint8
-    reader = itk.ImageFileReader[itk.Image[itk.UC, 3]].New()
-    reader.SetFileName(_itk_safe(input_path))
-    reader.Update()
+    # Cargar imagen de entrada como float32 para preservar el rango completo de
+    # intensidades (las imágenes BrainWeb son float32 con valores 0–1368, no uint8).
+    # Luego normalizar a 0–255 uint8 para que el algoritmo de mediana adaptativa,
+    # que opera en comparaciones de enteros, funcione correctamente.
+    img_f = itk.imread(_itk_safe(input_path), itk.F)
+    arr_f = itk.array_from_image(img_f).astype(np.float32)
+    vmin, vmax = float(arr_f.min()), float(arr_f.max())
+    if vmax > vmin:
+        arr_norm = (arr_f - vmin) / (vmax - vmin) * 255.0
+    else:
+        arr_norm = arr_f
+    arr_uc = np.clip(arr_norm, 0, 255).astype(np.uint8)
+    # Envolver el array normalizado como itk.Image conservando los metadatos espaciales
+    reader_output = itk.image_from_array(arr_uc)
+    reader_output.CopyInformation(img_f)
 
     # Validar y ajustar el tamaño máximo de ventana
     smax = args.max_window if args.max_window is not None else 7
@@ -609,19 +620,19 @@ def main() -> None:
 
     if args.experiment:
         # Modo experimento: corre las 12 combinaciones y genera figuras resumen
-        run_experiment(input_path, reader.GetOutput(), use_numpy=args.no_itk)
+        run_experiment(input_path, reader_output, use_numpy=args.no_itk)
     else:
         # Modo normal: ruido opcional + filtro + guardar NIfTI + PNG de comparación
-        orig_arr = itk.array_from_image(reader.GetOutput())
+        orig_arr = itk.array_from_image(reader_output)
         noisy_arr = apply_noise(
             orig_arr, args.noise_type, args.noise_density, args.noise_sigma
         )
 
         # Usar la imagen ruidosa o la original según si se inyectó ruido
         if np.array_equal(orig_arr, noisy_arr):
-            noisy_input = reader.GetOutput()
+            noisy_input = reader_output
         else:
-            noisy_input = _arr_to_itk(noisy_arr, reader.GetOutput())
+            noisy_input = _arr_to_itk(noisy_arr, reader_output)
 
         result = _apply_filter(noisy_input, smax, use_numpy=args.no_itk)
 
