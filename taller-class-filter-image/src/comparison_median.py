@@ -6,11 +6,38 @@ Comparación visual: Original vs Mediana ITK vs Mediana adaptativa.
 from __future__ import annotations
 
 import argparse
+import shutil
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import itk
+
+_TMP_DIR = None
+_UC3 = itk.Image[itk.UC, 3]
+
+
+def _itk_safe(p: Path) -> str:
+    global _TMP_DIR
+    s = str(p)
+    try:
+        s.encode("ascii")
+        return s
+    except UnicodeEncodeError:
+        if _TMP_DIR is None:
+            _TMP_DIR = Path(tempfile.mkdtemp(prefix="itk_cmp_"))
+        dst = _TMP_DIR / p.name
+        if not dst.exists():
+            shutil.copy2(p, dst)
+        return str(dst)
+
+
+def _load_uc3(path: Path):
+    r = itk.ImageFileReader[_UC3].New()
+    r.SetFileName(_itk_safe(path))
+    r.Update()
+    return r.GetOutput()
 import matplotlib
 
 matplotlib.use("Agg")
@@ -103,31 +130,37 @@ def main() -> None:
         print(r2.stderr or r2.stdout, file=sys.stderr)
         sys.exit(r2.returncode)
 
-    vol_orig = itk.imread(str(inp))
-    vol_med = itk.imread(str(out_median))
-    vol_ad = itk.imread(str(out_adaptive))
+    vol_orig = _load_uc3(inp)
+    vol_med = _load_uc3(out_median)
+    vol_ad = _load_uc3(out_adaptive)
 
-    def middle_slice(img):
+    def three_views(img):
         arr = itk.array_from_image(img)
         if arr.ndim != 3:
             raise ValueError("Se espera volumen 3D")
-        return arr[arr.shape[0] // 2, :, :]
+        z, y, x = arr.shape
+        return arr[z // 2, :, :], arr[:, :, x // 2], arr[:, y // 2, :]
 
-    s0 = middle_slice(vol_orig)
-    s1 = middle_slice(vol_med)
-    s2 = middle_slice(vol_ad)
-
-    fig, axes = plt.subplots(1, 3, figsize=(9, 3))
-    titles = [
+    col_titles = [
         "Original",
         f"Median Filter (r={radius})",
         "Adaptive Median (numpy)" if args.no_itk else "Adaptive Median (ITK)",
     ]
-    for ax, sl, title in zip(axes, (s0, s1, s2), titles):
-        ax.imshow(sl, cmap="gray")
-        ax.set_title(title, fontsize=10)
-        ax.axis("off")
-    fig.suptitle(f"{base} — Median vs Adaptive Median", fontsize=12)
+    volumes_views = [three_views(v) for v in (vol_orig, vol_med, vol_ad)]
+    view_labels = ["Axial", "Sagittal", "Coronal"]
+
+    fig, axes = plt.subplots(3, 3, figsize=(9, 9))
+    for col, (col_title, views) in enumerate(zip(col_titles, volumes_views)):
+        for row, (view_label, sl) in enumerate(zip(view_labels, views)):
+            ax = axes[row, col]
+            ax.imshow(sl, cmap="gray")
+            ax.axis("off")
+            if row == 0:
+                ax.set_title(col_title, fontsize=10)
+            if col == 0:
+                ax.text(-0.05, 0.5, view_label, transform=ax.transAxes,
+                        ha="right", va="center", fontsize=9, rotation=90)
+    fig.suptitle(f"{base} - Median vs Adaptive Median", fontsize=12)
     fig.tight_layout()
     fig.savefig(out_png, dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -136,4 +169,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        if _TMP_DIR is not None and Path(_TMP_DIR).exists():
+            shutil.rmtree(_TMP_DIR, ignore_errors=True)

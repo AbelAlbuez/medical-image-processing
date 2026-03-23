@@ -10,5 +10,11 @@ class-filter-image/comparison_results/
 # Archivos NIfTI sin comprimir (suelen ser muy grandes)
 class-filter-image/samples/*.nii
 
+# LaTeX auxiliares
+*.log
+*.aux
+*.toc
+*.out
+
 # macOS
 .DS_Store

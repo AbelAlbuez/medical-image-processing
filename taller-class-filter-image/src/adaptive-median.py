@@ -8,7 +8,9 @@ Para esto hay que probar con varios porcentajes de ruidos (nota del taller).
 from __future__ import annotations
 
 import argparse
+import shutil
 import sys
+import tempfile
 from pathlib import Path
 
 import itk
@@ -26,6 +28,39 @@ try:
     _TQDM_AVAILABLE = True
 except ImportError:
     _TQDM_AVAILABLE = False
+
+# ITK path workaround: C++ cannot handle non-ASCII paths on Windows
+_TMP_DIR = None
+
+
+def _itk_safe(p: Path) -> str:
+    """Copy file to ASCII-only temp dir if path has non-ASCII chars."""
+    global _TMP_DIR
+    s = str(p)
+    try:
+        s.encode("ascii")
+        return s
+    except UnicodeEncodeError:
+        if _TMP_DIR is None:
+            _TMP_DIR = Path(tempfile.mkdtemp(prefix="itk_adm_"))
+        dst = _TMP_DIR / p.name
+        if not dst.exists():
+            shutil.copy2(p, dst)
+        return str(dst)
+
+
+def _itk_safe_write(p: Path) -> str:
+    """Return ASCII-safe output path; caller must move the file if different."""
+    global _TMP_DIR
+    s = str(p)
+    try:
+        s.encode("ascii")
+        return s
+    except UnicodeEncodeError:
+        if _TMP_DIR is None:
+            _TMP_DIR = Path(tempfile.mkdtemp(prefix="itk_adm_"))
+        return str(_TMP_DIR / p.name)
+
 
 # Raíz del proyecto taller-class-filter-image (padre de src/)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -230,6 +265,12 @@ def _middle_slice(arr: np.ndarray) -> np.ndarray:
     return arr[arr.shape[0] // 2, :, :]
 
 
+def _three_views(arr: np.ndarray) -> tuple:
+    """Axial, sagittal, coronal middle slices from a (Z,Y,X) volume."""
+    z, y, x = arr.shape
+    return arr[z // 2, :, :], arr[:, :, x // 2], arr[:, y // 2, :]
+
+
 def _arr_to_itk(arr: np.ndarray, reference) -> itk.Image:
     """Convierte array numpy uint8 a itk.Image[UC,3] copiando metadatos."""
     img = itk.image_from_array(arr.astype(np.uint8))
@@ -245,34 +286,44 @@ def _apply_filter(noisy_itk, smax: int, use_numpy: bool) -> itk.Image:
 
 
 def save_single_comparison(
-    orig_slice: np.ndarray,
-    noisy_slice: np.ndarray,
-    filtered_slice: np.ndarray,
+    orig_arr: np.ndarray,
+    noisy_arr: np.ndarray,
+    filtered_arr: np.ndarray,
     title: str,
     out_path: Path,
     noise_type: str = "none",
 ) -> None:
     """
-    Guarda figura PNG:
-      - Sin ruido: 2 columnas → Original | Filtrada
-      - Con ruido: 3 columnas → Original | Ruidosa | Filtrada
+    Guarda figura PNG con 3 vistas anatomicas (axial, sagittal, coronal):
+      - Sin ruido: 2 columnas  -> Original | Adaptive Median
+      - Con ruido: 3 columnas  -> Original | Ruidosa | Adaptive Median
     """
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     if noise_type == "none":
-        slices = [orig_slice, filtered_slice]
-        subtitles = ["Original", "Adaptive Median"]
+        volumes = [orig_arr, filtered_arr]
+        col_titles = ["Original", "Adaptive Median"]
     else:
-        slices = [orig_slice, noisy_slice, filtered_slice]
-        subtitles = ["Original", f"Ruido ({noise_type})", "Adaptive Median"]
+        volumes = [orig_arr, noisy_arr, filtered_arr]
+        col_titles = ["Original", f"Ruido ({noise_type})", "Adaptive Median"]
 
-    fig, axes = plt.subplots(1, len(slices), figsize=(3.5 * len(slices), 3.5))
-    if len(slices) == 1:
-        axes = [axes]
-    for ax, sl, sub in zip(axes, slices, subtitles):
-        ax.imshow(sl, cmap="gray")
-        ax.set_title(sub, fontsize=9)
-        ax.axis("off")
+    n_cols = len(volumes)
+    view_labels = ["Axial", "Sagittal", "Coronal"]
+    fig, axes = plt.subplots(3, n_cols, figsize=(3.5 * n_cols, 3.5 * 3))
+    if n_cols == 1:
+        axes = axes.reshape(3, 1)
+
+    for col, (arr, col_title) in enumerate(zip(volumes, col_titles)):
+        views = _three_views(arr)
+        for row, (view_label, sl) in enumerate(zip(view_labels, views)):
+            ax = axes[row, col]
+            ax.imshow(sl, cmap="gray")
+            ax.axis("off")
+            if row == 0:
+                ax.set_title(col_title, fontsize=9)
+            if col == 0:
+                ax.text(-0.05, 0.5, view_label, transform=ax.transAxes,
+                        ha="right", va="center", fontsize=8, rotation=90)
     fig.suptitle(title, fontsize=10)
     fig.tight_layout()
     fig.savefig(out_path, dpi=200, bbox_inches="tight")
@@ -460,18 +511,21 @@ def run_experiment(input_path: Path, reader_output, use_numpy: bool) -> None:
 
         # 3. Guardar NIfTI
         nii_path = OUTPUT_ADAPTIVE_MEDIAN_DIR / f"{base}_{label}_adaptive_median.nii"
+        safe_nii = _itk_safe_write(nii_path)
         writer = itk.ImageFileWriter[itk.Image[itk.UC, 3]].New()
-        writer.SetFileName(str(nii_path))
+        writer.SetFileName(safe_nii)
         writer.SetInput(filtered_itk)
         writer.Update()
+        if safe_nii != str(nii_path):
+            nii_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(safe_nii, nii_path)
 
         # 4. Guardar PNG individual
         png_path = OUTPUT_COMPARISON_DIR / f"{base}_{label}_comparison.png"
-        mid = orig_arr.shape[0] // 2
         save_single_comparison(
-            orig_arr[mid],
-            noisy_arr[mid],
-            filtered_arr[mid],
+            orig_arr,
+            noisy_arr,
+            filtered_arr,
             title=f"{base} — {label}",
             out_path=png_path,
             noise_type=noise_type,
@@ -479,7 +533,7 @@ def run_experiment(input_path: Path, reader_output, use_numpy: bool) -> None:
 
         # 5. Acumular para resumen
         results[label] = {"noisy_arr": noisy_arr, "filtered_arr": filtered_arr}
-        print(f"  → {nii_path.name}", flush=True)
+        print(f"  -> {nii_path.name}", flush=True)
 
     # Figura resumen global
     _save_experiment_summary(base, orig_arr, results)
@@ -546,8 +600,7 @@ def main() -> None:
         out_path = default_output_path(input_path)
 
     reader = itk.ImageFileReader[itk.Image[itk.UC, 3]].New()
-    reader.SetFileName(str(input_path))
-
+    reader.SetFileName(_itk_safe(input_path))
     reader.Update()
     smax = args.max_window if args.max_window is not None else 7
     if smax < 3:
@@ -571,18 +624,21 @@ def main() -> None:
 
         result = _apply_filter(noisy_input, smax, use_numpy=args.no_itk)
 
+        safe_out = _itk_safe_write(out_path)
         writer = itk.ImageFileWriter[itk.Image[itk.UC, 3]].New()
-        writer.SetFileName(str(out_path))
+        writer.SetFileName(safe_out)
         writer.SetInput(result)
         writer.Update()
+        if safe_out != str(out_path):
+            out_path.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(safe_out, out_path)
 
         # Figura de comparación individual
-        mid = orig_arr.shape[0] // 2
         png_path = OUTPUT_COMPARISON_DIR / f"{_get_stem(input_path)}_single_comparison.png"
         save_single_comparison(
-            orig_arr[mid],
-            noisy_arr[mid],
-            itk.array_from_image(result)[mid],
+            orig_arr,
+            noisy_arr,
+            itk.array_from_image(result),
             title=f"{_get_stem(input_path)} — noise={args.noise_type} mw={smax}",
             out_path=png_path,
             noise_type=args.noise_type,
@@ -590,4 +646,8 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    finally:
+        if _TMP_DIR is not None and Path(_TMP_DIR).exists():
+            shutil.rmtree(_TMP_DIR, ignore_errors=True)
