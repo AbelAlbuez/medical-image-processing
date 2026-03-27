@@ -1,0 +1,4 @@
+# Umbrales ITK — Python (run_all_thresholds.py y scripts en Python/)
+itk>=5.3
+matplotlib>=3.7
+numpy>=1.24

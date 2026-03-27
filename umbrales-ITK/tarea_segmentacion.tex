@@ -1,0 +1,650 @@
+% ============================================================
+%  Taller 2 — Segmentación por Umbralización en Imágenes Médicas
+%  Pontificia Universidad Javeriana
+%  Procesamiento de Imágenes Médicas
+%
+%  Compilar con: pdflatex taller2_segmentacion.tex
+%  (dos pasadas para referencias cruzadas)
+%
+%  Estructura de carpetas esperada desde la raíz del proyecto:
+%    output/comparisons/   ← imágenes *_comparison.png
+% ============================================================
+
+\documentclass[12pt, a4paper]{article}
+
+% ── Codificación y lenguaje ────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish, es-tabla]{babel}
+
+% ── Tipografía y geometría ─────────────────────────────────
+\usepackage{lmodern}
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{microtype}
+\usepackage{parskip}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+% ── Matemáticas ────────────────────────────────────────────
+\usepackage{amsmath, amssymb, amsthm}
+
+% ── Figuras y subfiguras ───────────────────────────────────
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage[export]{adjustbox}
+
+% ── Tablas ────────────────────────────────────────────────
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{colortbl}
+\usepackage{array}
+
+% ── Hipervínculos ─────────────────────────────────────────
+\usepackage[colorlinks=true, linkcolor=blue!70!black,
+            citecolor=green!50!black, urlcolor=blue!70!black]{hyperref}
+
+% ── Encabezados y pies de página ──────────────────────────
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small Pontificia Universidad Javeriana $\mid$ Procesamiento de Imágenes Médicas}
+\fancyhead[R]{\small Taller 2 — Segmentación por Umbralización}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ── Cajas de información ───────────────────────────────────
+\usepackage{tcolorbox}
+\tcbuselibrary{skins, breakable}
+\tcbset{
+  infostyle/.style={
+    colback=blue!5, colframe=blue!40!black,
+    fonttitle=\bfseries, breakable, enhanced
+  },
+  warnstyle/.style={
+    colback=orange!8, colframe=orange!70!black,
+    fonttitle=\bfseries, breakable, enhanced
+  },
+  codestyle/.style={
+    colback=gray!6, colframe=gray!50,
+    fonttitle=\bfseries, breakable, enhanced
+  }
+}
+
+% ── Títulos de sección personalizados ─────────────────────
+\usepackage{titlesec}
+\titleformat{\section}{\large\bfseries\color{blue!70!black}}{}{0em}
+  {\thesection\quad}[\titlerule]
+\titleformat{\subsection}{\normalsize\bfseries\color{blue!50!black}}
+  {\thesubsection\quad}{0em}{}
+\titleformat{\subsubsection}{\normalsize\itshape\bfseries}
+  {\thesubsubsection\quad}{0em}{}
+
+% ── Rutas base de imágenes ────────────────────────────────
+% El .tex está en: umbrales-ITK/
+% Las imágenes están en: umbrales-ITK/output/
+\graphicspath{
+  {output/}
+}
+
+% ── Metadatos del documento ───────────────────────────────
+\title{
+  \vspace{-1cm}
+  {\large Pontificia Universidad Javeriana}\\[0.3em]
+  {\large Procesamiento de Imágenes Médicas}\\[1em]
+  \rule{\linewidth}{1.5pt}\\[0.5em]
+  {\LARGE\bfseries Taller 2 — Segmentación por Umbralización\\[0.2em]
+   en Imágenes Médicas Multimodales}\\[0.3em]
+  \rule{\linewidth}{1.5pt}
+}
+\author{
+  Abel Albuez\quad$\mid$\quad Victoria Acero\quad$\mid$\quad Santiago Gil\\[0.4em]
+  \small\texttt{aa-albuezs@javeriana.edu.co}
+  $\;\cdot\;$
+  \texttt{jv.acero@javeriana.edu.co}
+  $\;\cdot\;$
+  \texttt{santiago\_gil@javeriana.edu.co}
+}
+\date{Bogotá D.C., Colombia — Marzo 2026}
+
+% ============================================================
+\begin{document}
+% ============================================================
+
+\maketitle
+\thispagestyle{fancy}
+
+% ── Resumen ───────────────────────────────────────────────
+\begin{tcolorbox}[infostyle, title={Resumen}]
+Este documento reporta la implementación y análisis experimental de tres métodos clásicos
+de umbralización automática aplicados a imágenes médicas de tres modalidades distintas:
+tomografía computarizada de tórax (CT), resonancia magnética cerebral con contraste (MRI
+T1c) y ultrasonido endorrectal de próstata (US). Los métodos evaluados son el umbral de
+\textbf{Otsu}, el umbral de \textbf{Huang} y el umbral de \textbf{Triangle}, implementados
+con la biblioteca \emph{Insight Toolkit} (ITK) en Python. El análisis examina el
+comportamiento de cada método ante histogramas de diferente distribución y discute sus
+implicaciones clínicas en el contexto de la segmentación de imágenes médicas.
+\end{tcolorbox}
+
+\vspace{0.5em}
+\tableofcontents
+\newpage
+
+% ============================================================
+\section{Introducción}
+% ============================================================
+
+La segmentación de imágenes médicas consiste en particionar una imagen en regiones
+homogéneas respecto a una o más características, con el objetivo de aislar estructuras
+anatómicas o patológicas de interés clínico \cite{bankman2009}. Entre los métodos más
+simples y ampliamente utilizados en la práctica clínica se encuentra la
+\textbf{umbralización}, que transforma la imagen original en una máscara binaria a partir
+de un valor de intensidad umbral $T$: los vóxeles con intensidad inferior a $T$ se asignan
+a una clase (fondo o tejido de interés) y los superiores a la otra.
+
+La eficacia de la umbralización depende fundamentalmente de la estructura del histograma
+de la imagen. El caso ideal asume un histograma \textbf{bimodal}: dos picos diferenciados
+separados por un valle, donde cada pico representa una clase y el valle indica la ubicación
+natural del umbral \cite{bankman2009}. Sin embargo, las imágenes médicas presentan
+frecuentemente histogramas complejos, con múltiples modos, picos asimétricos o intensidades
+superpuestas entre clases, lo que hace necesario el uso de métodos de umbralización
+automática con criterios estadísticos robustos.
+
+El objetivo de este taller es implementar y comparar tres métodos de umbralización
+automática sobre tres modalidades de imagen médica, evaluando cualitativamente la calidad
+de la segmentación resultante y discutiendo la adecuación de cada método según las
+características del histograma de cada modalidad.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{llX}
+\toprule
+\textbf{Método} & \textbf{Filtro ITK} & \textbf{Criterio de optimización} \\
+\midrule
+Otsu   & \texttt{itk::OtsuThresholdImageFilter}     & Maximizar la varianza entre clases \\
+Huang  & \texttt{itk::HuangThresholdImageFilter}    & Minimizar la entropía difusa (\textit{fuzzy}) \\
+Triangle & \texttt{itk::TriangleThresholdImageFilter} & Maximizar la distancia geométrica al histograma \\
+\bottomrule
+\end{tabularx}
+\caption{Métodos de umbralización automática implementados en este taller.}
+\end{table}
+
+% ============================================================
+\section{Marco Teórico}
+% ============================================================
+
+\subsection{Umbralización global}
+
+La umbralización global es el método de segmentación más simple: asume que la imagen
+posee un histograma bimodal y que un único umbral $T$ permite separar los dos modos.
+La imagen segmentada $g(x,y)$ se obtiene como:
+
+\begin{equation}
+  g(x,y) =
+  \begin{cases}
+    1 & \text{si } f(x,y) \geq T \\
+    0 & \text{si } f(x,y) < T
+  \end{cases}
+  \label{eq:threshold}
+\end{equation}
+
+donde $f(x,y)$ es la intensidad del vóxel en la imagen original y los valores 0 y 1
+representan el fondo y el objeto de interés, respectivamente. La elección de $T$ determina
+completamente la calidad de la segmentación; métodos automáticos de estimación de $T$ son
+preferibles a la selección manual para garantizar reproducibilidad.
+
+\subsection{Método de Otsu}
+
+El método de Otsu \cite{otsu1979} estima el umbral óptimo $T^*$ como aquel que
+\textbf{maximiza la varianza entre clases} $\sigma_B^2(T)$, equivalente a minimizar la
+varianza intra-clase ponderada. Para un umbral $T$ que divide el histograma normalizado
+$p_i$ en dos clases $C_0 = \{0, \ldots, T-1\}$ y $C_1 = \{T, \ldots, L-1\}$:
+
+\begin{equation}
+  \sigma_B^2(T) = \omega_0(T)\,\omega_1(T)\,\bigl[\mu_0(T) - \mu_1(T)\bigr]^2
+  \label{eq:otsu}
+\end{equation}
+
+donde $\omega_k$ es la probabilidad acumulada de la clase $k$ y $\mu_k$ su media de
+intensidades. El umbral óptimo es:
+
+\begin{equation}
+  T^* = \arg\max_{T}\; \sigma_B^2(T)
+\end{equation}
+
+Otsu produce resultados óptimos cuando las dos clases tienen distribuciones gaussianas
+bien separadas y frecuencias de aparición similares. Su rendimiento se degrada cuando las
+clases tienen tamaños muy diferentes (una clase domina el histograma) o cuando los modos
+se solapan considerablemente.
+
+\subsection{Método de Huang}
+
+El método de Huang y Wang \cite{huang1995} plantea el problema de umbralización desde
+la perspectiva de la \textbf{lógica difusa} (\textit{fuzzy logic}). En lugar de una
+asignación binaria rígida, cada vóxel tiene un grado de pertenencia $\mu(x)$ a cada clase,
+definido por una función de membresía sigmoidal. El umbral óptimo es aquel que minimiza
+la \textbf{entropía difusa total} $E(T)$ de la imagen:
+
+\begin{equation}
+  E(T) = -\sum_{i=0}^{L-1} p_i \left[ \mu_i \ln \mu_i + (1 - \mu_i) \ln(1 - \mu_i) \right]
+  \label{eq:huang}
+\end{equation}
+
+donde $\mu_i$ es la función de membresía difusa del nivel de gris $i$ respecto a la
+clase más cercana. La intuición es que el umbral óptimo es aquel que hace más \emph{clara}
+la pertenencia de cada vóxel a su clase, reduciendo al mínimo la ambigüedad global.
+
+A diferencia de Otsu, Huang no asume que las clases tengan distribuciones gaussianas ni
+frecuencias similares. Su función de costo difuso le confiere mayor robustez ante
+histogramas con modos de distinta amplitud o clases no gaussianas. Tiende a producir
+umbrales más conservadores (más bajos) que Otsu, capturando mayor detalle en la clase
+de menor intensidad.
+
+\subsection{Método de Triangle}
+
+El método de Triangle \cite{zack1977} opera sobre la forma geométrica del histograma.
+El algoritmo traza una línea recta entre el pico máximo del histograma y su extremo más
+alejado, y busca el punto del histograma que maximiza la distancia perpendicular a dicha
+línea:
+
+\begin{equation}
+  T^* = \arg\max_{T}\; d_\perp\!\left(H(T),\, \overline{P_{\max}P_{\text{fin}}}\right)
+  \label{eq:triangle}
+\end{equation}
+
+donde $H(T)$ es el valor del histograma en $T$, y $\overline{P_{\max}P_{\text{fin}}}$ es
+la línea que une el pico máximo con el extremo del histograma. El método asume que el
+histograma tiene un \textbf{pico dominante} con una cola de baja frecuencia que representa
+la clase minoritaria. Es especialmente efectivo cuando una clase es muy pequeña respecto
+a la otra (histograma fuertemente asimétrico), situación común en imágenes donde el fondo
+domina el campo de visión.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{lXXX}
+\toprule
+\textbf{Aspecto} & \textbf{Otsu} & \textbf{Huang} & \textbf{Triangle} \\
+\midrule
+Criterio &
+  Máxima varianza entre clases &
+  Mínima entropía difusa &
+  Máxima distancia geométrica \\
+Supuesto del histograma &
+  Bimodal, clases similares &
+  Bimodal, más flexible &
+  Pico dominante con cola \\
+Distribución de clases &
+  Gaussianas, frecuencias similares &
+  No gaussianas toleradas &
+  Clase dominante + clase minoritaria \\
+Tendencia del umbral &
+  Valle del histograma &
+  Umbral conservador (bajo) &
+  Umbral alto (excluye la cola) \\
+Fortaleza &
+  Histogramas balanceados &
+  Histogramas asimétricos o solapados &
+  Histogramas fuertemente asimétricos \\
+Debilidad &
+  Clases muy desiguales en tamaño &
+  Sobreestima la clase minoritaria &
+  Falla en histogramas bimodales balanceados \\
+\bottomrule
+\end{tabularx}
+\caption{Comparación conceptual de los tres métodos de umbralización automática.}
+\label{tab:metodos}
+\end{table}
+
+% ============================================================
+\section{Implementación}
+% ============================================================
+
+Los tres filtros de umbralización se implementaron en Python utilizando la biblioteca ITK,
+siguiendo el mismo pipeline de entrada/salida:
+
+\begin{tcolorbox}[infostyle, title={Pipeline de segmentación por umbralización (los tres métodos)}]
+\textbf{Entrada:} Imagen médica en formato NIfTI (\texttt{.nii} / \texttt{.nii.gz})\\[0.3em]
+\textbf{Paso 1 — Lectura ITK:} \texttt{itk.imread()} carga el volumen 3D.\\[0.3em]
+\textbf{Paso 2 — Umbralización:} se instancia el filtro correspondiente
+(\texttt{OtsuThresholdImageFilter}, \texttt{HuangThresholdImageFilter} o
+\texttt{TriangleThresholdImageFilter}) con \texttt{InsideValue=0} y
+\texttt{OutsideValue=255}.\\[0.3em]
+\textbf{Paso 3 — Recuperación del umbral:} \texttt{GetThreshold()} retorna el valor $T^*$
+calculado automáticamente.\\[0.3em]
+\textbf{Paso 4 — Extracción del corte central:} se extrae el corte axial central del
+volumen segmentado para visualización.\\[0.3em]
+\textbf{Salida:} Máscara binaria NIfTI + PNG de comparación (Original | Otsu | Huang | Triangle).
+\end{tcolorbox}
+
+Los tres filtros comparten la misma interfaz en ITK: reciben una imagen de entrada, calculan
+el umbral automáticamente a partir del histograma interno (\texttt{NumberOfHistogramBins=128}
+por defecto) y producen una imagen de salida binaria donde los vóxeles con intensidad inferior
+al umbral toman el valor \texttt{InsideValue} y los superiores el valor \texttt{OutsideValue}.
+La convención usada en este taller asigna \texttt{InsideValue=0} (negro, fondo) y
+\texttt{OutsideValue=255} (blanco, objeto), de modo que las regiones de mayor intensidad
+en la imagen original aparecen en blanco en la máscara.
+
+% ============================================================
+\section{Dataset — Imágenes utilizadas}
+% ============================================================
+
+Los experimentos utilizan imágenes representativas de tres modalidades de imagen médica,
+seleccionadas para abarcar un amplio rango de características de histograma.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\textwidth}{llXX}
+\toprule
+\textbf{Imagen} & \textbf{Modalidad} & \textbf{Estructura de interés} & \textbf{Característica del histograma} \\
+\midrule
+\texttt{coronacases\_org\_001} &
+  CT de tórax &
+  Pulmones, tejidos blandos, estructuras óseas &
+  Multimodal: pico estrecho de aire (HU bajos) y distribución amplia de tejidos \\
+\texttt{BraTS-GLI-00000-000-t1c} &
+  MRI T1c cerebral &
+  Tumor cerebral (glioma), materia blanca, materia gris &
+  Bimodal: fondo negro (máscara craneal) y tejido cerebral con realce tumoral \\
+\texttt{04\_01} &
+  Ultrasonido endorrectal (US) &
+  Próstata, tejido periprostático &
+  Histograma amplio y distribuido por ruido speckle \\
+\bottomrule
+\end{tabularx}
+\caption{Imágenes médicas utilizadas en los experimentos de umbralización.}
+\end{table}
+
+% ============================================================
+\section{Resultados}
+% ============================================================
+
+\subsection{CT de tórax — \texttt{coronacases\_org\_001}}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{coronacases_org_001_comparison.png}
+  \caption{CT de tórax: Original, Otsu, Huang y Triangle (corte axial central).
+           Las regiones blancas corresponden a los vóxeles con intensidad superior al
+           umbral calculado por cada método.}
+  \label{fig:ct_thorax}
+\end{figure}
+
+El CT de tórax presenta el histograma más favorable para la umbralización global: existe
+una separación clara entre el aire intrapulmonar (intensidades bajas en Hounsfield) y
+los tejidos blandos y óseos (intensidades altas). Los tres métodos producen máscaras
+binarias reconocibles, aunque con diferencias notables en el umbral elegido.
+
+\textbf{Otsu} ubica el umbral en el valle del histograma entre los dos modos principales,
+generando una segmentación limpia donde los pulmones (clase de baja intensidad) quedan
+en negro y el resto del tórax —tejidos blandos, costillas y tejido subcutáneo— en blanco.
+El resultado es una máscara de alta legibilidad diagnóstica con bordes bien definidos.
+
+\textbf{Huang}, al minimizar la entropía difusa, elige un umbral
+más bajo que Otsu, capturando también estructuras pulmonares internas de intensidad
+intermedia: vasos, bronquios y nódulos. Las regiones blancas son más fragmentadas,
+lo que puede ser ventajoso para análisis detallado del parénquima pulmonar pero
+introduce más falsos positivos en la máscara.
+
+\textbf{Triangle} produce un umbral intermedio, aunque más cercano a Otsu que a Huang
+en esta imagen. La máscara resultante conserva las grandes estructuras torácicas con
+menor fragmentación interna que Huang, lo que refleja la sensibilidad del método de
+Triangle a la forma asimétrica del histograma CT.
+
+\subsection{MRI cerebral T1c — \texttt{BraTS-GLI-00000-000-t1c}}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{BraTS-GLI-00000-000-t1c_comparison.png}
+  \caption{MRI T1c cerebral (BraTS): Original, Otsu, Huang y Triangle (corte axial central).
+           La imagen original ya presenta máscara craneal (fondo negro). Las regiones
+           blancas en las máscaras corresponden a tejido cerebral de alta intensidad y
+           realce tumoral por contraste con gadolinio.}
+  \label{fig:mri_brain}
+\end{figure}
+
+La imagen MRI T1c es una secuencia con contraste de gadolinio, donde el tejido tumoral
+activo (glioma de alto grado) se realza y aparece con mayor intensidad que el tejido
+cerebral sano circundante. La imagen ya cuenta con una máscara de remoción de cráneo
+aplicada, por lo que el fondo es negro puro, lo que simplifica la estructura del
+histograma.
+
+\textbf{Otsu} genera la segmentación con mayor detalle estructural de los tres métodos,
+preservando la materia blanca, la materia gris y las zonas de realce tumoral en la
+máscara blanca. El umbral resulta relativamente bajo porque Otsu balancea las dos clases
+(fondo negro y tejido cerebral) y el tejido ocupa una fracción significativa del volumen.
+
+\textbf{Huang} produce un resultado visualmente similar a Otsu pero con el umbral
+levemente desplazado hacia valores superiores de intensidad. Esto resulta en una máscara
+ligeramente más fragmentada, donde algunas regiones de tejido de intensidad intermedia
+(materia gris más oscura) son excluidas. Las zonas de realce tumoral, al ser las más
+brillantes de la imagen, permanecen en blanco en ambos métodos.
+
+\textbf{Triangle} es el método más conservador en esta modalidad: su umbral es el más
+alto de los tres, por lo que solo los tejidos de mayor intensidad —materia blanca muy
+brillante y realce tumoral— quedan en la máscara. El resultado es una máscara más
+restringida que podría ser de utilidad para aislar específicamente las regiones de
+realce por contraste, pero a costa de excluir tejido cerebral normal de intensidad
+moderada.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{lXX}
+\toprule
+\textbf{Método} & \textbf{Tejido capturado (blanco)} & \textbf{Observación clínica} \\
+\midrule
+Otsu &
+  Materia blanca + materia gris + realce tumoral &
+  Segmentación más completa del parénquima cerebral \\
+Huang &
+  Materia blanca + realce tumoral + parte de la materia gris &
+  Umbral intermedio; mayor fragmentación en zonas de baja señal \\
+Triangle &
+  Materia blanca brillante + realce tumoral principalmente &
+  Útil para aislar realce por contraste; excluye materia gris \\
+\bottomrule
+\end{tabularx}
+\caption{Comparación de la región segmentada por cada método en la MRI T1c.}
+\end{table}
+
+\subsection{Ultrasonido endorrectal — \texttt{04\_01}}
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{04_01_comparison.png}
+  \caption{Ultrasonido endorrectal de próstata: Original, Otsu, Huang y Triangle
+           (corte axial central). El ruido speckle característico del ultrasonido
+           distribuye las intensidades de forma continua, dificultando la umbralización.}
+  \label{fig:us_prostate}
+\end{figure>
+
+El ultrasonido es la modalidad más desafiante para la umbralización global. El ruido
+\textit{speckle} inherente a la adquisición ultrasónica genera intensidades distribuidas
+de forma continua en toda la imagen, sin producir los modos bien diferenciados que
+sustentan la asunción bimodal de estos métodos. Como consecuencia, los tres algoritmos
+producen máscaras fragmentadas con alta densidad de falsos positivos y falsos negativos.
+
+\textbf{Otsu} genera una segmentación muy fragmentada donde las regiones blancas y negras
+se distribuyen de forma caótica en toda la región prostática. El histograma del ultrasonido
+es aproximadamente unimodal con cola extendida; la maximización de la varianza entre clases
+ubica el umbral en una zona del histograma que no corresponde a una frontera anatómica real.
+
+\textbf{Huang} produce un resultado muy similar a Otsu en términos de fragmentación.
+La entropía difusa no encuentra una separación clara en el histograma continuo del
+ultrasonido, lo que resulta en una máscara igualmente ruidosa. La similitud entre ambos
+métodos refleja que cuando el histograma no es bimodal, tanto el criterio de varianza
+(Otsu) como el de entropía (Huang) convergen a umbrales de calidad comparable pero
+insatisfactoria.
+
+\textbf{Triangle} es el que produce la segmentación visualmente más diferenciada de
+los tres para esta modalidad, concentrando las regiones blancas en una franja central de
+la imagen que se aproxima parcialmente a la región prostática. Esto se debe a que el
+histograma del ultrasonido tiene un pico de baja intensidad (fondo oscuro) con una cola
+hacia valores medios, estructura que se ajusta mejor al supuesto geométrico del método
+de Triangle. Sin embargo, el resultado sigue siendo inaceptable para uso diagnóstico,
+lo que confirma que la umbralización global no es el método de elección para imágenes
+de ultrasonido.
+
+% ============================================================
+\section{Análisis Comparativo}
+% ============================================================
+
+\subsection{Comparación entre los tres métodos de umbralización}
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.5}
+\begin{tabularx}{\textwidth}{lXXX}
+\toprule
+\textbf{Aspecto} &
+  \textbf{Otsu} &
+  \textbf{Huang} &
+  \textbf{Triangle} \\
+\midrule
+Umbral en CT tórax &
+  Valle del histograma, limpio &
+  Más bajo; captura estructuras internas &
+  Intermedio; similar a Otsu \\
+Umbral en MRI T1c &
+  Bajo; captura todo el parénquima &
+  Intermedio; más fragmentado &
+  Alto; solo tejido muy brillante \\
+Umbral en US próstata &
+  Insatisfactorio (speckle) &
+  Insatisfactorio (similar a Otsu) &
+  Parcialmente mejor; concentra región central \\
+Sensibilidad al histograma &
+  Alta: requiere bimodalidad clara &
+  Moderada: tolera asimetría &
+  Alta: asume pico dominante \\
+Adecuación clínica CT &
+  Excelente &
+  Buena (mayor detalle) &
+  Buena \\
+Adecuación clínica MRI &
+  Muy buena (segmentación completa) &
+  Buena (realce tumoral) &
+  Moderada (solo alta intensidad) \\
+Adecuación clínica US &
+  Pobre &
+  Pobre &
+  Parcial (inaceptable para diagnóstico) \\
+\bottomrule
+\end{tabularx}
+\caption{Comparación del desempeño de los tres métodos de umbralización por modalidad.}
+\label{tab:comparacion}
+\end{table}
+
+\subsection{Relación entre estructura del histograma y calidad de segmentación}
+
+Los resultados experimentales confirman el principio conceptual expuesto en clase
+\cite{bankman2009}: la calidad de la segmentación por umbralización global está
+directamente condicionada por la estructura bimodal del histograma. En la CT de tórax,
+donde existe una separación clara entre el aire y los tejidos blandos, los tres métodos
+producen segmentaciones reconocibles y clínicamente interpretables. En la MRI cerebral
+T1c, la presencia de una máscara de fondo negro produce un histograma con dos regiones
+diferenciadas, lo que favorece la umbralización aunque con diferencias en el nivel de
+detalle capturado. En el ultrasonido, donde el ruido speckle destruye la bimodalidad
+del histograma, ningún método logra una segmentación satisfactoria.
+
+Esta dependencia de la distribución de intensidades es la limitación fundamental de la
+umbralización global como método de segmentación, y motiva el uso de métodos más
+sofisticados —crecimiento de regiones, modelos de contornos activos, campos aleatorios
+de Markov— para modalidades con histogramas complejos o en presencia de ruido.
+
+\subsection{Implicaciones para la segmentación de tumores cerebrales (proyecto)}
+
+En el contexto del proyecto de segmentación de gliomas con el dataset BraTS, la elección
+del método de umbralización influye directamente en la calidad de la máscara inicial.
+Otsu captura el tejido cerebral completo y puede usarse como paso previo para aislar
+el cerebro del fondo. Triangle, al producir un umbral más alto, es útil para obtener
+una máscara restringida al realce tumoral en secuencias T1c, que puede servir como
+región semilla para métodos de crecimiento de regiones. Huang, con su comportamiento
+intermedio, ofrece un balance entre sensibilidad y especificidad en tejidos con
+intensidades solapadas.
+
+% ============================================================
+\section{Conclusiones}
+% ============================================================
+
+\begin{enumerate}
+
+  \item \textbf{Método de Otsu:} Produce los mejores resultados generales en imágenes
+    con histograma bimodal balanceado. En CT de tórax ofrece una separación limpia entre
+    pulmones y tejidos blandos; en MRI cerebral captura el parénquima completo. Su
+    desempeño es consistente con la teoría: al maximizar la varianza entre clases,
+    opera óptimamente cuando los dos grupos tienen frecuencias de aparición similares.
+    En ultrasonido falla por la ausencia de bimodalidad real en el histograma.
+
+  \item \textbf{Método de Huang:} El criterio de entropía difusa le confiere mayor
+    robustez ante histogramas con modos asimétricos o intensidades solapadas, produciendo
+    umbrales más conservadores que capturan mayor detalle en la clase de menor intensidad.
+    En CT de tórax esto se traduce en mayor captura de estructuras pulmonares internas;
+    en MRI cerebral en mayor fragmentación. Para imágenes de ultrasonido su desempeño
+    es equivalente al de Otsu, confirmando que el problema reside en la distribución
+    de intensidades y no en el criterio de optimización.
+
+  \item \textbf{Método de Triangle:} Su supuesto de un pico dominante con una cola
+    minoritaria lo hace especialmente adecuado para imágenes donde la clase de interés
+    es pequeña respecto al fondo. En MRI T1c es útil para aislar el realce tumoral,
+    la región de mayor intensidad. En ultrasonido logra parcialmente separar el centro
+    de la imagen, aunque el resultado sigue siendo insatisfactorio para uso clínico.
+
+  \item \textbf{Limitación fundamental:} Los tres métodos comparten la misma restricción
+    estructural: asumen un histograma bimodal. Cuando esta condición no se cumple
+    —como en imágenes de ultrasonido con ruido speckle— ningún método de umbralización
+    global produce una segmentación clínicamente útil. En estos casos es necesario
+    recurrir a métodos basados en regiones, contornos o modelos probabilísticos.
+
+  \item \textbf{Rol de ITK:} La biblioteca ITK proporciona implementaciones eficientes
+    y correctas de los tres métodos a través de \texttt{OtsuThresholdImageFilter},
+    \texttt{HuangThresholdImageFilter} y \texttt{TriangleThresholdImageFilter}, con
+    interfaz uniforme que facilita la comparación sistemática. El cálculo automático
+    del histograma interno y la recuperación del umbral con \texttt{GetThreshold()}
+    permiten una implementación concisa y reproducible sobre volúmenes 3D.
+
+\end{enumerate}
+
+% ============================================================
+\section*{Referencias}
+\addcontentsline{toc}{section}{Referencias}
+% ============================================================
+
+\begin{thebibliography}{9}
+
+\bibitem{bankman2009}
+  Bankman, I.\,N. (Ed.) (2009).
+  \textit{Handbook of Medical Image Processing and Analysis} (2nd ed.).
+  Academic Press.
+
+\bibitem{otsu1979}
+  Otsu, N. (1979).
+  A threshold selection method from gray-level histograms.
+  \textit{IEEE Transactions on Systems, Man, and Cybernetics}, 9(1), 62--66.
+  \url{https://doi.org/10.1109/TSMC.1979.4310076}
+
+\bibitem{huang1995}
+  Huang, L.-K., \& Wang, M.-J. (1995).
+  Image thresholding by minimizing the measures of fuzziness.
+  \textit{Pattern Recognition}, 28(1), 41--51.
+  \url{https://doi.org/10.1016/0031-3203(94)E0043-K}
+
+\bibitem{zack1977}
+  Zack, G.\,W., Rogers, W.\,E., \& Latt, S.\,A. (1977).
+  Automatic measurement of sister chromatid exchange frequency.
+  \textit{Journal of Histochemistry and Cytochemistry}, 25(7), 741--753.
+  \url{https://doi.org/10.1177/25.7.70454}
+
+\bibitem{itk}
+  ITK Development Team. (2024).
+  \textit{Insight Toolkit (ITK) v5.4}.
+  \url{https://itk.org}
+
+\end{thebibliography}
+
+\end{document}

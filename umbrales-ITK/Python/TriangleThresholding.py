@@ -6,6 +6,7 @@ import sys
 
 if len(sys.argv) != 4 :
   print("Usage: ", sys.argv[0], " <InputImage> <OutputImage> <NumberOfBins>")
+  print("  Lote (samples/ -> output/ + PNG): desde umbrales-ITK: python3 run_all_thresholds.py")
   sys.exit()
 
 Dimension = 3
