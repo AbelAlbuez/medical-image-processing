@@ -12,9 +12,8 @@ class-filter-image/samples/*.nii
 
 # Salidas umbrales-ITK (NIfTI y PNG generados)
 umbrales-ITK/output/
-# Muestras locales (suelen superar el límite de 100 MB de GitHub)
+# Muestras: versionar .nii.gz; ignorar .nii sin comprimir (GitHub rechaza >100 MB)
 umbrales-ITK/samples/*.nii
-umbrales-ITK/samples/*.nii.gz
 
 # LaTeX auxiliares
 *.log
