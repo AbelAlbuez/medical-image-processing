@@ -608,10 +608,13 @@ precisión fina en la detección del umbral.
 
 % [Subsección a cargo del compañero correspondiente]
 \textit{Análisis pendiente de completar por integrante del equipo.}
-
 % ------------------------------------------------------------
 \subsection{$b = 256$ barras}
 % ------------------------------------------------------------
+Con 256 barras, el histograma queda bien poblado, en tanto tiene asignada cada intensidad 1-1, esto es, una barra (bin) del histograma es una nota de intensidad. 
+esto tiende a \textbf{resaltar el ruido} y a amplificar
+la estructura de la distribución con su ruido corresponiente. Este efecto tiene consecuencias distintas según la
+modalidad y el método.
 
 \begin{figure}[H]
   \centering
@@ -623,8 +626,26 @@ precisión fina en la detección del umbral.
   \label{fig:b256}
 \end{figure}
 
-% [Subsección a cargo del compañero correspondiente]
-\textit{Análisis pendiente de completar por integrante del equipo.}
+\textbf{CT de tórax:} Con $b = 256$, el método Triangle produce un resultado muy poco útil, en tanto el cálculo del umbral
+en éste método depende de la cantidad y altura de bins en el histograma, lo que lo hace susceptible en éste caso de no producir buenos umbrales.
+Se notan algunas siluetas de los bordes que permiten mantener una idea ligera de la imagen pero se piederde más información de la deseada. 
+\textbf{Otsu} y
+\textbf{Huang} mantienen una estructura similar, aunque en éste caso, Otsu tiende a uniformizar mejor los blancos de la región de interés mientras que
+Huang logra mantener un contraste a pesar de que opaca algunas regiones de forma muy fuerte.
+
+\textbf{MRI T1c cerebral:} Los tres métodos producen resultados visualmente idénticos a
+los obtenidos con $b = 128$. La estructura bimodal de esta imagen (fondo negro puro +
+tejido cerebral) es tan pronunciada que, dados los 256 bins, no se logra tener un detalle gráfico de la imagen que sea diferenciador.
+En éste caso, el uso de 256 está muy poco recomendado.
+
+\textbf{Ultrasonido:} Con $b = 256$ los métodos Otsu y Huang producen máscaras con regiones
+marcadas, pero con sutilezas: Otsu resalta parte del ruido mientras qeu Huang opaca recgiones de posible interés. 
+El histograma detallado enfativza la variabilidad local, lo que explica la variabilidad en los resultados.
+Triangle en cambio, nuevamente, dada la sensiblidad al tamaño del histograma, no suele ser tan útil.
+
+\textbf{Recomendación de uso:} $b = 256$ puede ser una opción razonable cuando hay un requerimiento
+de exactitud para MRI o para CT. Por otro lado, su uso en ecografías está poco recomendado pues puede 
+ya sea acabar con regiones de interés o aumentar el ruido.
 
 % ============================================================
 \section{Análisis Comparativo}
