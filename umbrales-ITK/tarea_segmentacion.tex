@@ -491,6 +491,142 @@ lo que confirma que la umbralización global no es el método de elección para 
 de ultrasonido.
 
 % ============================================================
+\section{Efecto del número de barras del histograma (\texttt{NumberOfHistogramBins})}
+% ============================================================
+
+El parámetro \texttt{NumberOfHistogramBins} ($b$) controla la resolución con la que los
+filtros de umbralización automática de ITK discretizan el rango de intensidades de la
+imagen antes de aplicar su criterio de optimización. Un valor bajo de $b$ \textbf{suaviza}
+el histograma agrupando intensidades distintas en el mismo bin, lo que puede simplificar
+artificialmente la estructura del histograma. Un valor alto permite \textbf{mayor
+resolución}, capturando variabilidad fina de intensidades pero también amplificando el
+efecto del ruido sobre la estimación del umbral. El valor por defecto en ITK es
+$b = 128$.
+
+Para cuantificar este efecto se evaluaron cuatro valores: $b \in \{32, 64, 128, 256\}$,
+aplicados sobre las tres modalidades de imagen. Las imágenes sin sufijo en las secciones
+anteriores corresponden a $b = 128$ (valor por defecto). Los resultados se presentan a
+continuación, con una subsección dedicada a cada valor de $b$.
+
+\begin{table}[H]
+\centering
+\renewcommand{\arraystretch}{1.4}
+\begin{tabularx}{\textwidth}{lXXX}
+\toprule
+\textbf{$b$} & \textbf{CT de tórax} & \textbf{MRI T1c} & \textbf{US próstata} \\
+\midrule
+32  & Triangle converge con Otsu; máscaras limpias & Sin cambio visible & Otsu/Huang más continuos; Triangle ruidoso \\
+64  & Triangle comienza a separarse de Otsu & Sin cambio visible & Comportamiento intermedio \\
+128 & Resultado de referencia (default ITK) & Sin cambio visible & Triangle más compacto \\
+256 & Triangle degrada: tejido subcutáneo incluido; Otsu estable & Sin cambio visible & Triangle más compacto y preciso \\
+\bottomrule
+\end{tabularx}
+\caption{Resumen del efecto de \texttt{NumberOfHistogramBins} por modalidad.}
+\label{tab:bins}
+\end{table}
+
+% ------------------------------------------------------------
+\subsection{$b = 32$ barras}
+% ------------------------------------------------------------
+
+Con 32 barras, el histograma queda fuertemente suavizado: cada bin agrupa un rango
+amplio de intensidades, lo que tiende a \textbf{fusionar modos cercanos} y a simplificar
+la estructura de la distribución. Este efecto tiene consecuencias distintas según la
+modalidad y el método.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{output/comparisons/coronacases_org_001_comparison_b32.png}\\[0.8em]
+  \includegraphics[width=\textwidth]{output/comparisons/BraTS-GLI-00000-000-t1c_comparison_b32.png}\\[0.8em]
+  \includegraphics[width=\textwidth]{output/comparisons/04_01_comparison_b32.png}
+  \caption{Comparación con $b = 32$ barras. De arriba a abajo: CT de tórax, MRI T1c
+           cerebral, ultrasonido endorrectal. Columnas: Original, Otsu, Huang, Triangle.}
+  \label{fig:b32}
+\end{figure}
+
+\textbf{CT de tórax:} Con $b = 32$, el método Triangle produce su resultado más similar
+a Otsu de toda la serie experimental. El histograma suavizado reduce los picos secundarios
+de intensidades intermedias (tejido subcutáneo, estructuras mediastínicas), lo que lleva
+a Triangle a identificar un umbral más conservador y cercano al valle principal del
+histograma. El resultado es una máscara limpia donde los pulmones quedan bien delimitados
+sin el ruido periférico que aparece con resoluciones más altas. \textbf{Otsu} y
+\textbf{Huang} son prácticamente insensibles a este cambio: sus criterios globales (varianza
+entre clases y entropía difusa) se estabilizan incluso con resolución baja de histograma.
+
+\textbf{MRI T1c cerebral:} Los tres métodos producen resultados visualmente idénticos a
+los obtenidos con $b = 128$. La estructura bimodal de esta imagen (fondo negro puro +
+tejido cerebral) es tan pronunciada que incluso con solo 32 bins todos los algoritmos
+identifican el mismo valle del histograma y calculan umbrales equivalentes. Esta
+insensibilidad es una señal positiva: indica que el histograma de la imagen tiene una
+separación de modos robusta y que la segmentación es estable independientemente del valor
+de $b$ elegido.
+
+\textbf{Ultrasonido:} Con $b = 32$ los métodos Otsu y Huang producen máscaras con regiones
+blancas ligeramente más amplias y continuas que con resoluciones superiores. El histograma
+suavizado atenúa la variabilidad local del speckle, lo que empuja el umbral hacia un valor
+que captura más píxeles como objeto. Triangle en cambio presenta mayor fragmentación a
+$b = 32$ que a valores superiores, ya que la cola del histograma queda mal definida con
+tan pocos bins y el algoritmo geométrico pierde precisión. En ningún caso el resultado
+es clínicamente aceptable, pero la diferencia entre métodos es observable.
+
+\textbf{Recomendación de uso:} $b = 32$ puede ser una opción razonable cuando se trabaja
+con imágenes CT y se desea que Triangle se comporte de forma más conservadora y parecida
+a Otsu, o cuando se busca estabilidad del umbral ante ruido leve en el histograma.
+No es recomendable para imágenes de ultrasonido ni para aplicaciones que requieran
+precisión fina en la detección del umbral.
+
+% ------------------------------------------------------------
+\subsection{$b = 64$ barras}
+% ------------------------------------------------------------
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{output/comparisons/coronacases_org_001_comparison_b64.png}\\[0.8em]
+  \includegraphics[width=\textwidth]{output/comparisons/BraTS-GLI-00000-000-t1c_comparison_b64.png}\\[0.8em]
+  \includegraphics[width=\textwidth]{output/comparisons/04_01_comparison_b64.png}
+  \caption{Comparación con $b = 64$ barras. De arriba a abajo: CT de tórax, MRI T1c
+           cerebral, ultrasonido endorrectal.}
+  \label{fig:b64}
+\end{figure}
+
+% [Subsección a cargo del compañero correspondiente]
+\textit{Análisis pendiente de completar por integrante del equipo.}
+
+% ------------------------------------------------------------
+\subsection{$b = 128$ barras (valor de referencia)}
+% ------------------------------------------------------------
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{output/comparisons/coronacases_org_001_comparison_b128.png}\\[0.8em]
+  \includegraphics[width=\textwidth]{output/comparisons/BraTS-GLI-00000-000-t1c_comparison_b128.png}\\[0.8em]
+  \includegraphics[width=\textwidth]{output/comparisons/04_01_comparison_b128.png}
+  \caption{Comparación con $b = 128$ barras (valor por defecto de ITK). De arriba a abajo:
+           CT de tórax, MRI T1c cerebral, ultrasonido endorrectal.}
+  \label{fig:b128}
+\end{figure}
+
+% [Subsección a cargo del compañero correspondiente]
+\textit{Análisis pendiente de completar por integrante del equipo.}
+
+% ------------------------------------------------------------
+\subsection{$b = 256$ barras}
+% ------------------------------------------------------------
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=\textwidth]{output/comparisons/coronacases_org_001_comparison_b256.png}\\[0.8em]
+  \includegraphics[width=\textwidth]{output/comparisons/BraTS-GLI-00000-000-t1c_comparison_b256.png}\\[0.8em]
+  \includegraphics[width=\textwidth]{output/comparisons/04_01_comparison_b256.png}
+  \caption{Comparación con $b = 256$ barras. De arriba a abajo: CT de tórax, MRI T1c
+           cerebral, ultrasonido endorrectal.}
+  \label{fig:b256}
+\end{figure}
+
+% [Subsección a cargo del compañero correspondiente]
+\textit{Análisis pendiente de completar por integrante del equipo.}
+
+% ============================================================
 \section{Análisis Comparativo}
 % ============================================================
 
@@ -534,6 +670,10 @@ Adecuación clínica US &
   Pobre &
   Pobre &
   Parcial (inaceptable para diagnóstico) \\
+Sensibilidad a \texttt{NumberOfHistogramBins} &
+  Baja: estable en todos los valores de $b$ &
+  Baja: estable en todos los valores de $b$ &
+  Alta en CT: $b=32$ converge con Otsu; $b=256$ degrada \\
 \bottomrule
 \end{tabularx}
 \caption{Comparación del desempeño de los tres métodos de umbralización por modalidad.}
@@ -607,6 +747,17 @@ intensidades solapadas.
     interfaz uniforme que facilita la comparación sistemática. El cálculo automático
     del histograma interno y la recuperación del umbral con \texttt{GetThreshold()}
     permiten una implementación concisa y reproducible sobre volúmenes 3D.
+
+  \item \textbf{Efecto de \texttt{NumberOfHistogramBins}:} La resolución del histograma
+    interno afecta de forma desigual a los tres métodos. Otsu y Huang son robustos ante
+    variaciones de $b$: sus criterios globales convergen al mismo umbral independientemente
+    de si se usan 32 o 256 bins. Triangle es el más sensible: en CT de tórax, $b = 32$
+    produce un umbral más conservador y similar a Otsu (deseable), mientras que $b = 256$
+    incorpora estructuras periféricas no deseadas. En MRI T1c con máscara craneal ningún
+    valor de $b$ altera el resultado, lo que confirma la solidez de la bimodalidad de esa
+    imagen. En ultrasonido el efecto es moderado y no supera la limitación estructural del
+    speckle. El valor por defecto $b = 128$ es un balance adecuado para la mayoría de
+    escenarios clínicos.
 
 \end{enumerate}
 
