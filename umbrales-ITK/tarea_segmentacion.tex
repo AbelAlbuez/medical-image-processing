@@ -51,7 +51,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small Pontificia Universidad Javeriana $\mid$ Procesamiento de Imágenes Médicas}
-\fancyhead[R]{\small Taller 2 — Segmentación por Umbralización}
+
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
@@ -75,8 +75,10 @@
 
 % ── Títulos de sección personalizados ─────────────────────
 \usepackage{titlesec}
-\titleformat{\section}{\large\bfseries\color{blue!70!black}}{}{0em}
-  {\thesection\quad}[\titlerule]
+\titleformat{\section}
+  {\large\bfseries\color{blue!70!black}}
+  {\thesection}{1em}{}
+  [\titlerule]
 \titleformat{\subsection}{\normalsize\bfseries\color{blue!50!black}}
   {\thesubsection\quad}{0em}{}
 \titleformat{\subsubsection}{\normalsize\itshape\bfseries}
@@ -337,7 +339,7 @@ seleccionadas para abarcar un amplio rango de características de histograma.
 
 \begin{table}[H]
 \centering
-\renewcommand{\arraystretch}{1.3}
+\renewcommand{\arraystretch}{1}
 \begin{tabularx}{\textwidth}{llXX}
 \toprule
 \textbf{Imagen} & \textbf{Modalidad} & \textbf{Estructura de interés} & \textbf{Característica del histograma} \\
@@ -491,7 +493,7 @@ lo que confirma que la umbralización global no es el método de elección para 
 de ultrasonido.
 
 % ============================================================
-\section{Efecto del número de barras del histograma (\texttt{NumberOfHistogramBins})}
+\section{Efecto del número de barras del histograma}
 % ============================================================
 
 El parámetro \texttt{NumberOfHistogramBins} ($b$) controla la resolución con la que los
@@ -589,8 +591,15 @@ precisión fina en la detección del umbral.
   \label{fig:b64}
 \end{figure}
 
-% [Subsección a cargo del compañero correspondiente]
-\textit{Análisis pendiente de completar por integrante del equipo.}
+\textbf{CT de torax:} Con $b = 64$, el método Otsu tiene un comportamiento prácticamente idéntico que, con los otros valores de $b$, generando una segmentación clara en la cual los pulmones se encuentran bien diferenciados respecto el tejido circundante. El método Huang, por otra parte, presenta un cambio significativo en relación con los resultados obtenidos en $b = 32$, en ese sentido, la imagen creada contempla pulmones visualmente más completos y continuos, con un número mayor de intensidades intermedias contenidas en el parénquima pulmonar. Esto implica un desplazamiento del umbral que incorpora las estructuras internas. Finalmente, el método triangle mantiene mayor proximidad a Otsu en con comparación con $b = 128$ y $b = 265$ y presenta una apariencia visual muy cercana a la obtenida con $b = 32$.
+
+\textbf{RM cerebral T1c:} En este modo, Otsu permanece prácticamente sin cambios, conservando la mayor parte del parénquima cerebral. Huang introduce un ligero oscurecimiento en algunas regiones con respecto a $b = 32$, lo que sugiere un leve rechazo de las intensidades intermedias. Triangle, por su parte, muestra un comportamiento más restrictivo, el resultado es también mucho más oscuro y retiene principalmente las intensidades más altas. Este comportamiento es coherente con su tendencia a elegir umbrales más altos cuando el histograma tiene una mayor resolución.
+
+\textbf{Ultrasonido:} Los procesos de Otsu y Huang siguen generando segmentaciones fragmentadas debido al ruido speckle con $b = 64$. En Otsu, la partición de regiones negras y blancas conserva gran parte de su parecido y está sujeta a variaciones locales, pero mantiene el mismo patrón caótico del conjunto. En Huang también se mantiene una fragmentación muy inconexa, pero con una ligera reorganización de algunas de las áreas que se extienden a cada extremo de las 32 barras. El triángulo muestra una diferencia más clara: en el caso de $b = 64$, el área blanca es más restringida y concentrada que en el caso de $b = 32$, donde aún se observaba una extensión aún mayor de áreas segmentadas. Estas sugerencias implican que, a medida que aumenta la resolución del histograma, el triángulo comienza a endurecerse aún más en torno al umbral, aunque el resultado sigue siendo lo suficientemente inadecuado como para permitir una segmentación útil en la práctica clínica.
+
+\textbf{Ultrasonido:} Con $b = 64$, se continúan generando segmentaciones fraccionadas por Otsu y Huang debido al ruido speckle. Sin embargo, se observa que la distribución de las regiones blancas es modificada respecto a $b = 32$, reflejando una mayor sensibilidad a la variabilidad del histograma. En triangle, se muestra una mejora frente a $b = 32$ , donde hay mayor concentración de la región segmentada en la zona central de la imagen, conservando más información que en $b = 128$ y $b = 256$, donde la segmentación es más compacta. En ningún caso se obtiene un resultado clínicamente aceptable, pero se evidencian diferencias entre los distintos valores del parámetro evaluado.
+
+\textbf{Recomendación de uso:} $b = 64$ es un valor intermedio, a partir del cual empezamos a observar diferencias entre los distintos métodos, especialmente en Huang y Triangle. Se puede utilizar cuando se busca un equilibrio entre un histograma suave y la conservación de los detalles, pero no elimina las limitaciones asociados a modalidades como la ecografía.
 
 % ------------------------------------------------------------
 \subsection{$b = 128$ barras (valor de referencia)}
@@ -606,8 +615,13 @@ precisión fina en la detección del umbral.
   \label{fig:b128}
 \end{figure}
 
-% [Subsección a cargo del compañero correspondiente]
-\textit{Análisis pendiente de completar por integrante del equipo.}
+\textbf{TC de tórax:} Con $b = 128$, el método de Otsu mantiene un comportamiento muy similar al de 64 barras, con una segmentación clara de los pulmones en presencia de los tejidos circundantes. El método de Huang se vuelve más restrictivo que el de 64 barras, y se observa una mayor oscuridad en el interior de los pulmones y una menor incorporación de tonos intermedios. Triangle, por su parte,  presenta el cambio más notable dado que la máscara se oscurece significativamente y pierde gran parte de la información interna que aún conservaba con 64 barras. Se evidencia que a medida que aumenta la resolución del histograma, tanto Huang como Triangle desplazan el umbral, dejando fuera estructuras pulmonares de intensidad intermedia que anteriormente permanecían subdivididas.
+
+\textbf{RM cerebral T1c:} Los resultados obtenidos con los métodos de Otsu y Huang siguen siendo muy similares a los obtenidos con 64 barras, aunque Otsu conserva más regiones blancas que Huang, y continúa tendiendo a captar una mayor proporción del parénquima. Triangle, por el contrario, sigue siendo el más restrictivo y deja prácticamente una máscara oscura en todo el cerebro, preservando solo las intensidades más altas. 
+
+\textbf{Ultrasonido:} Con $b = 128$, se generan por Otsu y Huang segmentaciones fraccionadas y similares entre sí, aunque en Huang se observa un oscurecimiento en algunas regiones respecto a 64 barras. Estos cambios son pequeños y la conclusión general no cambia, dado que no se da una separación útil por el ruido speckle. La segmentación vuelve a ser restringida por Triangle y aún más información es perdida en comparación con 64 barras, quedando una región blanca más compacta y menos extensa. En ningún caso es obtenido un resultado clínicamente aceptable.
+
+\textbf{Recomendación de uso:} $b = 128$ constituye un valor de referencia adecuado porque ofrece un equilibrio entre resolución del histograma y estabilidad del umbral. En Otsu y Huang mantiene resultados consistentes en modalidades con estructura bimodal clara, mientras que en Triangle permite evidenciar mejor su sensibilidad a la forma fina del histograma y su tendencia a volverse más restrictivo a medida que aumenta la resolución.
 % ------------------------------------------------------------
 \subsection{$b = 256$ barras}
 % ------------------------------------------------------------
@@ -646,7 +660,7 @@ Triangle en cambio, nuevamente, dada la sensiblidad al tamaño del histograma, n
 \textbf{Recomendación de uso:} $b = 256$ puede ser una opción razonable cuando hay un requerimiento
 de exactitud para MRI o para CT. Por otro lado, su uso en ecografías está poco recomendado pues puede 
 ya sea acabar con regiones de interés o aumentar el ruido.
-
+\newpage
 % ============================================================
 \section{Análisis Comparativo}
 % ============================================================
@@ -783,8 +797,8 @@ intensidades solapadas.
 \end{enumerate}
 
 % ============================================================
-\section*{Referencias}
 \addcontentsline{toc}{section}{Referencias}
+\renewcommand{\refname}{Referencias}
 % ============================================================
 
 \begin{thebibliography}{9}
