@@ -10,6 +10,9 @@ class-filter-image/comparison_results/
 # Archivos NIfTI sin comprimir (suelen ser muy grandes)
 class-filter-image/samples/*.nii
 
+# Resultados taller-segmentation (NIfTI generados)
+taller-segmentation/results/
+
 # Salidas umbrales-ITK (NIfTI y PNG generados)
 umbrales-ITK/output/
 # Muestras: versionar .nii.gz; ignorar .nii sin comprimir (GitHub rechaza >100 MB)
