@@ -19,7 +19,7 @@ import numpy as np
 # Configuración de rutas
 # ---------------------------------------------------------------------------
 
-IMAGES_DIR = "/Users/abelalbuez/Documents/Maestria/Tercer Semestre/Proc Img Medicas/medical-image-processing/Images"
+IMAGES_DIR = os.path.join(os.path.dirname(__file__), "..", "images")
 
 IMAGES = {
     "brain":  os.path.join(IMAGES_DIR, "MRBrainTumor.nii.gz"),
@@ -74,13 +74,16 @@ def apply_kmeans(path: str, centroids: list[float]) -> tuple[itk.Image, list[flo
     output_image  : itk.Image    — imagen segmentada con etiquetas
     final_means   : list[float]  — centroides finales calculados
     """
-    InputImageType = itk.Image[itk.F, 3]
-
     # Leer imagen como float
     image = itk.imread(path, itk.F)
 
-    # Instanciar el filtro siguiendo la API oficial
-    kmeans_filter = itk.ScalarImageKmeansImageFilter[InputImageType].New()
+    # ScalarImageKmeansImageFilter requiere dos templates: [Input, Output]
+    # La combinación [itk.F, itk.UC] está soportada en ITK Python
+    InputImageType = itk.Image[itk.F, 3]
+    OutputImageType = itk.Image[itk.UC, 3]
+
+    # Instanciar el filtro
+    kmeans_filter = itk.ScalarImageKmeansImageFilter[InputImageType, OutputImageType].New()
     kmeans_filter.SetInput(image)
     kmeans_filter.SetUseNonContiguousLabels(True)
 

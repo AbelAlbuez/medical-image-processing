@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 # Configuración de rutas
 # ---------------------------------------------------------------------------
 
-IMAGES_DIR = "/Users/abelalbuez/Documents/Maestria/Tercer Semestre/Proc Img Medicas/medical-image-processing/Images"
+IMAGES_DIR = os.path.join(os.path.dirname(__file__), "..", "images")
 
 IMAGES = {
     "brain":  os.path.join(IMAGES_DIR, "MRBrainTumor.nii.gz"),

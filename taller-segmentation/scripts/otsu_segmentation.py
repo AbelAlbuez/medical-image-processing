@@ -19,7 +19,7 @@ import numpy as np
 # Configuración de rutas
 # ---------------------------------------------------------------------------
 
-IMAGES_DIR = "/Users/abelalbuez/Documents/Maestria/Tercer Semestre/Proc Img Medicas/medical-image-processing/Images"
+IMAGES_DIR = os.path.join(os.path.dirname(__file__), "..", "images")
 
 IMAGES = {
     "brain":  os.path.join(IMAGES_DIR, "MRBrainTumor.nii.gz"),
@@ -54,14 +54,13 @@ def apply_otsu(path: str, n_thresholds: int) -> tuple[itk.Image, list[float]]:
     output_image  : itk.Image    — imagen segmentada con etiquetas
     thresholds    : list[float]  — umbrales calculados por Otsu
     """
-    InputImageType = itk.Image[itk.F, 3]
-    OutputImageType = itk.Image[itk.UC, 3]
+    ImageType = itk.Image[itk.F, 3]
 
     # Leer imagen como float
     image = itk.imread(path, itk.F)
 
-    # Instanciar el filtro siguiendo la API oficial
-    otsu_filter = itk.OtsuMultipleThresholdsImageFilter[InputImageType, OutputImageType].New()
+    # Instanciar el filtro (input y output del mismo tipo float)
+    otsu_filter = itk.OtsuMultipleThresholdsImageFilter[ImageType, ImageType].New()
     otsu_filter.SetInput(image)
     otsu_filter.SetNumberOfThresholds(n_thresholds)
     otsu_filter.SetNumberOfHistogramBins(NUM_HISTOGRAM_BINS)
