@@ -1,4 +1,5 @@
-itk
-numpy
-matplotlib
-SimpleITK
+itk>=5.4
+numpy>=1.26
+scikit-learn>=1.4
+scipy>=1.11
+matplotlib>=3.8

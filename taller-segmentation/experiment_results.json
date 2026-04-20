@@ -1,0 +1,1401 @@
+[
+  {
+    "image_name": "brain",
+    "image_path": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\images\\MRBrainTumor.nii.gz",
+    "geometry": {
+      "origin": [
+        -119.53099822998047,
+        -119.53099822998047,
+        -77.4000015258789
+      ],
+      "spacing": [
+        0.9375,
+        0.9375,
+        1.2000000476837158
+      ],
+      "direction": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "size": [
+        256,
+        256,
+        130
+      ]
+    },
+    "roi_voxels": 1870063,
+    "preprocessing": {
+      "mode": "zscore",
+      "mean": 127.07827758789062,
+      "std": 54.052734375,
+      "shift_applied": 1.0,
+      "roi_voxels": 1870063,
+      "post_roi_min": -2.3327744007110596,
+      "post_roi_max": 16.343523025512695,
+      "post_roi_mean": 5.430966609765164e-08
+    },
+    "evaluated_k": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "sweep": [
+      {
+        "k": 3,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.89966694355011,
+          0.032713696360588074,
+          2.655219078063965
+        ],
+        "final_means": [
+          -1.298419155392947,
+          0.020813951431098966,
+          2.2350125341107807
+        ],
+        "silhouette_mean": 0.553553581237793,
+        "silhouette_variance": 1.0371965845005585e-05,
+        "calinski_harabasz": 35835.96992969527,
+        "calinski_harabasz_variance": 421546.1582468848,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 4,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.89966694355011,
+          -0.23787108063697815,
+          0.27511034250259403,
+          2.655219078063965
+        ],
+        "final_means": [
+          -1.313093509124686,
+          -0.009188344840808686,
+          0.6581524225987152,
+          2.794550933262019
+        ],
+        "silhouette_mean": 0.49243394533793133,
+        "silhouette_variance": 6.181921440134234e-06,
+        "calinski_harabasz": 31955.726303034247,
+        "calinski_harabasz_variance": 4402393.702791397,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 4,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.298419155392947,
+          0.020813951431098966,
+          2.2350125341107807,
+          9.289267779811738
+        ],
+        "final_means": [
+          -1.313093509124686,
+          -0.009188344840808686,
+          0.6581524225987152,
+          2.794550933262019
+        ],
+        "silhouette_mean": 0.49243394533793133,
+        "silhouette_variance": 6.181921440134234e-06,
+        "calinski_harabasz": 31955.726303034247,
+        "calinski_harabasz_variance": 4402393.702791397,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 5,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.89966694355011,
+          -0.43502100706100466,
+          0.032713696360588074,
+          0.3895635282993316,
+          2.655219078063965
+        ],
+        "final_means": [
+          -1.5655066421662853,
+          -0.6392040507364978,
+          0.0032689540808318275,
+          0.6752448930259288,
+          2.812448667120911
+        ],
+        "silhouette_mean": 0.4828721582889557,
+        "silhouette_variance": 2.227630583107043e-06,
+        "calinski_harabasz": 29761.47311982056,
+        "calinski_harabasz_variance": 287616.43349860405,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 5,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.313093509124686,
+          -0.009188344840808686,
+          0.6581524225987152,
+          2.794550933262019,
+          9.569036979387358
+        ],
+        "final_means": [
+          -1.3152991332212378,
+          -0.013411982640556411,
+          0.5014508757227341,
+          1.8301389007998,
+          4.003369595096661
+        ],
+        "silhouette_mean": 0.5073868830998739,
+        "silhouette_variance": 8.444415566404788e-06,
+        "calinski_harabasz": 34165.61303813081,
+        "calinski_harabasz_variance": 1158859.6303898701,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 6,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.89966694355011,
+          -0.6195067157745362,
+          -0.12047087258100524,
+          0.17984861862659463,
+          0.46330086874961834,
+          2.655219078063965
+        ],
+        "final_means": [
+          -1.5679417866835907,
+          -0.6454296949786343,
+          -0.0014247363546612982,
+          0.5082089977422592,
+          1.835524638183878,
+          4.008653947556218
+        ],
+        "silhouette_mean": 0.5077615777651469,
+        "silhouette_variance": 1.5421329816294674e-05,
+        "calinski_harabasz": 34102.28481307305,
+        "calinski_harabasz_variance": 1646281.4047309908,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 6,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.3152991332212378,
+          -0.013411982640556411,
+          0.5014508757227341,
+          1.8301389007998,
+          4.003369595096661,
+          10.173446310304678
+        ],
+        "final_means": [
+          -1.3157424479728486,
+          -0.014386906571353296,
+          0.4566042350985539,
+          1.4394362708809612,
+          2.7037155689683883,
+          4.831342359629044
+        ],
+        "silhouette_mean": 0.4996168911457062,
+        "silhouette_variance": 3.747063147467126e-06,
+        "calinski_harabasz": 31223.5665544387,
+        "calinski_harabasz_variance": 1469033.9911009567,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 7,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.89966694355011,
+          -0.7846403336524964,
+          -0.23787108063697815,
+          0.032713696360588074,
+          0.27511034250259403,
+          0.5212855935096741,
+          2.655219078063965
+        ],
+        "final_means": [
+          -1.719644057217994,
+          -1.0523714345313113,
+          -0.42812308290051243,
+          0.002267171382990967,
+          0.5101722586687585,
+          1.8367681416234831,
+          4.009316156194785
+        ],
+        "silhouette_mean": 0.5047351121902466,
+        "silhouette_variance": 1.9094997014690307e-06,
+        "calinski_harabasz": 30781.36909826649,
+        "calinski_harabasz_variance": 1633336.967711787,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 7,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.5679417866835907,
+          -0.6454296949786343,
+          -0.0014247363546612982,
+          0.5082089977422592,
+          1.835524638183878,
+          4.008653947556218,
+          10.176088486534457
+        ],
+        "final_means": [
+          -1.5682693260964558,
+          -0.6465150735424409,
+          -0.0024466164191662113,
+          0.46273726304359003,
+          1.4480299385074569,
+          2.7151015480765874,
+          4.844555438728039
+        ],
+        "silhouette_mean": 0.5031691590944926,
+        "silhouette_variance": 2.5520064410342352e-06,
+        "calinski_harabasz": 32348.354655647487,
+        "calinski_harabasz_variance": 693530.279968582,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 8,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.89966694355011,
+          -0.9224245429039002,
+          -0.33923271008900235,
+          -0.07537418718848915,
+          0.1382051706314087,
+          0.34034480707986015,
+          0.5732869012015203,
+          2.655219078063965
+        ],
+        "final_means": [
+          -1.7198988190218794,
+          -1.0531706757723154,
+          -0.4291473376326724,
+          0.0012423645354595254,
+          0.4644566872708653,
+          1.4491963844463,
+          2.715865951352831,
+          4.844870261312483
+        ],
+        "silhouette_mean": 0.5033213297526041,
+        "silhouette_variance": 2.224624668972158e-06,
+        "calinski_harabasz": 31998.822522632894,
+        "calinski_harabasz_variance": 573756.433083185,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 8,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.5682693260964558,
+          -0.6465150735424409,
+          -0.0024466164191662113,
+          0.46273726304359003,
+          1.4480299385074569,
+          2.7151015480765874,
+          4.844555438728039,
+          10.594039232120368
+        ],
+        "final_means": [
+          -1.5684857656523286,
+          -0.6472096040198108,
+          -0.0030846676277807624,
+          0.431647902573187,
+          1.1682521916686157,
+          2.1164827384098017,
+          3.5219054584030154,
+          5.85319956199893
+        ],
+        "silhouette_mean": 0.4963635206222534,
+        "silhouette_variance": 7.670597247747916e-07,
+        "calinski_harabasz": 27902.373630902348,
+        "calinski_harabasz_variance": 291949.6161904026,
+        "silhouette_repeats": 3
+      }
+    ],
+    "k_summary": {
+      "3": {
+        "best_strategy": "quantile_anchored",
+        "best_calinski_harabasz": 35835.96992969527,
+        "best_silhouette_mean": 0.553553581237793,
+        "best_silhouette_variance": 1.0371965845005585e-05,
+        "final_means": [
+          -1.298419155392947,
+          0.020813951431098966,
+          2.2350125341107807
+        ]
+      },
+      "4": {
+        "best_strategy": "quantile_anchored",
+        "best_calinski_harabasz": 31955.726303034247,
+        "best_silhouette_mean": 0.49243394533793133,
+        "best_silhouette_variance": 6.181921440134234e-06,
+        "final_means": [
+          -1.313093509124686,
+          -0.009188344840808686,
+          0.6581524225987152,
+          2.794550933262019
+        ]
+      },
+      "5": {
+        "best_strategy": "warm_start",
+        "best_calinski_harabasz": 34165.61303813081,
+        "best_silhouette_mean": 0.5073868830998739,
+        "best_silhouette_variance": 8.444415566404788e-06,
+        "final_means": [
+          -1.3152991332212378,
+          -0.013411982640556411,
+          0.5014508757227341,
+          1.8301389007998,
+          4.003369595096661
+        ]
+      },
+      "6": {
+        "best_strategy": "quantile_anchored",
+        "best_calinski_harabasz": 34102.28481307305,
+        "best_silhouette_mean": 0.5077615777651469,
+        "best_silhouette_variance": 1.5421329816294674e-05,
+        "final_means": [
+          -1.5679417866835907,
+          -0.6454296949786343,
+          -0.0014247363546612982,
+          0.5082089977422592,
+          1.835524638183878,
+          4.008653947556218
+        ]
+      },
+      "7": {
+        "best_strategy": "warm_start",
+        "best_calinski_harabasz": 32348.354655647487,
+        "best_silhouette_mean": 0.5031691590944926,
+        "best_silhouette_variance": 2.5520064410342352e-06,
+        "final_means": [
+          -1.5682693260964558,
+          -0.6465150735424409,
+          -0.0024466164191662113,
+          0.46273726304359003,
+          1.4480299385074569,
+          2.7151015480765874,
+          4.844555438728039
+        ]
+      },
+      "8": {
+        "best_strategy": "quantile_anchored",
+        "best_calinski_harabasz": 31998.822522632894,
+        "best_silhouette_mean": 0.5033213297526041,
+        "best_silhouette_variance": 2.224624668972158e-06,
+        "final_means": [
+          -1.7198988190218794,
+          -1.0531706757723154,
+          -0.4291473376326724,
+          0.0012423645354595254,
+          0.4644566872708653,
+          1.4491963844463,
+          2.715865951352831,
+          4.844870261312483
+        ]
+      }
+    },
+    "chosen_k": 3,
+    "chosen_strategy": "quantile_anchored",
+    "initial_seeds": [
+      -1.89966694355011,
+      0.032713696360588074,
+      2.655219078063965
+    ],
+    "final_means": [
+      -1.298419155392947,
+      0.020813951431098966,
+      2.2350125341107807
+    ],
+    "winning_silhouette_mean": 0.553553581237793,
+    "winning_silhouette_variance": 1.0371965845005585e-05,
+    "winning_calinski_harabasz": 35835.96992969527,
+    "selection_criterion": "calinski_harabasz",
+    "lesion_cluster_ids": [
+      2
+    ],
+    "lesion_reason": "best_single_cluster",
+    "lesion_tail": "bright",
+    "lesion_cluster_scores": {
+      "2": {
+        "size": 151553,
+        "mean_intensity": 2.2349627017974854,
+        "tail_extremeness": 1.0,
+        "compactness": 0.03228562111011619,
+        "edge_support": 0.8219536836736947,
+        "score": 0.7135598261959527
+      }
+    },
+    "lesion_mask_voxels": 143789,
+    "outputs": {
+      "label_map": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\results\\unsupervised_kmeans\\brain\\label_map.nii.gz",
+      "lesion_mask": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\results\\unsupervised_kmeans\\brain\\lesion_mask.nii.gz",
+      "roi_mask": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\results\\unsupervised_kmeans\\brain\\roi_mask.nii.gz"
+    },
+    "processing_time_seconds": 381.14616060000844
+  },
+  {
+    "image_name": "breast",
+    "image_path": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\images\\MRBreastCancer.nii.gz",
+    "geometry": {
+      "origin": [
+        -176.53799438476562,
+        -179.75100708007812,
+        -76.68409729003906
+      ],
+      "spacing": [
+        0.4464290142059326,
+        0.4464283585548401,
+        4.999995231628418
+      ],
+      "direction": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.9999969665552881,
+          0.00246310380348868
+        ],
+        [
+          0.0,
+          -0.0024631037781342453,
+          0.9999969665552256
+        ]
+      ],
+      "size": [
+        784,
+        784,
+        30
+      ]
+    },
+    "roi_voxels": 5495903,
+    "preprocessing": {
+      "mode": "zscore",
+      "mean": 759.2044067382812,
+      "std": 346.74444580078125,
+      "shift_applied": 1.0,
+      "roi_voxels": 5495903,
+      "post_roi_min": -2.1870415210723877,
+      "post_roi_max": 4.687580585479736,
+      "post_roi_mean": 7.67617294172851e-08
+    },
+    "evaluated_k": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "sweep": [
+      {
+        "k": 3,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.7550457620620727,
+          0.054672710597515106,
+          1.9881374502182005
+        ],
+        "final_means": [
+          -1.162626572975946,
+          0.003431693272528637,
+          1.1163739512575077
+        ],
+        "silhouette_mean": 0.5546072721481323,
+        "silhouette_variance": 1.6296661892549007e-06,
+        "calinski_harabasz": 55722.47634370599,
+        "calinski_harabasz_variance": 67327.75817006844,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 4,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.7550457620620727,
+          -0.5157359790802001,
+          0.5285140252113343,
+          1.9881374502182005
+        ],
+        "final_means": [
+          -1.1662604415509743,
+          -0.008186759552356272,
+          0.785296687719845,
+          1.7143449841712801
+        ],
+        "silhouette_mean": 0.53633185227712,
+        "silhouette_variance": 1.8808924772252388e-06,
+        "calinski_harabasz": 66650.1480726783,
+        "calinski_harabasz_variance": 132401.21360512445,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 4,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.162626572975946,
+          0.003431693272528637,
+          1.1163739512575077,
+          2.901977268368622
+        ],
+        "final_means": [
+          -1.1662591287053836,
+          -0.008186600134250276,
+          0.785296687719845,
+          1.7143449841712801
+        ],
+        "silhouette_mean": 0.5363847414652506,
+        "silhouette_variance": 1.5084682595379997e-06,
+        "calinski_harabasz": 66798.49105432618,
+        "calinski_harabasz_variance": 133346.52950409832,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 5,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.7550457620620727,
+          -0.8102025914192199,
+          0.054672710597515106,
+          0.7328609752655029,
+          1.9881374502182005
+        ],
+        "final_means": [
+          -1.4135914925268531,
+          -0.7231610266228299,
+          0.0032208146888359486,
+          0.7911834030665795,
+          1.719950901115038
+        ],
+        "silhouette_mean": 0.521598756313324,
+        "silhouette_variance": 6.806958931330579e-07,
+        "calinski_harabasz": 74951.06091133028,
+        "calinski_harabasz_variance": 2327224.7366058496,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 5,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.1662591287053836,
+          -0.008186600134250276,
+          0.785296687719845,
+          1.7143449841712801,
+          3.2009627848255082
+        ],
+        "final_means": [
+          -1.1676809995400395,
+          -0.012876168704734639,
+          0.5893491243358818,
+          1.156120466677574,
+          2.0557250076712448
+        ],
+        "silhouette_mean": 0.5213783979415894,
+        "silhouette_variance": 2.5457550378860105e-07,
+        "calinski_harabasz": 70357.1198971604,
+        "calinski_harabasz_variance": 59219.77728977806,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 6,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.7550457620620727,
+          -0.9772476153373718,
+          -0.27821654391288764,
+          0.3491078944206237,
+          0.854610541820526,
+          1.9881374502182005
+        ],
+        "final_means": [
+          -1.4149550399085546,
+          -0.7263908605463346,
+          -0.0014909768548052769,
+          0.597112115690712,
+          1.1622376964450878,
+          2.060901188151853
+        ],
+        "silhouette_mean": 0.5168448090553284,
+        "silhouette_variance": 5.836988563601153e-07,
+        "calinski_harabasz": 83737.33860206451,
+        "calinski_harabasz_variance": 1197445.8222345246,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 6,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.4135914925268531,
+          -0.7231610266228299,
+          0.0032208146888359486,
+          0.7911834030665795,
+          1.719950901115038,
+          3.203765743297387
+        ],
+        "final_means": [
+          -1.4149512801117476,
+          -0.726386018455318,
+          -0.001490485058571127,
+          0.5971285461477447,
+          1.162263115723784,
+          2.060926590167348
+        ],
+        "silhouette_mean": 0.5153046250343323,
+        "silhouette_variance": 1.2926742769536759e-06,
+        "calinski_harabasz": 83611.31520495693,
+        "calinski_harabasz_variance": 288243.9055033562,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 7,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.7550457620620727,
+          -1.0810310745239258,
+          -0.5157359790802001,
+          0.054672710597515106,
+          0.5285140252113343,
+          0.941503038406372,
+          1.9881374502182005
+        ],
+        "final_means": [
+          -1.5839528356145072,
+          -1.0659551452985314,
+          -0.5341738359135325,
+          0.0019135357829287653,
+          0.599477904694395,
+          1.1641950475096294,
+          2.0626442124440274
+        ],
+        "silhouette_mean": 0.5171849727630615,
+        "silhouette_variance": 1.1160470331598542e-06,
+        "calinski_harabasz": 93420.17590266385,
+        "calinski_harabasz_variance": 4211371.985222934,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 7,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.4149550399085546,
+          -0.7263908605463346,
+          -0.0014909768548052769,
+          0.597112115690712,
+          1.1622376964450878,
+          2.060901188151853,
+          3.3742408868157945
+        ],
+        "final_means": [
+          -1.4156364366871488,
+          -0.7279867272793817,
+          -0.003748912551720981,
+          0.47593245285993807,
+          0.9223722246029101,
+          1.466306313354402,
+          2.336928171836624
+        ],
+        "silhouette_mean": 0.5170243183771769,
+        "silhouette_variance": 1.7000029409865013e-06,
+        "calinski_harabasz": 92296.90312858218,
+        "calinski_harabasz_variance": 71092.65164121536,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 8,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.7550457620620727,
+          -1.1511199576514108,
+          -0.6865984266144889,
+          -0.17830504800592153,
+          0.26780851108687254,
+          0.6474512219429016,
+          1.009487271308899,
+          1.9881374502182005
+        ],
+        "final_means": [
+          -1.584384600187201,
+          -1.066779459097004,
+          -0.5357210008310583,
+          -0.00034122137924152854,
+          0.47852193710684193,
+          0.9242509981520994,
+          1.4681317871086468,
+          2.3387346106215827
+        ],
+        "silhouette_mean": 0.5201571782430013,
+        "silhouette_variance": 7.923201400059395e-06,
+        "calinski_harabasz": 103489.33464311069,
+        "calinski_harabasz_variance": 12084305.798239937,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 8,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.5839528356145072,
+          -1.0659551452985314,
+          -0.5341738359135325,
+          0.0019135357829287653,
+          0.599477904694395,
+          1.1641950475096294,
+          2.0626442124440274,
+          3.375112398961882
+        ],
+        "final_means": [
+          -1.5843841459680936,
+          -1.0667791626472096,
+          -0.5357203254501858,
+          -0.00034106090367042063,
+          0.4785329248671797,
+          0.9242732168389184,
+          1.468167473143315,
+          2.33876758610215
+        ],
+        "silhouette_mean": 0.5194398363431295,
+        "silhouette_variance": 3.4706366381303473e-06,
+        "calinski_harabasz": 103958.89699955405,
+        "calinski_harabasz_variance": 3874869.3565876186,
+        "silhouette_repeats": 3
+      }
+    ],
+    "k_summary": {
+      "3": {
+        "best_strategy": "quantile_anchored",
+        "best_calinski_harabasz": 55722.47634370599,
+        "best_silhouette_mean": 0.5546072721481323,
+        "best_silhouette_variance": 1.6296661892549007e-06,
+        "final_means": [
+          -1.162626572975946,
+          0.003431693272528637,
+          1.1163739512575077
+        ]
+      },
+      "4": {
+        "best_strategy": "warm_start",
+        "best_calinski_harabasz": 66798.49105432618,
+        "best_silhouette_mean": 0.5363847414652506,
+        "best_silhouette_variance": 1.5084682595379997e-06,
+        "final_means": [
+          -1.1662591287053836,
+          -0.008186600134250276,
+          0.785296687719845,
+          1.7143449841712801
+        ]
+      },
+      "5": {
+        "best_strategy": "quantile_anchored",
+        "best_calinski_harabasz": 74951.06091133028,
+        "best_silhouette_mean": 0.521598756313324,
+        "best_silhouette_variance": 6.806958931330579e-07,
+        "final_means": [
+          -1.4135914925268531,
+          -0.7231610266228299,
+          0.0032208146888359486,
+          0.7911834030665795,
+          1.719950901115038
+        ]
+      },
+      "6": {
+        "best_strategy": "quantile_anchored",
+        "best_calinski_harabasz": 83737.33860206451,
+        "best_silhouette_mean": 0.5168448090553284,
+        "best_silhouette_variance": 5.836988563601153e-07,
+        "final_means": [
+          -1.4149550399085546,
+          -0.7263908605463346,
+          -0.0014909768548052769,
+          0.597112115690712,
+          1.1622376964450878,
+          2.060901188151853
+        ]
+      },
+      "7": {
+        "best_strategy": "quantile_anchored",
+        "best_calinski_harabasz": 93420.17590266385,
+        "best_silhouette_mean": 0.5171849727630615,
+        "best_silhouette_variance": 1.1160470331598542e-06,
+        "final_means": [
+          -1.5839528356145072,
+          -1.0659551452985314,
+          -0.5341738359135325,
+          0.0019135357829287653,
+          0.599477904694395,
+          1.1641950475096294,
+          2.0626442124440274
+        ]
+      },
+      "8": {
+        "best_strategy": "warm_start",
+        "best_calinski_harabasz": 103958.89699955405,
+        "best_silhouette_mean": 0.5194398363431295,
+        "best_silhouette_variance": 3.4706366381303473e-06,
+        "final_means": [
+          -1.5843841459680936,
+          -1.0667791626472096,
+          -0.5357203254501858,
+          -0.00034106090367042063,
+          0.4785329248671797,
+          0.9242732168389184,
+          1.468167473143315,
+          2.33876758610215
+        ]
+      }
+    },
+    "chosen_k": 8,
+    "chosen_strategy": "warm_start",
+    "initial_seeds": [
+      -1.5839528356145072,
+      -1.0659551452985314,
+      -0.5341738359135325,
+      0.0019135357829287653,
+      0.599477904694395,
+      1.1641950475096294,
+      2.0626442124440274,
+      3.375112398961882
+    ],
+    "final_means": [
+      -1.5843841459680936,
+      -1.0667791626472096,
+      -0.5357203254501858,
+      -0.00034106090367042063,
+      0.4785329248671797,
+      0.9242732168389184,
+      1.468167473143315,
+      2.33876758610215
+    ],
+    "winning_silhouette_mean": 0.5194398363431295,
+    "winning_silhouette_variance": 3.4706366381303473e-06,
+    "winning_calinski_harabasz": 103958.89699955405,
+    "selection_criterion": "calinski_harabasz",
+    "lesion_cluster_ids": [
+      7
+    ],
+    "lesion_reason": "best_single_cluster",
+    "lesion_tail": "bright",
+    "lesion_cluster_scores": {
+      "7": {
+        "size": 132012,
+        "mean_intensity": 2.3387444019317627,
+        "tail_extremeness": 0.6911807436562458,
+        "compactness": 0.09598588307503453,
+        "edge_support": 0.7581381238490773,
+        "score": 0.5591213735591509
+      }
+    },
+    "lesion_mask_voxels": 117762,
+    "outputs": {
+      "label_map": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\results\\unsupervised_kmeans\\breast\\label_map.nii.gz",
+      "lesion_mask": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\results\\unsupervised_kmeans\\breast\\lesion_mask.nii.gz",
+      "roi_mask": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\results\\unsupervised_kmeans\\breast\\roi_mask.nii.gz"
+    },
+    "processing_time_seconds": 879.8221756000421
+  },
+  {
+    "image_name": "liver",
+    "image_path": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\images\\MRLiverTumor.nii.gz",
+    "geometry": {
+      "origin": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "spacing": [
+        1.7343100309371948,
+        1.7343100309371948,
+        1.7343100309371948
+      ],
+      "direction": [
+        [
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0
+        ]
+      ],
+      "size": [
+        177,
+        177,
+        98
+      ]
+    },
+    "roi_voxels": 857407,
+    "preprocessing": {
+      "mode": "zscore",
+      "mean": 139.82936096191406,
+      "std": 75.177490234375,
+      "shift_applied": 1.0,
+      "roi_voxels": 857407,
+      "post_roi_min": -1.8443052768707275,
+      "post_roi_max": 3.1155595779418945,
+      "post_roi_mean": -4.555887755941512e-08
+    },
+    "evaluated_k": [
+      3,
+      4,
+      5,
+      6,
+      7,
+      8
+    ],
+    "sweep": [
+      {
+        "k": 3,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.4419096183776856,
+          -0.2308492511510849,
+          2.5465040397644043
+        ],
+        "final_means": [
+          -0.7588468543487118,
+          -0.00939690274449846,
+          2.052949288953045
+        ],
+        "silhouette_mean": 0.5593783060709635,
+        "silhouette_variance": 1.3533691413966962e-06,
+        "calinski_harabasz": 75054.76476442385,
+        "calinski_harabasz_variance": 127996.29015914728,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 4,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.4419096183776856,
+          -0.456201889514923,
+          -0.11752524405717844,
+          2.5465040397644043
+        ],
+        "final_means": [
+          -1.2006241727539788,
+          -0.5383300260545771,
+          -0.0009038924451566197,
+          2.0552340695683142
+        ],
+        "silhouette_mean": 0.5203973452250162,
+        "silhouette_variance": 1.1231420769617114e-05,
+        "calinski_harabasz": 74080.42740768498,
+        "calinski_harabasz_variance": 1425578.8970324881,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 4,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -0.7588468543487118,
+          -0.00939690274449846,
+          1.0217761931042733,
+          2.052949288953045
+        ],
+        "final_means": [
+          -0.7626263884679029,
+          -0.01874623772386238,
+          1.1212817118793093,
+          2.330511414950182
+        ],
+        "silhouette_mean": 0.5678678353627523,
+        "silhouette_variance": 7.497181881730183e-07,
+        "calinski_harabasz": 102481.94282644824,
+        "calinski_harabasz_variance": 107822.14014162579,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 5,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.4419096183776856,
+          -0.5665859746932983,
+          -0.2308492511510849,
+          -0.02932921521365673,
+          2.5465040397644043
+        ],
+        "final_means": [
+          -1.273745314493262,
+          -0.6532977620259953,
+          -0.2536374843044065,
+          0.012184272769393772,
+          2.058823784027741
+        ],
+        "silhouette_mean": 0.47352922956148785,
+        "silhouette_variance": 3.7899032791067885e-07,
+        "calinski_harabasz": 61703.26978325678,
+        "calinski_harabasz_variance": 484913.02325928374,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 5,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -0.7626263884679029,
+          -0.01874623772386238,
+          1.1212817118793093,
+          1.7258965634147456,
+          2.330511414950182
+        ],
+        "final_means": [
+          -0.7638104950300447,
+          -0.021453825185403102,
+          0.7387227578281998,
+          1.5818092780256294,
+          2.4180889739171545
+        ],
+        "silhouette_mean": 0.5625568429629008,
+        "silhouette_variance": 2.396566885288899e-06,
+        "calinski_harabasz": 112034.56068413537,
+        "calinski_harabasz_variance": 384703.9528178089,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 6,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.4419096183776856,
+          -0.6325762395858765,
+          -0.35411695027351386,
+          -0.15936955070495606,
+          0.2927954092025755,
+          2.5465040397644043
+        ],
+        "final_means": [
+          -1.2760897690153516,
+          -0.657103407274295,
+          -0.2620604316199053,
+          0.0019908271621457627,
+          1.1345330938587783,
+          2.333432181640947
+        ],
+        "silhouette_mean": 0.5060882767041525,
+        "silhouette_variance": 3.906196976149406e-06,
+        "calinski_harabasz": 104774.27894530876,
+        "calinski_harabasz_variance": 282816.5140348009,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 6,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.3040578859503862,
+          -0.7638104950300447,
+          -0.021453825185403102,
+          0.7387227578281998,
+          1.5818092780256294,
+          2.4180889739171545
+        ],
+        "final_means": [
+          -1.2057160288564275,
+          -0.5456724950665267,
+          -0.013233854711572138,
+          0.7464456798574003,
+          1.58614155013638,
+          2.4186888740535353
+        ],
+        "silhouette_mean": 0.5575481255849203,
+        "silhouette_variance": 1.780209481062735e-08,
+        "calinski_harabasz": 138144.0119494429,
+        "calinski_harabasz_variance": 95569.83118278487,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 7,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.4419096183776856,
+          -0.6830862832069398,
+          -0.456201889514923,
+          -0.2308492511510849,
+          -0.11752524405717844,
+          0.6837045907974235,
+          2.5465040397644043
+        ],
+        "final_means": [
+          -1.3994920717276584,
+          -0.8746089186171485,
+          -0.5460953878009999,
+          -0.21997357636612358,
+          0.003388368453407184,
+          1.1355817175237677,
+          2.3336982697980573
+        ],
+        "silhouette_mean": 0.5021042426427206,
+        "silhouette_variance": 2.297028651633405e-06,
+        "calinski_harabasz": 105218.13081114541,
+        "calinski_harabasz_variance": 27006.713455803456,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 7,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.2057160288564275,
+          -0.5456724950665267,
+          -0.013233854711572138,
+          0.7464456798574003,
+          1.16629361499689,
+          1.58614155013638,
+          2.4186888740535353
+        ],
+        "final_means": [
+          -1.206176458379191,
+          -0.5462915623806324,
+          -0.01429102383775458,
+          0.549650884747671,
+          1.1705180578800685,
+          1.8132556207408266,
+          2.4544609421911674
+        ],
+        "silhouette_mean": 0.5538087884585062,
+        "silhouette_variance": 1.214305558821454e-07,
+        "calinski_harabasz": 147734.16126604652,
+        "calinski_harabasz_variance": 246190.77642137828,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 8,
+        "strategy": "quantile_anchored",
+        "initial_seeds": [
+          -1.4419096183776856,
+          -0.7250226872307914,
+          -0.5221132387433733,
+          -0.31302424090249203,
+          -0.17727439641952517,
+          -0.07935160134519849,
+          1.008479458945133,
+          2.5465040397644043
+        ],
+        "final_means": [
+          -1.4891055862242275,
+          -1.0440551728931624,
+          -0.7014416074116097,
+          -0.4590353075327796,
+          -0.19461151142249566,
+          0.004025246720651962,
+          1.1359752778728107,
+          2.333774276969207
+        ],
+        "silhouette_mean": 0.5040965676307678,
+        "silhouette_variance": 9.215877364946816e-08,
+        "calinski_harabasz": 105462.72654147905,
+        "calinski_harabasz_variance": 489941.09838591114,
+        "silhouette_repeats": 3
+      },
+      {
+        "k": 8,
+        "strategy": "warm_start",
+        "initial_seeds": [
+          -1.206176458379191,
+          -0.5462915623806324,
+          -0.01429102383775458,
+          0.549650884747671,
+          1.1705180578800685,
+          1.8132556207408266,
+          2.4544609421911674,
+          2.7850102600665307
+        ],
+        "final_means": [
+          -1.2064545159190874,
+          -0.5466091717386363,
+          -0.014750674988174233,
+          0.4473766617086889,
+          0.9520503588430326,
+          1.4815665954054031,
+          1.9990321462654046,
+          2.4819292581694734
+        ],
+        "silhouette_mean": 0.5456521511077881,
+        "silhouette_variance": 3.513509123346618e-06,
+        "calinski_harabasz": 156110.25021638002,
+        "calinski_harabasz_variance": 1578038.0005495858,
+        "silhouette_repeats": 3
+      }
+    ],
+    "k_summary": {
+      "3": {
+        "best_strategy": "quantile_anchored",
+        "best_calinski_harabasz": 75054.76476442385,
+        "best_silhouette_mean": 0.5593783060709635,
+        "best_silhouette_variance": 1.3533691413966962e-06,
+        "final_means": [
+          -0.7588468543487118,
+          -0.00939690274449846,
+          2.052949288953045
+        ]
+      },
+      "4": {
+        "best_strategy": "warm_start",
+        "best_calinski_harabasz": 102481.94282644824,
+        "best_silhouette_mean": 0.5678678353627523,
+        "best_silhouette_variance": 7.497181881730183e-07,
+        "final_means": [
+          -0.7626263884679029,
+          -0.01874623772386238,
+          1.1212817118793093,
+          2.330511414950182
+        ]
+      },
+      "5": {
+        "best_strategy": "warm_start",
+        "best_calinski_harabasz": 112034.56068413537,
+        "best_silhouette_mean": 0.5625568429629008,
+        "best_silhouette_variance": 2.396566885288899e-06,
+        "final_means": [
+          -0.7638104950300447,
+          -0.021453825185403102,
+          0.7387227578281998,
+          1.5818092780256294,
+          2.4180889739171545
+        ]
+      },
+      "6": {
+        "best_strategy": "warm_start",
+        "best_calinski_harabasz": 138144.0119494429,
+        "best_silhouette_mean": 0.5575481255849203,
+        "best_silhouette_variance": 1.780209481062735e-08,
+        "final_means": [
+          -1.2057160288564275,
+          -0.5456724950665267,
+          -0.013233854711572138,
+          0.7464456798574003,
+          1.58614155013638,
+          2.4186888740535353
+        ]
+      },
+      "7": {
+        "best_strategy": "warm_start",
+        "best_calinski_harabasz": 147734.16126604652,
+        "best_silhouette_mean": 0.5538087884585062,
+        "best_silhouette_variance": 1.214305558821454e-07,
+        "final_means": [
+          -1.206176458379191,
+          -0.5462915623806324,
+          -0.01429102383775458,
+          0.549650884747671,
+          1.1705180578800685,
+          1.8132556207408266,
+          2.4544609421911674
+        ]
+      },
+      "8": {
+        "best_strategy": "warm_start",
+        "best_calinski_harabasz": 156110.25021638002,
+        "best_silhouette_mean": 0.5456521511077881,
+        "best_silhouette_variance": 3.513509123346618e-06,
+        "final_means": [
+          -1.2064545159190874,
+          -0.5466091717386363,
+          -0.014750674988174233,
+          0.4473766617086889,
+          0.9520503588430326,
+          1.4815665954054031,
+          1.9990321462654046,
+          2.4819292581694734
+        ]
+      }
+    },
+    "chosen_k": 8,
+    "chosen_strategy": "warm_start",
+    "initial_seeds": [
+      -1.206176458379191,
+      -0.5462915623806324,
+      -0.01429102383775458,
+      0.549650884747671,
+      1.1705180578800685,
+      1.8132556207408266,
+      2.4544609421911674,
+      2.7850102600665307
+    ],
+    "final_means": [
+      -1.2064545159190874,
+      -0.5466091717386363,
+      -0.014750674988174233,
+      0.4473766617086889,
+      0.9520503588430326,
+      1.4815665954054031,
+      1.9990321462654046,
+      2.4819292581694734
+    ],
+    "winning_silhouette_mean": 0.5456521511077881,
+    "winning_silhouette_variance": 3.513509123346618e-06,
+    "winning_calinski_harabasz": 156110.25021638002,
+    "selection_criterion": "calinski_harabasz",
+    "lesion_cluster_ids": [
+      7
+    ],
+    "lesion_reason": "best_single_cluster",
+    "lesion_tail": "bright",
+    "lesion_cluster_scores": {
+      "3": {
+        "size": 34628,
+        "mean_intensity": 0.4473772644996643,
+        "tail_extremeness": 0.0,
+        "compactness": 0.03419781337401475,
+        "edge_support": 0.8365433180566586,
+        "score": 0.21768528285766833
+      },
+      "4": {
+        "size": 30231,
+        "mean_intensity": 0.9520686864852905,
+        "tail_extremeness": 0.0,
+        "compactness": 0.06646442360728075,
+        "edge_support": 0.931585429622202,
+        "score": 0.2495124633073707
+      },
+      "5": {
+        "size": 28850,
+        "mean_intensity": 1.4815576076507568,
+        "tail_extremeness": 0.0,
+        "compactness": 0.038075880758807586,
+        "edge_support": 0.9471703617489688,
+        "score": 0.24631156062694412
+      },
+      "6": {
+        "size": 28513,
+        "mean_intensity": 1.9990007877349854,
+        "tail_extremeness": 0.17424816604353482,
+        "compactness": 0.01938112864471719,
+        "edge_support": 0.8487565363206345,
+        "score": 0.30415849926310534
+      },
+      "7": {
+        "size": 65722,
+        "mean_intensity": 2.481900453567505,
+        "tail_extremeness": 1.0,
+        "compactness": 0.12446052371369078,
+        "edge_support": 0.8803206164746095,
+        "score": 0.751195285047075
+      }
+    },
+    "lesion_mask_voxels": 63352,
+    "outputs": {
+      "label_map": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\results\\unsupervised_kmeans\\liver\\label_map.nii.gz",
+      "lesion_mask": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\results\\unsupervised_kmeans\\liver\\lesion_mask.nii.gz",
+      "roi_mask": "C:\\Users\\LENOVO LOQ\\Desktop\\procesamiento de imágenes médicas\\taller filtro\\medical-image-processing\\taller-segmentation\\results\\unsupervised_kmeans\\liver\\roi_mask.nii.gz"
+    },
+    "processing_time_seconds": 213.34527940000407
+  }
+]

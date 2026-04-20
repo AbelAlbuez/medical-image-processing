@@ -1,129 +1,111 @@
 #!/usr/bin/env python
-"""
-Visualización de vistas ortogonales (axial, coronal, sagital) de volúmenes 3D.
+"""Visualización de vistas ortogonales (axial, coronal, sagital) de volúmenes 3D.
 
-Carga un volumen .nii.gz y genera una figura con las 3 vistas lado a lado.
-Configurar IMAGE_PATH y los índices de slice al inicio del script.
+Genera un mosaico por cada imagen (brain, breast, liver) con:
+    * Imagen original (gris)
+    * ROI anatómica (binaria)
+    * Mapa de etiquetas K-means (tab10)
+    * Máscara final de lesión (binaria)
+
+Usa SimpleITK porque el wrapper itk-python está bloqueado por Windows App Control.
 """
 from __future__ import annotations
 
-import os
+import sys
+from pathlib import Path
 
-import itk
-import numpy as np
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+import numpy as np
 
-# ---------------------------------------------------------------------------
-# Configuración — modificar según lo que se quiera visualizar
-# ---------------------------------------------------------------------------
+HERE = Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
+from pipeline import VolumeIO  # noqa: E402
 
-# Ruta al volumen a visualizar (puede ser imagen original o resultado de segmentación)
-IMAGE_PATH = os.path.join(os.path.dirname(__file__), "..", "results", "otsu", "brain_otsu_2.nii.gz")
+ROOT = HERE.parent
+IMAGES_DIR = ROOT / "images"
+RESULTS_DIR = ROOT / "results" / "unsupervised_kmeans"
+FIGURES_DIR = ROOT / "report" / "figures"
 
-# Índices de slice — si es None, se usa el slice central automáticamente
-# NOTA: para cáncer de mama el tumor puede no estar en slices centrales;
-#       ajustar SLICE_AXIAL manualmente hasta encontrar el corte con el tumor
-SLICE_AXIAL   = None
-SLICE_CORONAL = None
-SLICE_SAGITAL = None
-
-# Colormap: 'gray' para imágenes originales, 'tab10' para segmentaciones
-COLORMAP = "tab10"
-
-# ---------------------------------------------------------------------------
-# Configuración de rutas de salida
-# ---------------------------------------------------------------------------
-
-FIGURES_DIR = os.path.join(os.path.dirname(__file__), "..", "report", "figures")
-
-# ---------------------------------------------------------------------------
-# Funciones
-# ---------------------------------------------------------------------------
+VOLUMES = [
+    ("brain",  IMAGES_DIR / "MRBrainTumor.nii.gz"),
+    ("breast", IMAGES_DIR / "MRBreastCancer.nii.gz"),
+    ("liver",  IMAGES_DIR / "MRLiverTumor.nii.gz"),
+]
 
 
-def load_volume(path: str) -> np.ndarray:
-    """Carga un volumen NIfTI y lo convierte a numpy array."""
-    image = itk.imread(path, itk.F)
-    arr = itk.array_from_image(image)
-    return arr
+def load_array(path: Path) -> np.ndarray:
+    return VolumeIO.to_numpy(VolumeIO.read(path))
 
 
-def get_slice_index(arr: np.ndarray, axis: int, requested: int | None) -> int:
-    """Retorna el índice de slice: el solicitado o el central si es None."""
-    if requested is not None:
-        return requested
-    return arr.shape[axis] // 2
+def find_focus_slice(
+    lesion: np.ndarray, roi: np.ndarray
+) -> tuple[int, int, int]:
+    """Pick slices centred on the lesion; fall back to ROI centroid, then volume centre."""
+    for candidate in (lesion.astype(bool), roi.astype(bool)):
+        if candidate.any():
+            z = int(np.argmax(candidate.sum(axis=(1, 2))))
+            y = int(np.argmax(candidate.sum(axis=(0, 2))))
+            x = int(np.argmax(candidate.sum(axis=(0, 1))))
+            return z, y, x
+    z, y, x = lesion.shape
+    return z // 2, y // 2, x // 2
 
 
-def visualize_orthogonal(arr: np.ndarray, name: str, cmap: str) -> None:
-    """
-    Genera una figura con las 3 vistas ortogonales del volumen.
-
-    Parámetros
-    ----------
-    arr  : np.ndarray — volumen 3D (Z, Y, X)
-    name : str        — nombre para títulos y archivo de salida
-    cmap : str        — colormap de matplotlib
-    """
-    # Calcular índices de slice
-    idx_axial   = get_slice_index(arr, 0, SLICE_AXIAL)
-    idx_coronal = get_slice_index(arr, 1, SLICE_CORONAL)
-    idx_sagital = get_slice_index(arr, 2, SLICE_SAGITAL)
-
-    # Extraer slices
-    slice_axial   = arr[idx_axial, :, :]
-    slice_coronal = arr[:, idx_coronal, :]
-    slice_sagital = arr[:, :, idx_sagital]
-
-    # Crear figura con 3 subplots
-    fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-
-    titles = [
-        f"Axial (slice {idx_axial})",
-        f"Coronal (slice {idx_coronal})",
-        f"Sagital (slice {idx_sagital})",
+def render_row(ax_row, volume: np.ndarray, cmap: str, title: str,
+               z: int, y: int, x: int) -> None:
+    slices = [
+        (volume[z, :, :], f"Axial z={z}"),
+        (volume[:, y, :], f"Coronal y={y}"),
+        (volume[:, :, x], f"Sagital x={x}"),
     ]
-    slices = [slice_axial, slice_coronal, slice_sagital]
-
-    for ax, title, sl in zip(axes, titles, slices):
+    for ax, (sl, slab) in zip(ax_row, slices):
         ax.imshow(sl, cmap=cmap, aspect="auto")
-        ax.set_title(f"{name} — {title}", fontsize=12)
+        ax.set_title(f"{title} · {slab}", fontsize=10)
         ax.axis("off")
 
-    fig.suptitle(f"Vistas ortogonales: {name}", fontsize=14, fontweight="bold")
+
+def visualize_volume(name: str, original_path: Path) -> None:
+    out_dir = RESULTS_DIR / name
+    roi_path = out_dir / "roi_mask.nii.gz"
+    label_path = out_dir / "label_map.nii.gz"
+    lesion_path = out_dir / "lesion_mask.nii.gz"
+
+    missing = [p for p in (original_path, roi_path, label_path, lesion_path) if not p.exists()]
+    if missing:
+        print(f"  [SKIP] {name}: falta {missing[0].name}")
+        return
+
+    print(f"  Renderizando mosaico: {name}")
+    original = load_array(original_path)
+    roi = load_array(roi_path)
+    labels = load_array(label_path)
+    lesion = load_array(lesion_path)
+
+    z, y, x = find_focus_slice(lesion, roi)
+
+    fig, axes = plt.subplots(4, 3, figsize=(14, 14))
+    render_row(axes[0], original, "gray", "Original", z, y, x)
+    render_row(axes[1], roi, "gray", "ROI", z, y, x)
+    render_row(axes[2], labels, "tab10", "Label map", z, y, x)
+    render_row(axes[3], lesion, "gray", "Lesion mask", z, y, x)
+
+    fig.suptitle(f"Segmentación no supervisada K-means · {name}", fontsize=14, fontweight="bold")
     fig.tight_layout()
 
-    # Guardar figura
-    out_path = os.path.join(FIGURES_DIR, f"{name}_vistas.png")
-    fig.savefig(out_path, dpi=150, bbox_inches="tight")
+    FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+    out_path = FIGURES_DIR / f"{name}_mosaico_unsupervised.png"
+    fig.savefig(out_path, dpi=140, bbox_inches="tight")
     plt.close(fig)
     print(f"  Guardado: {out_path}")
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
-
 def main() -> None:
-    os.makedirs(FIGURES_DIR, exist_ok=True)
-
-    # Verificar que el archivo existe
-    if not os.path.isfile(IMAGE_PATH):
-        print(f"  ERROR: no se encontró el archivo: {IMAGE_PATH}")
-        print("  Asegúrese de haber ejecutado primero el script de segmentación correspondiente.")
-        return
-
-    print(f"  Cargando: {IMAGE_PATH}")
-    arr = load_volume(IMAGE_PATH)
-    print(f"  Forma del volumen: {arr.shape}")
-
-    # Nombre base para títulos y archivo de salida
-    basename = os.path.splitext(os.path.splitext(os.path.basename(IMAGE_PATH))[0])[0]
-
-    visualize_orthogonal(arr, basename, COLORMAP)
-    print("\n  Visualización completada.")
+    FIGURES_DIR.mkdir(parents=True, exist_ok=True)
+    for name, path in VOLUMES:
+        visualize_volume(name, path)
+    print("\n  Mosaicos generados.")
 
 
 if __name__ == "__main__":
