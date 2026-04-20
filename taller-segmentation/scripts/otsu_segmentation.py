@@ -1,25 +1,20 @@
-#!/usr/bin/env python
 """
-Segmentación Otsu con múltiples umbrales — OtsuMultipleThresholdsImageFilter (ITK).
+otsu_segmentation.py
+Taller 2 — Segmentación por Umbrales
+Procesamiento de Imágenes Médicas — Pontificia Universidad Javeriana
 
-Busca automáticamente los umbrales óptimos para separar las regiones de la imagen.
-Se prueban 1, 2 y 3 umbrales para cada imagen.
+Aplica OtsuMultipleThresholdsImageFilter con n = 1, 2, 3.
+Guarda los resultados en results/otsu/ para revisión manual en 3D Slicer.
 
-Referencia:
-    https://examples.itk.org/src/filtering/thresholding/thresholdanimageusingotsu/documentation
+Referencia oficial ITK:
+  https://examples.itk.org/src/filtering/thresholding/thresholdanimageusingotsu/documentation
 """
-from __future__ import annotations
 
 import os
-
 import itk
 import numpy as np
 
-# ---------------------------------------------------------------------------
-# Configuración de rutas
-# ---------------------------------------------------------------------------
-
-IMAGES_DIR = os.path.join(os.path.dirname(__file__), "..", "images")
+IMAGES_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "images")
 
 IMAGES = {
     "brain":  os.path.join(IMAGES_DIR, "MRBrainTumor.nii.gz"),
@@ -27,81 +22,89 @@ IMAGES = {
     "liver":  os.path.join(IMAGES_DIR, "MRLiverTumor.nii.gz"),
 }
 
-RESULTS_DIR = os.path.join(os.path.dirname(__file__), "..", "results")
+LABELS_ES = {
+    "brain":  "Tumor cerebral (MR)",
+    "breast": "Cáncer de mama (MR)",
+    "liver":  "Tumor hepático (MR)",
+}
 
-# Número de umbrales a probar
-THRESHOLDS_TO_TRY = [1, 2, 3]
+NUM_THRESHOLDS_LIST = [1, 2, 3]
+NUM_HISTOGRAM_BINS  = 128
 
-# Número de bins del histograma interno de Otsu
-NUM_HISTOGRAM_BINS = 128
-
-# ---------------------------------------------------------------------------
-# Funciones
-# ---------------------------------------------------------------------------
-
-
-def apply_otsu(path: str, n_thresholds: int) -> tuple[itk.Image, list[float]]:
-    """
-    Aplica OtsuMultipleThresholdsImageFilter sobre la imagen.
-
-    Parámetros
-    ----------
-    path          : str — ruta al archivo NIfTI
-    n_thresholds  : int — número de umbrales a calcular
-
-    Retorna
-    -------
-    output_image  : itk.Image    — imagen segmentada con etiquetas
-    thresholds    : list[float]  — umbrales calculados por Otsu
-    """
-    ImageType = itk.Image[itk.F, 3]
-
-    # Leer imagen como float
-    image = itk.imread(path, itk.F)
-
-    # Instanciar el filtro (input y output del mismo tipo float)
-    otsu_filter = itk.OtsuMultipleThresholdsImageFilter[ImageType, ImageType].New()
-    otsu_filter.SetInput(image)
-    otsu_filter.SetNumberOfThresholds(n_thresholds)
-    otsu_filter.SetNumberOfHistogramBins(NUM_HISTOGRAM_BINS)
-    otsu_filter.SetLabelOffset(0)
-    otsu_filter.Update()
-
-    # Obtener umbrales calculados
-    thresholds = list(otsu_filter.GetThresholds())
-
-    return otsu_filter.GetOutput(), thresholds
+RAIZ        = os.path.dirname(os.path.abspath(__file__))
+RESULTS_DIR = os.path.join(RAIZ, "..", "results", "otsu")
+os.makedirs(RESULTS_DIR, exist_ok=True)
 
 
-# ---------------------------------------------------------------------------
-# Main
-# ---------------------------------------------------------------------------
+def aplicar_otsu(key, path):
+    print(f"\n{'='*60}")
+    print(f"  {LABELS_ES[key].upper()}")
+    print(f"{'='*60}")
 
-def main() -> None:
-    output_dir = os.path.join(RESULTS_DIR, "otsu")
-    os.makedirs(output_dir, exist_ok=True)
+    imagen = itk.imread(path, itk.F)
+    arr    = itk.array_from_image(imagen)
+    IT     = type(imagen)
 
-    for key, path in IMAGES.items():
-        for n_thresh in THRESHOLDS_TO_TRY:
-            print(f"\n{'='*60}")
-            print(f"  Imagen: {key}")
-            print(f"  Número de umbrales: {n_thresh}")
-            print(f"{'='*60}")
+    print(f"  Shape : {arr.shape}")
+    print(f"  Rango : min={arr.min():.1f}  max={arr.max():.1f}")
+    print(f"  P50={np.percentile(arr[arr>0],50):.1f}  "
+          f"P75={np.percentile(arr[arr>0],75):.1f}  "
+          f"P90={np.percentile(arr[arr>0],90):.1f}  "
+          f"P99={np.percentile(arr[arr>0],99):.1f}")
 
-            # Aplicar filtro Otsu
-            result, thresholds = apply_otsu(path, n_thresh)
+    for n in NUM_THRESHOLDS_LIST:
+        filtro = itk.OtsuMultipleThresholdsImageFilter[IT, IT].New()
+        filtro.SetInput(imagen)
+        filtro.SetNumberOfThresholds(n)
+        filtro.SetNumberOfHistogramBins(NUM_HISTOGRAM_BINS)
+        filtro.Update()
 
-            # Imprimir umbrales calculados
-            thresh_str = ", ".join(f"{t:.2f}" for t in thresholds)
-            print(f"  Umbrales calculados: [{thresh_str}]")
+        umbrales  = [round(float(u), 2) for u in filtro.GetThresholds()]
+        resultado = filtro.GetOutput()
+        arr_seg   = itk.array_from_image(resultado)
 
-            # Guardar resultado
-            out_path = os.path.join(output_dir, f"{key}_otsu_{n_thresh}.nii.gz")
-            itk.imwrite(result, out_path)
-            print(f"  Guardado: {out_path}")
+        print(f"\n  n={n}")
+        print(f"    Umbrales calculados : {umbrales}")
+        print(f"    Regiones generadas  : {n+1} (etiquetas 0 a {n})")
+        print(f"    Rangos de intensidad por etiqueta:")
 
-    print("\n  Segmentación Otsu completada.")
+        limites = [0.0] + umbrales + [float(arr.max())]
+        for et in range(n + 1):
+            cnt   = int(np.sum(arr_seg == et))
+            pct   = cnt / arr_seg.size * 100
+            rango = f"[{limites[et]:.1f} – {limites[et+1]:.1f}]"
+            print(f"      Et.{et}: {cnt:>9,} vóx ({pct:5.2f}%)  intensidad {rango}")
+
+        ruta = os.path.join(RESULTS_DIR, f"{key}_otsu_{n}.nii.gz")
+        itk.imwrite(resultado, ruta)
+        print(f"    Guardado: {os.path.basename(ruta)}")
 
 
 if __name__ == "__main__":
-    main()
+    print("\n" + "="*60)
+    print("  SEGMENTACIÓN — MÉTODO DE OTSU")
+    print("  Taller 2 | Procesamiento de Imágenes Médicas")
+    print("  Pontificia Universidad Javeriana — 2026")
+    print("="*60)
+
+    for key, path in IMAGES.items():
+        if not os.path.exists(path):
+            print(f"\n  ⚠  No encontrado: {path}")
+            continue
+        aplicar_otsu(key, path)
+
+    print("\n" + "="*60)
+    print("  ✓  Completado — 9 archivos NII en results/otsu/")
+    print("="*60)
+    print()
+    print("  ARCHIVOS GENERADOS:")
+    for key in IMAGES:
+        for n in NUM_THRESHOLDS_LIST:
+            print(f"    results/otsu/{key}_otsu_{n}.nii.gz")
+    print()
+    print("  PRÓXIMO PASO — EN 3D SLICER:")
+    print("    1. File → Add Data → abrir cada NII")
+    print("    2. Cambiar visualización a Label Map")
+    print("    3. Identificar qué etiqueta (0,1,2,3) es el tumor")
+    print("    4. Anotar: imagen, n, etiqueta_tumor")
+    print("="*60)
