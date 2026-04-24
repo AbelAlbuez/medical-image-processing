@@ -4,6 +4,10 @@ import sys
 # sample usage
 # ./confidenceConnected input output 0 2 1 132 142 96
 
+# estos parametros son la semilla => 132 142 96 (un lado del ventriculo)
+
+
+
 if len(sys.argv) < 9 :
   print("Usage: ", sys.argv[0], " <InputImage> <OutputImage> <NumberOfIterations> <Multiplier> <InitialNeighborhoodRadius> <XSeed> <YSeed> <ZSeed>")
   sys.exit()
