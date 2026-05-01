@@ -20,11 +20,11 @@ Autores: Abel Albuez, Victoria Acero, Santiago Gil
 
 ## Imágenes médicas
 
-| Imagen                | Voxel (x, y, z) | Intensidad | Spacing      |
-|-----------------------|-----------------|------------|--------------|
-| MRBrainTumor.nii.gz   | (140, 100, 83)  | 213        | Axial 1.2    |
-| MRLiverTumor.nii.gz   | (28, 86, 73)    | 61         | Axial 1.7    |
-| MRBreastCancer.nii.gz | (558, 250, 20)  | 390        | Reformat 0.4 |
+| Imagen                | Vóxel (x, y, z) | Intensidad | Spacing        |
+|-----------------------|-----------------|------------|----------------|
+| MRBrainTumor.nii.gz   | (140, 100, 83)  | 213        | Axial 1.2      |
+| MRLiverTumor.nii.gz   | (28, 86, 73)    | 61         | Axial 1.7      |
+| MRBreastCancer.nii.gz | (558, 250, 20)  | 390        | Reformat 0.4   |
 
 Las imágenes deben colocarse manualmente en la carpeta `images/`.
 No están incluidas en el repositorio (`.gitignore` las excluye).
@@ -167,7 +167,7 @@ identificar el cuello de botella.
 Las semillas para Level Sets se identificaron usando el **Data Probe** de 3D
 Slicer, posicionando el cursor sobre la región del tumor en la vista axial.
 
-| Imagen         | Voxel (x, y, z) | Intensidad | Spacing      |
+| Imagen         | Vóxel (x, y, z) | Intensidad | Spacing      |
 |----------------|-----------------|------------|--------------|
 | MRBrainTumor   | (140, 100, 83)  | 213        | Axial 1.2    |
 | MRLiverTumor   | (28, 86, 73)    | 61         | Axial 1.7    |
