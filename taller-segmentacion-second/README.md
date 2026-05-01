@@ -1,179 +1,177 @@
-# taller-segmentacion-second
+# Taller 3 — Segmentación por Regiones
 
-Taller 3 - Segmentacion por regiones con ITK: **Watersheds** y **Level Sets (Fast Marching)**.
+Implementación de algoritmos de segmentación basados en regiones usando ITK
+sobre imágenes de Resonancia Magnética. Curso de Procesamiento de Imágenes
+Médicas — Pontificia Universidad Javeriana, 2026.
 
-## Estructura
+Autores: Abel Albuez, Victoria Acero, Santiago Gil
+
+---
+
+## Algoritmos implementados
+
+- **Watershed**: segmentación basada en la topografía del mapa de gradiente.
+  Parámetros: sigma, threshold, level.
+- **Level Sets con Fast Marching**: propagación de un frente de onda desde
+  una semilla definida manualmente. Parámetros: iterations, sigma, alpha,
+  beta, stoppingValue. Se ejecuta en dos fases.
+
+---
+
+## Imágenes médicas
+
+| Imagen                | Voxel (x, y, z) | Intensidad | Spacing      |
+|-----------------------|-----------------|------------|--------------|
+| MRBrainTumor.nii.gz   | (140, 100, 83)  | 213        | Axial 1.2    |
+| MRLiverTumor.nii.gz   | (28, 86, 73)    | 61         | Axial 1.7    |
+| MRBreastCancer.nii.gz | (558, 250, 20)  | 390        | Reformat 0.4 |
+
+Las imágenes deben colocarse manualmente en la carpeta `images/`.
+No están incluidas en el repositorio (`.gitignore` las excluye).
+
+---
+
+## Instalación
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+## Estructura de carpetas
 
 ```
 taller-segmentacion-second/
-├── images/                       # imagenes de entrada (.nii.gz)
+├── images/                        # Imágenes médicas (no incluidas en el repo)
 ├── output/
 │   ├── watershed/
-│   │   └── gradient/             # imagenes de gradiente intermedias
-│   └── level_sets/
-│       └── gradient/             # imagenes de gradiente intermedias
+│   │   ├── volumes/               # Volúmenes .nii.gz por combinación
+│   │   ├── individual/            # Figura 3 vistas por combinación
+│   │   ├── grids/                 # Grillas comparativas
+│   │   └── gradient/              # Imágenes de gradiente intermedias
+│   ├── level_sets/
+│   │   ├── fase1/
+│   │   │   ├── volumes/
+│   │   │   ├── individual/
+│   │   │   └── grids/
+│   │   └── fase2/
+│   │       ├── volumes/
+│   │       ├── individual/
+│   │       └── grids/
+│   └── mosaics/                   # Mosaicos resumen por imagen y método
 ├── report/
-│   └── figures/                  # figuras del informe
+│   └── figures/
 ├── scripts/
-│   ├── watershed.py              # pipeline Watersheds
-│   ├── level_sets.py             # pipeline Fast Marching
-│   └── visualize_results.py      # vista 3 planos de un volumen
-├── requirements.txt
-└── README.md
+│   ├── watershed.py               # Barrido de parámetros Watershed
+│   ├── level_sets.py              # Barrido de parámetros Level Sets (2 fases)
+│   ├── generate_mosaic.py         # Generador automático de mosaicos
+│   └── visualize_results.py       # Visualizador individual
+└── requirements.txt
 ```
 
-## Dependencias (`requirements.txt`)
+---
 
-```
-itk==5.4.0
-itk-io==5.4.0
-itk-filtering==5.4.0
-itk-segmentation==5.4.0
-numpy==1.26.4
-matplotlib==3.8.4
-```
+## Flujo de trabajo recomendado
 
-## Setup: crear entorno virtual e instalar dependencias
-
-Desde el directorio `taller-segmentacion-second/`:
-
-1. Crear el entorno virtual (solo la primera vez):
-
-   ```bash
-   python3 -m venv venv
-   ```
-
-2. Activar el entorno virtual:
-
-   ```bash
-   source venv/bin/activate
-   ```
-
-3. Actualizar `pip` e instalar dependencias:
-
-   ```bash
-   pip install --upgrade pip
-   pip install -r requirements.txt
-   ```
-
-4. Salir del entorno virtual cuando termines:
-
-   ```bash
-   deactivate
-   ```
-
-## Uso
-
-### Imagenes de entrada
-
-Copiar manualmente los volumenes `.nii.gz` dentro de la carpeta `images/`. Los scripts
-resuelven rutas relativas contra esa carpeta automaticamente.
-
-### Watershed - `scripts/watershed.py`
-
-Pipeline:
-1. Lectura de la imagen 3D float
-2. `GradientMagnitudeRecursiveGaussianImageFilter` (parametro: `sigma`)
-3. `WatershedImageFilter` (parametros: `threshold`, `level`)
-4. Guardado del label map y de la imagen de gradiente intermedia
-
-Ejecucion:
+### Paso 1 — Watershed (no requiere semilla)
 
 ```bash
-python scripts/watershed.py A1_grayT1.nii.gz \
-    --sigma 1.0 \
-    --threshold 0.01 \
-    --level 0.2
+python scripts/watershed.py MRBrainTumor.nii.gz
+python scripts/watershed.py MRLiverTumor.nii.gz
+python scripts/watershed.py MRBreastCancer.nii.gz
 ```
 
-Argumentos:
-
-| Argumento     | Default              | Descripcion |
-|---------------|----------------------|-------------|
-| `input_image` | -                    | Ruta al `.nii.gz` (posicional). Si es relativa, se busca en `images/`. |
-| `--sigma`     | `1.0`                | Sigma del gradiente gaussiano. |
-| `--threshold` | `0.01`               | Umbral minimo de gradiente considerado borde. |
-| `--level`     | `0.2`                | Nivel de inundacion (fusion de cuencas). |
-| `--output_dir`| `output/watershed/`  | Directorio de salida. |
-
-Salida:
-- `output/watershed/<nombre>_ws_s{sigma}_t{threshold}_l{level}.nii.gz` - label map
-- `output/watershed/gradient/<nombre>_gradient.nii.gz` - imagen de gradiente
-- `output/watershed/<nombre>_ws_preview.png` - vista rapida 3 planos
-- En consola: estadisticas del gradiente (min, max, media) y tiempo total.
-
-### Level Sets - `scripts/level_sets.py`
-
-Pipeline (hasta seccion 4.3.1 del ITK Software Guide - Fast Marching):
-1. Lectura de la imagen 3D float
-2. `CurvatureAnisotropicDiffusionImageFilter` (cuello de botella computacional)
-3. `GradientMagnitudeRecursiveGaussianImageFilter` (parametro: `sigma`)
-4. `SigmoidImageFilter` (parametros: `alpha`, `beta`) - genera la speed image
-5. Creacion de la semilla con `initialDistance`
-6. `FastMarchingImageFilter` (parametro: `stoppingValue`)
-7. `BinaryThresholdImageFilter` - mascara binaria final
-
-Ejecucion:
+### Paso 2 — Level Sets fase 1 (iterations + sigma)
 
 ```bash
-python scripts/level_sets.py A1_grayT1.nii.gz \
-    --seed 132 142 96 \
-    --initial_distance 5.0 \
-    --sigma 1.0 \
-    --alpha -0.5 \
-    --beta 3.0 \
-    --stopping_value 100.0 \
-    --iterations 5
+python scripts/level_sets.py MRBrainTumor.nii.gz   --seed 140 100 83 --phase 1
+python scripts/level_sets.py MRLiverTumor.nii.gz   --seed 28 86 73   --phase 1
+python scripts/level_sets.py MRBreastCancer.nii.gz --seed 558 250 20 --phase 1
 ```
 
-Argumentos:
+### Paso 3 — Generar mosaicos para revisar resultados
 
-| Argumento            | Default               | Descripcion |
-|----------------------|-----------------------|-------------|
-| `input_image`        | -                     | Ruta al `.nii.gz` (posicional). |
-| `--seed X Y Z`       | centro del volumen    | Semilla en indices de voxel. |
-| `--initial_distance` | `5.0`                 | Distancia inicial desde la semilla. |
-| `--sigma`            | `1.0`                 | Sigma del gradiente gaussiano. |
-| `--alpha`            | `-0.5`                | Pendiente del sigmoide. |
-| `--beta`             | `3.0`                 | Punto de inflexion del sigmoide. |
-| `--stopping_value`   | `100.0`               | Valor de parada del Fast Marching. |
-| `--iterations`       | `5`                   | Iteraciones de difusion anisotropica. |
-| `--time_step`        | `0.0625`              | Paso de tiempo de la difusion. |
-| `--conductance`      | `3.0`                 | Conductancia de la difusion. |
-| `--output_dir`       | `output/level_sets/`  | Directorio de salida. |
+```bash
+python scripts/generate_mosaic.py
+```
 
-Salida:
-- `output/level_sets/<nombre>_ls_seed{x}_{y}_{z}_iter{n}.nii.gz` - mascara binaria
-- `output/level_sets/gradient/<nombre>_gradient.nii.gz` - imagen de gradiente
-- En consola: estadisticas del gradiente y tabla de tiempos por paso.
+### Paso 4 — Editar `ITERATIONS_BEST` y `SIGMA_BEST` en `level_sets.py`
 
-### Visualizacion - `scripts/visualize_results.py`
-
-Genera una figura con 3 cortes ortogonales (axial, coronal, sagital) de un volumen.
-Editar las variables al inicio del script:
+Revisar los mosaicos de fase 1 en `output/mosaics/` y editar las constantes
+al inicio de `scripts/level_sets.py`:
 
 ```python
-IMAGE_PATH         = "output/watershed/<archivo>.nii.gz"
-SLICE_AXIAL        = None    # None -> centro del eje
-SLICE_CORONAL      = None
-SLICE_SAGITAL      = None
-USE_LABEL_COLORMAP = True    # True para segmentaciones, False para originales
+ITERATIONS_BEST = <mejor valor de fase 1>
+SIGMA_BEST      = <mejor valor de fase 1>
 ```
 
-Ejecucion:
+### Paso 5 — Level Sets fase 2 (alpha + beta + stoppingValue)
 
 ```bash
-python scripts/visualize_results.py
+python scripts/level_sets.py MRBrainTumor.nii.gz   --seed 140 100 83 --phase 2
+python scripts/level_sets.py MRLiverTumor.nii.gz   --seed 28 86 73   --phase 2
+python scripts/level_sets.py MRBreastCancer.nii.gz --seed 558 250 20 --phase 2
 ```
 
-Notas:
-- `USE_LABEL_COLORMAP=True` aplica `nipy_spectral`, esencial para distinguir las
-  cuencas adyacentes producidas por Watershed (en escala de grises serian
-  indistinguibles).
-- `USE_LABEL_COLORMAP=False` aplica `gray` y se recomienda para los volumenes
-  originales o las imagenes de gradiente.
+### Paso 6 — Generar mosaicos finales
 
-## Referencias
+```bash
+python scripts/generate_mosaic.py
+```
 
-- ITK Software Guide - Watersheds: https://itk.org/ITKSoftwareGuide/html/Book2/ITKSoftwareGuide-Book2ch4.html#x35-1860004.2
-- ITK Software Guide - Fast Marching: https://itk.org/ITKSoftwareGuide/html/Book2/ITKSoftwareGuide-Book2ch4.html#x35-1890004.3
+---
+
+## Advertencia de rendimiento
+
+El paso más lento es la **difusión anisotrópica** en Level Sets.
+Tiempos aproximados por combinación según `iterations`:
+
+| iterations | Tiempo aproximado |
+|------------|-------------------|
+| 5          | ~30 segundos      |
+| 15         | ~90 segundos      |
+| 30         | ~3 minutos        |
+
+La fase 1 completa (9 combinaciones) puede tardar entre **5 y 30 minutos**
+dependiendo del hardware. Se imprime el tiempo por paso en consola para
+identificar el cuello de botella.
+
+---
+
+## Salidas generadas
+
+### Watershed
+
+- `output/watershed/volumes/`    → volúmenes segmentados (`.nii.gz`)
+- `output/watershed/individual/` → figura 3 vistas por combinación (`.png`)
+- `output/watershed/grids/`      → grillas comparativas (`.png`)
+- `output/watershed/gradient/`   → mapas de gradiente intermedios (`.nii.gz`)
+
+### Level Sets
+
+- `output/level_sets/fase1/` → resultados de la fase 1
+- `output/level_sets/fase2/` → resultados de la fase 2
+- Cada fase contiene: `volumes/`, `individual/`, `grids/`
+
+### Mosaicos
+
+- `output/mosaics/` → un mosaico por imagen y método (`.png`)
+
+  Ejemplo: `MRBrainTumor_watershed_mosaic.png`
+
+---
+
+## Semillas identificadas en 3D Slicer
+
+Las semillas para Level Sets se identificaron usando el **Data Probe** de 3D
+Slicer, posicionando el cursor sobre la región del tumor en la vista axial.
+
+| Imagen         | Voxel (x, y, z) | Intensidad | Spacing      |
+|----------------|-----------------|------------|--------------|
+| MRBrainTumor   | (140, 100, 83)  | 213        | Axial 1.2    |
+| MRLiverTumor   | (28, 86, 73)    | 61         | Axial 1.7    |
+| MRBreastCancer | (558, 250, 20)  | 390        | Reformat 0.4 |
+
+> ⚠️ El spacing de MRBreastCancer corresponde a una vista reformateada
+> en 3D Slicer, no al spacing axial nativo del volumen.
