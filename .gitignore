@@ -13,6 +13,11 @@ class-filter-image/samples/*.nii
 # Resultados taller-segmentation (NIfTI generados)
 taller-segmentation/results/
 
+# Salidas taller-segmentacion-second (NIfTI y figuras generados)
+taller-segmentacion-second/output/
+# Entorno virtual del taller
+taller-segmentacion-second/scripts/.venv/
+
 # Salidas umbrales-ITK (NIfTI y PNG generados)
 umbrales-ITK/output/
 # Muestras: versionar .nii.gz; ignorar .nii sin comprimir (GitHub rechaza >100 MB)

@@ -1,0 +1,6 @@
+itk==5.4.0
+itk-io==5.4.0
+itk-filtering==5.4.0
+itk-segmentation==5.4.0
+numpy==1.26.4
+matplotlib==3.8.4
