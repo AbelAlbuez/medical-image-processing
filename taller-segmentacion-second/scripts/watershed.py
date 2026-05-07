@@ -19,6 +19,8 @@ MAX_CELDAS_POR_FILA = 4
 Dimension = 3
 PixelType = itk.F  # float, requerido por GradientMagnitudeRecursiveGaussian
 ImageType = itk.Image[PixelType, Dimension]
+LabelPixelType = itk.US  # tipo soportado por ITK Python para guardar etiquetas
+LabelImageType = itk.Image[LabelPixelType, Dimension]
 
 # ---------------------------------------------------------------------------
 # Valores por defecto del barrido
@@ -70,12 +72,13 @@ def parsear_argumentos():
 
 
 def resolver_ruta_entrada(ruta_str):
-    # Si la ruta no es absoluta, se busca dentro de la carpeta images/
+    # Si la ruta no es absoluta, se busca dentro de images/ o Images/
     ruta = Path(ruta_str)
     if not ruta.is_absolute() and not ruta.exists():
-        candidato = Path("images") / ruta
-        if candidato.exists():
-            return candidato
+        for carpeta_imagenes in ("images", "Images"):
+            candidato = Path(carpeta_imagenes) / ruta
+            if candidato.exists():
+                return candidato
     return ruta
 
 
@@ -101,6 +104,17 @@ def aplicar_watershed(imagen_gradiente, threshold, level):
     watershed.SetLevel(level)
     watershed.Update()
     return watershed.GetOutput()
+
+
+def convertir_etiquetas_para_salida(imagen_etiquetas):
+    # Watershed devuelve etiquetas en un tipo que no siempre esta envuelto para
+    # escritura directa en ITK Python. Se convierte a unsigned short para poder
+    # guardar el volumen y generar las PNG sin perder la semantica de label map.
+    CastFilter = itk.CastImageFilter[type(imagen_etiquetas), LabelImageType]
+    cast = CastFilter.New()
+    cast.SetInput(imagen_etiquetas)
+    cast.Update()
+    return cast.GetOutput()
 
 
 def figura_individual(array_etiquetas, ruta_salida, titulo):
@@ -307,6 +321,7 @@ def main():
         # Pipeline: gradiente (cacheado) -> watershed
         imagen_gradiente = cache_gradiente[sigma]
         imagen_etiquetas = aplicar_watershed(imagen_gradiente, threshold, level)
+        imagen_etiquetas = convertir_etiquetas_para_salida(imagen_etiquetas)
 
         t_total = time.perf_counter() - t_inicio
         tiempos_por_combinacion[(sigma, threshold, level)] = t_total

@@ -139,12 +139,13 @@ def parsear_argumentos():
 
 
 def resolver_ruta_entrada(ruta_str):
-    # Si la ruta no es absoluta, se busca dentro de la carpeta images/
+    # Si la ruta no es absoluta, se busca dentro de images/ o Images/
     ruta = Path(ruta_str)
     if not ruta.is_absolute() and not ruta.exists():
-        candidato = Path("images") / ruta
-        if candidato.exists():
-            return candidato
+        for carpeta_imagenes in ("images", "Images"):
+            candidato = Path(carpeta_imagenes) / ruta
+            if candidato.exists():
+                return candidato
     return ruta
 
 
