@@ -23,6 +23,9 @@ umbrales-ITK/output/
 # Muestras: versionar .nii.gz; ignorar .nii sin comprimir (GitHub rechaza >100 MB)
 umbrales-ITK/samples/*.nii
 
+# Salidas registro-second-part (PNG y mosaicos generados)
+registro-second-part/output/
+
 # LaTeX auxiliares
 *.log
 *.aux
@@ -31,3 +34,6 @@ umbrales-ITK/samples/*.nii
 
 # macOS
 .DS_Store
+
+# Ignorar dataset de registro completo
+RegistrationData/

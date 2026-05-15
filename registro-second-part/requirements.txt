@@ -1,0 +1,4 @@
+# Registro de imagenes (ITK) - registro_4_pipelines.py y scripts en Python/
+itk>=5.3
+matplotlib>=3.7
+numpy>=1.24
