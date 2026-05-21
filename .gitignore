@@ -26,6 +26,18 @@ umbrales-ITK/samples/*.nii
 # Salidas registro-second-part (PNG y mosaicos generados)
 registro-second-part/output/
 
+# RegLib_C20_Data: ignorar outputs/resultados generados (se conserva la carpeta con .gitkeep)
+# El entorno virtual RegLib_C20_Data/.venv/ ya queda cubierto por el patrón global .venv/
+RegLib_C20_Data/results/*
+!RegLib_C20_Data/results/.gitkeep
+RegLib_C20_Data/output/
+
+# Archivos comprimidos
+*.zip
+
+# Cache de Python
+__pycache__/
+
 # LaTeX auxiliares
 *.log
 *.aux

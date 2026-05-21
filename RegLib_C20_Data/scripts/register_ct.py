@@ -1,0 +1,359 @@
+"""
+Taller 4 — Registro de Imágenes Médicas: RegLib Case #20
+Script: register_ct.py
+
+Registro intra-sujeto CT_2 -> CT_1 mediante un pipeline multi-etapa en ITK:
+    1) Registro Rígido    (Euler3DTransform)
+    2) Registro Affine    (AffineTransform, inicializado con la rígida)
+    3) Registro BSpline   (refinamiento deformable)
+
+El producto final es:
+    - results/CT_2_registered.nrrd  : CT_2 llevado al espacio de CT_1
+    - results/CT_diff.nrrd          : |CT_1 - CT_2_registered|
+    - transforms/ct_bspline_transform.tfm : transform BSpline final
+      (será reutilizada por register_pet.py para llevar PET_2 al espacio PET_1)
+
+Convenciones del proyecto:
+    BASE_DIR       = .../RegLib_C20_Data
+    IMAGES_DIR     = BASE_DIR/images
+    RESULTS_DIR    = BASE_DIR/results
+    TRANSFORMS_DIR = BASE_DIR/transforms
+Pixel type ITK: itk.F (float32) en todos los filtros.
+"""
+
+import os
+import sys
+import itk
+
+# -----------------------------------------------------------------------------
+# Rutas independientes del directorio de trabajo
+# -----------------------------------------------------------------------------
+BASE_DIR       = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+IMAGES_DIR     = os.path.join(BASE_DIR, "images")
+RESULTS_DIR    = os.path.join(BASE_DIR, "results")
+TRANSFORMS_DIR = os.path.join(BASE_DIR, "transforms")
+
+os.makedirs(RESULTS_DIR, exist_ok=True)
+os.makedirs(TRANSFORMS_DIR, exist_ok=True)
+
+FIXED_PATH  = os.path.join(IMAGES_DIR, "CT_1.nrrd")
+MOVING_PATH = os.path.join(IMAGES_DIR, "CT_2.nrrd")
+
+# -----------------------------------------------------------------------------
+# Tipos ITK
+# -----------------------------------------------------------------------------
+PixelType = itk.F
+Dimension = 3
+ImageType = itk.Image[PixelType, Dimension]
+
+
+# =============================================================================
+# Utilidades de E/S
+# =============================================================================
+def read_image(path):
+    """Lee una imagen NRRD y la devuelve como itk.Image[F, 3]."""
+    try:
+        reader = itk.ImageFileReader[ImageType].New()
+        reader.SetFileName(path)
+        reader.Update()
+        return reader.GetOutput()
+    except Exception as exc:
+        print(f"[ERROR] No fue posible leer la imagen: {path}")
+        print(f"        Detalle: {exc}")
+        sys.exit(1)
+
+
+def write_image(image, path):
+    """Escribe una itk.Image[F, 3] en disco."""
+    writer = itk.ImageFileWriter[ImageType].New()
+    writer.SetFileName(path)
+    writer.SetInput(image)
+    writer.Update()
+
+
+def print_image_info(name, image):
+    """Imprime metadata principal de una imagen ITK."""
+    size    = image.GetLargestPossibleRegion().GetSize()
+    spacing = image.GetSpacing()
+    origin  = image.GetOrigin()
+    print(f"  {name}:")
+    print(f"    size    = [{size[0]}, {size[1]}, {size[2]}]")
+    print(f"    spacing = [{spacing[0]:.4f}, {spacing[1]:.4f}, {spacing[2]:.4f}]")
+    print(f"    origin  = [{origin[0]:.4f}, {origin[1]:.4f}, {origin[2]:.4f}]")
+
+
+# =============================================================================
+# Etapa 1 — Registro Rígido (Euler3DTransform)
+# =============================================================================
+def run_rigid_registration(fixed, moving):
+    # Nota: usamos VersorRigid3DTransform en lugar de Euler3DTransform porque
+    # ITK Python no envuelve CenteredTransformInitializer para Euler3D.
+    # Ambas son rígidas en 3D (rotación + traslación); VersorRigid parametriza
+    # la rotación con un versor (cuaternión unitario).
+    print("\n[Etapa 1] Registro Rígido (VersorRigid3DTransform) ...")
+
+    TransformType = itk.VersorRigid3DTransform[itk.D]
+    initial_transform = TransformType.New()
+
+    # Inicialización por momentos (alinea centros de masa)
+    InitializerType = itk.CenteredTransformInitializer[
+        TransformType, ImageType, ImageType
+    ]
+    initializer = InitializerType.New()
+    initializer.SetTransform(initial_transform)
+    initializer.SetFixedImage(fixed)
+    initializer.SetMovingImage(moving)
+    initializer.MomentsOn()
+    initializer.InitializeTransform()
+
+    # Métrica: Mattes MI
+    MetricType = itk.MattesMutualInformationImageToImageMetricv4[
+        ImageType, ImageType
+    ]
+    metric = MetricType.New()
+    metric.SetNumberOfHistogramBins(50)
+
+    # Optimizador: Regular Step Gradient Descent
+    OptimizerType = itk.RegularStepGradientDescentOptimizerv4[itk.D]
+    optimizer = OptimizerType.New()
+    optimizer.SetLearningRate(1.0)
+    optimizer.SetMinimumStepLength(0.001)
+    optimizer.SetNumberOfIterations(200)
+    optimizer.SetRelaxationFactor(0.5)
+
+    # Registro v4
+    RegistrationType = itk.ImageRegistrationMethodv4[ImageType, ImageType]
+    registration = RegistrationType.New()
+    registration.SetFixedImage(fixed)
+    registration.SetMovingImage(moving)
+    registration.SetMetric(metric)
+    registration.SetOptimizer(optimizer)
+    registration.SetInitialTransform(initial_transform)
+    registration.InPlaceOn()
+
+    # Esquema multi-resolución sencillo (1 nivel)
+    registration.SetNumberOfLevels(1)
+    registration.SetSmoothingSigmasPerLevel([0])
+    registration.SetShrinkFactorsPerLevel([1])
+
+    registration.Update()
+
+    # Con InPlaceOn(), 'initial_transform' es la misma instancia tipada que se
+    # optimizó; registration.GetTransform() devolvería la clase base Transform
+    # (sin GetCenter/GetMatrix/GetTranslation accesibles desde Python).
+    print(f"  Iteraciones: {optimizer.GetCurrentIteration()}")
+    print(f"  Métrica final: {optimizer.GetValue():.6f}")
+    print("  Etapa 1 completada.")
+    return initial_transform
+
+
+# =============================================================================
+# Etapa 2 — Registro Affine (inicializado con la transform rígida)
+# =============================================================================
+def run_affine_registration(fixed, moving, rigid_transform):
+    print("\n[Etapa 2] Registro Affine (AffineTransform) ...")
+
+    AffineType = itk.AffineTransform[itk.D, Dimension]
+    affine_transform = AffineType.New()
+
+    # Inicializar el affine con la rotación + traslación del paso rígido:
+    # matriz y centro provenientes de la Euler3D y traslación copiada.
+    affine_transform.SetCenter(rigid_transform.GetCenter())
+    affine_transform.SetMatrix(rigid_transform.GetMatrix())
+    affine_transform.SetTranslation(rigid_transform.GetTranslation())
+
+    MetricType = itk.MattesMutualInformationImageToImageMetricv4[
+        ImageType, ImageType
+    ]
+    metric = MetricType.New()
+    metric.SetNumberOfHistogramBins(50)
+
+    OptimizerType = itk.RegularStepGradientDescentOptimizerv4[itk.D]
+    optimizer = OptimizerType.New()
+    optimizer.SetLearningRate(0.1)
+    optimizer.SetMinimumStepLength(0.0001)
+    optimizer.SetNumberOfIterations(200)
+    optimizer.SetRelaxationFactor(0.5)
+
+    RegistrationType = itk.ImageRegistrationMethodv4[ImageType, ImageType]
+    registration = RegistrationType.New()
+    registration.SetFixedImage(fixed)
+    registration.SetMovingImage(moving)
+    registration.SetMetric(metric)
+    registration.SetOptimizer(optimizer)
+    registration.SetInitialTransform(affine_transform)
+    registration.InPlaceOn()
+
+    registration.SetNumberOfLevels(1)
+    registration.SetSmoothingSigmasPerLevel([0])
+    registration.SetShrinkFactorsPerLevel([1])
+
+    registration.Update()
+
+    print(f"  Iteraciones: {optimizer.GetCurrentIteration()}")
+    print(f"  Métrica final: {optimizer.GetValue():.6f}")
+    print("  Etapa 2 completada.")
+    return affine_transform
+
+
+# =============================================================================
+# Etapa 3 — Registro BSpline (refinamiento deformable)
+# =============================================================================
+def run_bspline_registration(fixed, moving, affine_transform):
+    print("\n[Etapa 3] Registro BSpline (orden 3) ...")
+
+    SplineOrder = 3
+    BSplineType = itk.BSplineTransform[itk.D, Dimension, SplineOrder]
+    bspline_transform = BSplineType.New()
+
+    # Inicializar la malla BSpline cubriendo el dominio de la imagen fixed.
+    InitializerType = itk.BSplineTransformInitializer[BSplineType, ImageType]
+    initializer = InitializerType.New()
+    initializer.SetTransform(bspline_transform)
+    initializer.SetImage(fixed)
+    mesh = itk.Size[Dimension]()
+    mesh[0] = 8
+    mesh[1] = 8
+    mesh[2] = 8
+    initializer.SetTransformDomainMeshSize(mesh)
+    initializer.InitializeTransform()
+
+    MetricType = itk.MattesMutualInformationImageToImageMetricv4[
+        ImageType, ImageType
+    ]
+    metric = MetricType.New()
+    metric.SetNumberOfHistogramBins(50)
+
+    # Optimizador: LBFGS2 (cuasi-Newton, apropiado para BSpline).
+    # Si la build de ITK no lo expone, caemos a GradientDescentOptimizerv4.
+    try:
+        OptimizerType = itk.LBFGS2Optimizerv4
+        optimizer = OptimizerType.New()
+        optimizer.SetMaximumIterations(100)
+    except Exception:
+        OptimizerType = itk.GradientDescentOptimizerv4Template[itk.D]
+        optimizer = OptimizerType.New()
+        optimizer.SetLearningRate(1.0)
+        optimizer.SetNumberOfIterations(100)
+
+    RegistrationType = itk.ImageRegistrationMethodv4[ImageType, ImageType]
+    registration = RegistrationType.New()
+    registration.SetFixedImage(fixed)
+    registration.SetMovingImage(moving)
+    registration.SetMetric(metric)
+    registration.SetOptimizer(optimizer)
+    registration.SetInitialTransform(bspline_transform)
+    registration.InPlaceOn()
+
+    # La transform affine se aplica como "moving initial transform":
+    # primero se compone con el BSpline durante la optimización.
+    registration.SetMovingInitialTransform(affine_transform)
+
+    registration.SetNumberOfLevels(1)
+    registration.SetSmoothingSigmasPerLevel([0])
+    registration.SetShrinkFactorsPerLevel([1])
+
+    registration.Update()
+
+    print("  Etapa 3 completada.")
+    return bspline_transform
+
+
+# =============================================================================
+# Aplicación de la transform final (Affine ∘ BSpline) sobre CT_2
+# =============================================================================
+def resample_moving(fixed, moving, affine_transform, bspline_transform):
+    """Genera la imagen CT_2 registrada en el espacio de CT_1."""
+    # Composición: primero BSpline, luego Affine (orden de aplicación a un
+    # punto: T_total(p) = T_affine(T_bspline(p))).
+    CompositeType = itk.CompositeTransform[itk.D, Dimension]
+    composite = CompositeType.New()
+    composite.AddTransform(affine_transform)
+    composite.AddTransform(bspline_transform)
+
+    ResamplerType = itk.ResampleImageFilter[ImageType, ImageType]
+    resampler = ResamplerType.New()
+    resampler.SetInput(moving)
+    resampler.SetTransform(composite)
+    resampler.SetUseReferenceImage(True)
+    resampler.SetReferenceImage(fixed)
+    resampler.SetDefaultPixelValue(-1000.0)  # HU del aire
+
+    InterpolatorType = itk.LinearInterpolateImageFunction[ImageType, itk.D]
+    interpolator = InterpolatorType.New()
+    resampler.SetInterpolator(interpolator)
+
+    resampler.Update()
+    return resampler.GetOutput()
+
+
+def absolute_difference(image_a, image_b):
+    """Devuelve |image_a - image_b| como itk.Image[F, 3]."""
+    SubFilter = itk.SubtractImageFilter[ImageType, ImageType, ImageType].New()
+    SubFilter.SetInput1(image_a)
+    SubFilter.SetInput2(image_b)
+
+    AbsFilter = itk.AbsImageFilter[ImageType, ImageType].New()
+    AbsFilter.SetInput(SubFilter.GetOutput())
+    AbsFilter.Update()
+    return AbsFilter.GetOutput()
+
+
+# =============================================================================
+# Programa principal
+# =============================================================================
+def main():
+    print("=" * 70)
+    print("Taller 4 - Registro CT_2 -> CT_1 (RegLib Case #20)")
+    print("=" * 70)
+
+    print("\n[1/4] Lectura de imágenes ...")
+    fixed  = read_image(FIXED_PATH)
+    moving = read_image(MOVING_PATH)
+    print_image_info("CT_1 (fixed)",  fixed)
+    print_image_info("CT_2 (moving)", moving)
+
+    # --- Pipeline de registro -------------------------------------------------
+    rigid_tx   = run_rigid_registration(fixed, moving)
+    affine_tx  = run_affine_registration(fixed, moving, rigid_tx)
+    bspline_tx = run_bspline_registration(fixed, moving, affine_tx)
+
+    # --- Resampling y diferencia ---------------------------------------------
+    print("\n[2/4] Resampling de CT_2 al espacio de CT_1 ...")
+    moving_resampled = resample_moving(fixed, moving, affine_tx, bspline_tx)
+
+    print("[3/4] Cálculo de imagen diferencia |CT_1 - CT_2_registered| ...")
+    diff_image = absolute_difference(fixed, moving_resampled)
+
+    # --- Guardado de resultados ----------------------------------------------
+    print("[4/4] Guardando resultados ...")
+    out_registered = os.path.join(RESULTS_DIR, "CT_2_registered.nrrd")
+    out_diff       = os.path.join(RESULTS_DIR, "CT_diff.nrrd")
+    out_bspline    = os.path.join(TRANSFORMS_DIR, "ct_bspline_transform.tfm")
+    out_affine     = os.path.join(TRANSFORMS_DIR, "ct_affine_transform.tfm")
+
+    write_image(moving_resampled, out_registered)
+    write_image(diff_image,       out_diff)
+
+    # Guardar la transformación affine y la BSpline por separado;
+    # register_pet.py necesitará ambas para componer T_total.
+    tx_writer = itk.TransformFileWriterTemplate[itk.D].New()
+    tx_writer.SetInput(affine_tx)
+    tx_writer.SetFileName(out_affine)
+    tx_writer.Update()
+
+    tx_writer = itk.TransformFileWriterTemplate[itk.D].New()
+    tx_writer.SetInput(bspline_tx)
+    tx_writer.SetFileName(out_bspline)
+    tx_writer.Update()
+
+    print("\nArchivos generados:")
+    print(f"  - {out_registered}")
+    print(f"  - {out_diff}")
+    print(f"  - {out_affine}")
+    print(f"  - {out_bspline}")
+    print("\nRegistro CT finalizado correctamente.")
+
+
+if __name__ == "__main__":
+    main()
