@@ -13,16 +13,45 @@ IMG_DIR = ROOT / "imgs"
 OUT_ROOT = ROOT / "output"
 
 
-def save_mosaic(arrays, title, out_dir):
-    labels = ["Fija", "Movible", "Registrada", "Diferencia"]
-    cmaps = ["gray", "gray", "gray", "RdBu_r"]
-    fig, axes = plt.subplots(2, 2, figsize=(10, 10))
-    for ax, arr, label, cmap in zip(axes.ravel(), arrays, labels, cmaps):
-        ax.imshow(arr, cmap=cmap, origin="lower")
+def save_mosaic(arrays, title, out_dir, params_text=None):
+    arr_fixed, arr_moving, arr_registered, arr_diff_before, arr_diff_after = arrays
+    fig, axes = plt.subplots(2, 3, figsize=(14, 10))
+
+    # Cada diff usa su propia escala simétrica (percentil 99 → robusto a outliers
+    # de los píxeles de fondo introducidos por DefaultPixelValue).
+    def _sym_range(a):
+        v = float(np.percentile(np.abs(a), 99))
+        return v if v > 1e-9 else 1e-9
+
+    rng_before = _sym_range(arr_diff_before)
+    rng_after = _sym_range(arr_diff_after)
+
+    panels = [
+        (axes[0, 0], arr_fixed,       "Fija",        "gray",   None),
+        (axes[0, 1], arr_moving,      "Movible",     "gray",   None),
+        (axes[0, 2], arr_registered,  "Registrada",  "gray",   None),
+        (axes[1, 0], arr_diff_before, f"Diferencia ANTES (±{rng_before:.2g})",   "RdBu_r", rng_before),
+        (axes[1, 1], arr_diff_after,  f"Diferencia DESPUÉS (±{rng_after:.2g})",  "RdBu_r", rng_after),
+    ]
+    for ax, arr, label, cmap, rng in panels:
+        if rng is not None:
+            im = ax.imshow(arr, cmap=cmap, origin="lower", vmin=-rng, vmax=rng)
+            fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+        else:
+            ax.imshow(arr, cmap=cmap, origin="lower")
         ax.set_title(label)
         ax.axis("off")
+    axes[1, 2].axis("off")
+
     fig.suptitle(title, fontsize=14)
-    fig.tight_layout()
+    fig.tight_layout(rect=(0, 0.13, 1, 0.97))
+    if params_text:
+        fig.text(
+            0.5, 0.02, params_text,
+            ha="center", va="bottom",
+            family="monospace", fontsize=9,
+            bbox=dict(boxstyle="round,pad=0.5", facecolor="#f5f5f5", edgecolor="#888"),
+        )
     nombre = out_dir.split("/")[-1]
     plt.savefig(f"{out_dir}/mosaico_{nombre}.png", dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -120,13 +149,22 @@ def pipeline1_traslacion2D_monomodal():
     arr_fixed = itk.array_from_image(fixedReader.GetOutput())
     arr_moving = itk.array_from_image(movingReader.GetOutput())
     arr_registered = itk.array_from_image(resampler.GetOutput())
+    arr_diff_before = arr_fixed - arr_moving
     arr_diff = arr_fixed - arr_registered
 
     guardar_individuales(out_dir, arr_fixed, arr_moving, arr_registered, arr_diff)
+    params_text = (
+        "Transformación: TranslationTransform 2D   |   Métrica: MeanSquares   |   "
+        "Optimizer: RegularStepGradientDescent\n"
+        "Config: maxStep=4.00, minStep=0.01, maxIters=200\n"
+        f"Resultado: Tx={finalParameters[0]:.4f}, Ty={finalParameters[1]:.4f}   "
+        f"iters={optimizer.GetCurrentIteration()}   métrica={optimizer.GetValue():.4f}"
+    )
     save_mosaic(
-        [arr_fixed, arr_moving, arr_registered, arr_diff],
+        [arr_fixed, arr_moving, arr_registered, arr_diff_before, arr_diff],
         "Pipeline 1: Traslación 2D (monomodal)",
         out_dir,
+        params_text=params_text,
     )
 
 
@@ -248,13 +286,24 @@ def pipeline2_traslacion2D_multimodal():
             return np.zeros_like(a)
         return (a - amin) / (amax - amin)
 
+    arr_diff_before = _norm(arr_fixed) - _norm(arr_moving)
     arr_diff = _norm(arr_fixed) - _norm(arr_registered)
 
     guardar_individuales(out_dir, arr_fixed, arr_moving, arr_registered, arr_diff)
+    params_text = (
+        "Transformación: TranslationTransform 2D   |   Métrica: MutualInformation   |   "
+        "Optimizer: GradientDescent (Maximize)\n"
+        "Preproc: Cast→Normalize→GaussianSmooth(var=2.0)   "
+        f"σ_fija=σ_movible=0.4   muestras={numberOfSamples}\n"
+        "Config: learningRate=15.0, maxIters=200\n"
+        f"Resultado: Tx={finalParameters[0]:.4f}, Ty={finalParameters[1]:.4f}   "
+        f"iters={optimizer.GetCurrentIteration()}   métrica={optimizer.GetValue():.4f}"
+    )
     save_mosaic(
-        [arr_fixed, arr_moving, arr_registered, arr_diff],
+        [arr_fixed, arr_moving, arr_registered, arr_diff_before, arr_diff],
         "Pipeline 2: Traslación 2D (multimodal, MI)",
         out_dir,
+        params_text=params_text,
     )
 
 
@@ -360,13 +409,25 @@ def pipeline3_rigido2D():
     arr_fixed = itk.array_from_image(fixedReader.GetOutput()).astype(np.float32)
     arr_moving = itk.array_from_image(movingReader.GetOutput()).astype(np.float32)
     arr_registered = itk.array_from_image(resampler.GetOutput()).astype(np.float32)
+    arr_diff_before = arr_fixed - arr_moving
     arr_diff = arr_fixed - arr_registered
 
     guardar_individuales(out_dir, arr_fixed, arr_moving, arr_registered, arr_diff)
+    params_text = (
+        "Transformación: CenteredRigid2DTransform   |   Métrica: MeanSquares   |   "
+        "Optimizer: RegularStepGradientDescent\n"
+        "Config: maxStep=0.10, minStep=0.001, maxIters=300, relaxation=0.6, "
+        "translationScale=1/1000\n"
+        f"Resultado: ángulo={finalAngle * 180.0 / math.pi:.4f}°   "
+        f"centro=({finalParameters[1]:.2f}, {finalParameters[2]:.2f})   "
+        f"T=({finalParameters[3]:.4f}, {finalParameters[4]:.4f})\n"
+        f"           iters={optimizer.GetCurrentIteration()}   métrica={optimizer.GetValue():.4f}"
+    )
     save_mosaic(
-        [arr_fixed, arr_moving, arr_registered, arr_diff],
+        [arr_fixed, arr_moving, arr_registered, arr_diff_before, arr_diff],
         "Pipeline 3: Rígido 2D",
         out_dir,
+        params_text=params_text,
     )
 
 
@@ -491,13 +552,28 @@ def pipeline4_rigido3D():
     arr_fixed = _extraer_slice_axial(fixedReader.GetOutput(), z=90)
     arr_moving = _extraer_slice_axial(movingReader.GetOutput(), z=90)
     arr_registered = _extraer_slice_axial(resampler.GetOutput(), z=90)
+    arr_diff_before = arr_fixed - arr_moving
     arr_diff = arr_fixed - arr_registered
 
     guardar_individuales(out_dir, arr_fixed, arr_moving, arr_registered, arr_diff)
+    params_text = (
+        "Transformación: VersorRigid3DTransform   |   Métrica: MeanSquaresv4   |   "
+        "Optimizer: RegularStepGradientDescentv4\n"
+        "Inicialización: CenteredTransformInitializer (Moments)   "
+        "translationScale=1/1000   niveles=1\n"
+        "Config: learningRate=0.2, minStep=0.001, maxIters=200, "
+        "ReturnBestParamsAndValue=True\n"
+        f"Resultado: versor=({finalParameters[0]:.4e}, {finalParameters[1]:.4e}, "
+        f"{finalParameters[2]:.4f})\n"
+        f"           T=({finalParameters[3]:.4f}, {finalParameters[4]:.4f}, "
+        f"{finalParameters[5]:.4f})   "
+        f"iters={optimizer.GetCurrentIteration()}   métrica={optimizer.GetValue():.4f}"
+    )
     save_mosaic(
-        [arr_fixed, arr_moving, arr_registered, arr_diff],
+        [arr_fixed, arr_moving, arr_registered, arr_diff_before, arr_diff],
         "Pipeline 4: Rígido 3D (slice axial z=90)",
         out_dir,
+        params_text=params_text,
     )
 
 
