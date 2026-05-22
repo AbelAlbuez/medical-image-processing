@@ -23,7 +23,12 @@ Pixel type ITK: itk.F (float32) en todos los filtros.
 
 import os
 import sys
+import time
+
 import itk
+
+# Marca de tiempo global para medir la duración total del pipeline
+tiempo_inicio_total = time.time()
 
 # -----------------------------------------------------------------------------
 # Rutas independientes del directorio de trabajo
@@ -224,17 +229,13 @@ def run_bspline_registration(fixed, moving, affine_transform):
     metric = MetricType.New()
     metric.SetNumberOfHistogramBins(50)
 
-    # Optimizador: LBFGS2 (cuasi-Newton, apropiado para BSpline).
-    # Si la build de ITK no lo expone, caemos a GradientDescentOptimizerv4.
-    try:
-        OptimizerType = itk.LBFGS2Optimizerv4
-        optimizer = OptimizerType.New()
-        optimizer.SetMaximumIterations(100)
-    except Exception:
-        OptimizerType = itk.GradientDescentOptimizerv4Template[itk.D]
-        optimizer = OptimizerType.New()
-        optimizer.SetLearningRate(1.0)
-        optimizer.SetNumberOfIterations(100)
+    # Optimizador: GradientDescent honra bien el budget de iteraciones y el
+    # esquema multi-resolución. Mantenemos 30 it por nivel para acotar tiempo.
+    OptimizerType = itk.GradientDescentOptimizerv4Template[itk.D]
+    optimizer = OptimizerType.New()
+    optimizer.SetLearningRate(1.0)
+    optimizer.SetNumberOfIterations(30)
+    optimizer.SetConvergenceWindowSize(5)
 
     RegistrationType = itk.ImageRegistrationMethodv4[ImageType, ImageType]
     registration = RegistrationType.New()
@@ -249,9 +250,18 @@ def run_bspline_registration(fixed, moving, affine_transform):
     # primero se compone con el BSpline durante la optimización.
     registration.SetMovingInitialTransform(affine_transform)
 
-    registration.SetNumberOfLevels(1)
-    registration.SetSmoothingSigmasPerLevel([0])
-    registration.SetShrinkFactorsPerLevel([1])
+    # Pirámide multi-resolución: 3 niveles, de grueso a fino.
+    # Acelera enormemente respecto a evaluar siempre a full resolution.
+    registration.SetNumberOfLevels(3)
+    registration.SetSmoothingSigmasPerLevel([2, 1, 0])
+    registration.SetShrinkFactorsPerLevel([4, 2, 1])
+    registration.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
+
+    # Muestreo estocástico de la métrica MI: ~5% de voxels por iteración.
+    # Es la optimización que más acorta el tiempo manteniendo calidad.
+    SamplingStrategy = itk.ImageRegistrationMethodv4.RANDOM
+    registration.SetMetricSamplingStrategy(SamplingStrategy)
+    registration.SetMetricSamplingPercentage(0.05)
 
     registration.Update()
 
@@ -314,11 +324,23 @@ def main():
     print_image_info("CT_2 (moving)", moving)
 
     # --- Pipeline de registro -------------------------------------------------
-    rigid_tx   = run_rigid_registration(fixed, moving)
-    affine_tx  = run_affine_registration(fixed, moving, rigid_tx)
-    bspline_tx = run_bspline_registration(fixed, moving, affine_tx)
+    tiempo_inicio_etapa = time.time()
+    rigid_tx = run_rigid_registration(fixed, moving)
+    tiempo_etapa = time.time() - tiempo_inicio_etapa
+    print(f"[Etapa 1] Rígido completada ✓ — Tiempo: {tiempo_etapa:.1f}s ({tiempo_etapa/60:.1f} min)")
 
-    # --- Resampling y diferencia ---------------------------------------------
+    tiempo_inicio_etapa = time.time()
+    affine_tx = run_affine_registration(fixed, moving, rigid_tx)
+    tiempo_etapa = time.time() - tiempo_inicio_etapa
+    print(f"[Etapa 2] Affine completada ✓ — Tiempo: {tiempo_etapa:.1f}s ({tiempo_etapa/60:.1f} min)")
+
+    tiempo_inicio_etapa = time.time()
+    bspline_tx = run_bspline_registration(fixed, moving, affine_tx)
+    tiempo_etapa = time.time() - tiempo_inicio_etapa
+    print(f"[Etapa 3] BSpline completada ✓ — Tiempo: {tiempo_etapa:.1f}s ({tiempo_etapa/60:.1f} min)")
+
+    # --- Resampling, diferencia y guardado -----------------------------------
+    tiempo_inicio_etapa = time.time()
     print("\n[2/4] Resampling de CT_2 al espacio de CT_1 ...")
     moving_resampled = resample_moving(fixed, moving, affine_tx, bspline_tx)
 
@@ -352,7 +374,15 @@ def main():
     print(f"  - {out_diff}")
     print(f"  - {out_affine}")
     print(f"  - {out_bspline}")
+
+    tiempo_etapa = time.time() - tiempo_inicio_etapa
+    print(f"[Etapa 4] Resampling CT y guardado — Tiempo: {tiempo_etapa:.1f}s ({tiempo_etapa/60:.1f} min)")
+
     print("\nRegistro CT finalizado correctamente.")
+
+    tiempo_total = time.time() - tiempo_inicio_total
+    print(f"\n=== Pipeline CT completado ===")
+    print(f"Tiempo total: {tiempo_total:.1f}s ({tiempo_total/60:.1f} min)")
 
 
 if __name__ == "__main__":

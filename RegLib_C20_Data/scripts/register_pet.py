@@ -19,7 +19,12 @@ existan en disco.
 
 import os
 import sys
+import time
+
 import itk
+
+# Marca de tiempo global para medir la duración total del pipeline
+tiempo_inicio_total = time.time()
 
 # -----------------------------------------------------------------------------
 # Rutas independientes del directorio de trabajo
@@ -159,17 +164,23 @@ def main():
         print("        Ejecuta primero: python scripts/register_ct.py")
         sys.exit(1)
 
+    tiempo_inicio_etapa = time.time()
     affine_tx  = read_transform(AFFINE_PATH)
     bspline_tx = read_transform(BSPLINE_PATH)
+    tiempo_etapa = time.time() - tiempo_inicio_etapa
     print(f"  Affine  : {type(affine_tx).__name__}")
     print(f"  BSpline : {type(bspline_tx).__name__}")
+    print(f"[Etapa 1] Lectura de transforms — Tiempo: {tiempo_etapa:.1f}s ({tiempo_etapa/60:.1f} min)")
 
     # --- Resampling de PET_2 ------------------------------------------------
+    tiempo_inicio_etapa = time.time()
     print("\n[3/4] Aplicando transformación a PET_2 ...")
     pet_registered = resample_pet(pet_fixed, pet_moving, affine_tx, bspline_tx)
 
     print("       Calculando imagen diferencia |PET_1 - PET_2_registered| ...")
     pet_diff = absolute_difference(pet_fixed, pet_registered)
+    tiempo_etapa = time.time() - tiempo_inicio_etapa
+    print(f"[Etapa 2] Resampling PET — Tiempo: {tiempo_etapa:.1f}s ({tiempo_etapa/60:.1f} min)")
 
     # --- Guardado de resultados --------------------------------------------
     print("\n[4/4] Guardando resultados ...")
@@ -183,6 +194,10 @@ def main():
     print(f"  - {out_registered}")
     print(f"  - {out_diff}")
     print("\nRegistro PET finalizado correctamente.")
+
+    tiempo_total = time.time() - tiempo_inicio_total
+    print(f"\n=== Pipeline PET completado ===")
+    print(f"Tiempo total: {tiempo_total:.1f}s ({tiempo_total/60:.1f} min)")
 
 
 if __name__ == "__main__":
