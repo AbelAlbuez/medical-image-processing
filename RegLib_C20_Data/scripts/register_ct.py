@@ -26,6 +26,11 @@ import sys
 import time
 
 import itk
+import numpy as np
+import matplotlib
+matplotlib.use('Agg')  # sin display, compatible con servidor/Colab
+import matplotlib.pyplot as plt
+import matplotlib.gridspec as GridSpec
 
 # Marca de tiempo global para medir la duración total del pipeline
 tiempo_inicio_total = time.time()
@@ -171,13 +176,13 @@ def run_affine_registration(fixed, moving, rigid_transform):
         ImageType, ImageType
     ]
     metric = MetricType.New()
-    metric.SetNumberOfHistogramBins(50)
+    metric.SetNumberOfHistogramBins(32)
 
     OptimizerType = itk.RegularStepGradientDescentOptimizerv4[itk.D]
     optimizer = OptimizerType.New()
     optimizer.SetLearningRate(0.1)
     optimizer.SetMinimumStepLength(0.0001)
-    optimizer.SetNumberOfIterations(200)
+    optimizer.SetNumberOfIterations(100)
     optimizer.SetRelaxationFactor(0.5)
 
     RegistrationType = itk.ImageRegistrationMethodv4[ImageType, ImageType]
@@ -189,9 +194,13 @@ def run_affine_registration(fixed, moving, rigid_transform):
     registration.SetInitialTransform(affine_transform)
     registration.InPlaceOn()
 
-    registration.SetNumberOfLevels(1)
-    registration.SetSmoothingSigmasPerLevel([0])
-    registration.SetShrinkFactorsPerLevel([1])
+    registration.SetNumberOfLevels(3)
+    registration.SetSmoothingSigmasPerLevel([2, 1, 0])
+    registration.SetShrinkFactorsPerLevel([4, 2, 1])
+    registration.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
+    # MetricSamplingStrategy: 0=NONE, 1=REGULAR, 2=RANDOM (enum interno de ITK)
+    registration.SetMetricSamplingStrategy(2)
+    registration.SetMetricSamplingPercentage(0.10)
 
     registration.Update()
 
@@ -217,9 +226,9 @@ def run_bspline_registration(fixed, moving, affine_transform):
     initializer.SetTransform(bspline_transform)
     initializer.SetImage(fixed)
     mesh = itk.Size[Dimension]()
-    mesh[0] = 8
-    mesh[1] = 8
-    mesh[2] = 8
+    mesh[0] = 5
+    mesh[1] = 5
+    mesh[2] = 5
     initializer.SetTransformDomainMeshSize(mesh)
     initializer.InitializeTransform()
 
@@ -227,14 +236,14 @@ def run_bspline_registration(fixed, moving, affine_transform):
         ImageType, ImageType
     ]
     metric = MetricType.New()
-    metric.SetNumberOfHistogramBins(50)
+    metric.SetNumberOfHistogramBins(32)
 
     # Optimizador: GradientDescent honra bien el budget de iteraciones y el
-    # esquema multi-resolución. Mantenemos 30 it por nivel para acotar tiempo.
+    # esquema multi-resolución. Mantenemos 20 it por nivel para acotar tiempo.
     OptimizerType = itk.GradientDescentOptimizerv4Template[itk.D]
     optimizer = OptimizerType.New()
     optimizer.SetLearningRate(1.0)
-    optimizer.SetNumberOfIterations(30)
+    optimizer.SetNumberOfIterations(20)
     optimizer.SetConvergenceWindowSize(5)
 
     RegistrationType = itk.ImageRegistrationMethodv4[ImageType, ImageType]
@@ -257,11 +266,11 @@ def run_bspline_registration(fixed, moving, affine_transform):
     registration.SetShrinkFactorsPerLevel([4, 2, 1])
     registration.SmoothingSigmasAreSpecifiedInPhysicalUnitsOn()
 
-    # Muestreo estocástico de la métrica MI: ~5% de voxels por iteración.
+    # Muestreo estocástico de la métrica MI: ~10% de voxels por iteración.
     # Es la optimización que más acorta el tiempo manteniendo calidad.
-    SamplingStrategy = itk.ImageRegistrationMethodv4.RANDOM
-    registration.SetMetricSamplingStrategy(SamplingStrategy)
-    registration.SetMetricSamplingPercentage(0.05)
+    # MetricSamplingStrategy: 0=NONE, 1=REGULAR, 2=RANDOM.
+    registration.SetMetricSamplingStrategy(2)
+    registration.SetMetricSamplingPercentage(0.10)
 
     registration.Update()
 
@@ -307,6 +316,31 @@ def absolute_difference(image_a, image_b):
     AbsFilter.SetInput(SubFilter.GetOutput())
     AbsFilter.Update()
     return AbsFilter.GetOutput()
+
+
+def save_three_views(image_np, title, output_path, cmap='gray', vmin=None, vmax=None):
+    """
+    Guarda axial, coronal y sagital del slice central de un volumen numpy.
+    image_np: array (Z, Y, X) — resultado de itk.array_from_image()
+    """
+    z, y, x = image_np.shape
+    fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+    fig.suptitle(title, fontsize=14, fontweight='bold')
+
+    vistas = [
+        (image_np[z // 2, :, :], "Axial"),
+        (image_np[:, y // 2, :], "Coronal"),
+        (image_np[:, :, x // 2], "Sagital"),
+    ]
+    for ax, (slice_2d, nombre) in zip(axes, vistas):
+        ax.imshow(slice_2d, cmap=cmap, origin='lower', aspect='auto',
+                  vmin=vmin, vmax=vmax)
+        ax.set_title(nombre)
+        ax.axis('off')
+
+    plt.tight_layout()
+    plt.savefig(output_path, dpi=150, bbox_inches='tight')
+    plt.close()
 
 
 # =============================================================================
@@ -379,6 +413,49 @@ def main():
     print(f"[Etapa 4] Resampling CT y guardado — Tiempo: {tiempo_etapa:.1f}s ({tiempo_etapa/60:.1f} min)")
 
     print("\nRegistro CT finalizado correctamente.")
+
+    # -------------------------------------------------------------------------
+    # Exportación PNG — 3 vistas de cada resultado CT
+    # -------------------------------------------------------------------------
+    print("\n[5/4] Generando visualizaciones PNG ...")
+    tiempo_inicio_etapa = time.time()
+
+    # Convertir imágenes a numpy (eje Z primero)
+    ct1_np  = itk.array_from_image(fixed)
+    ct2_np  = itk.array_from_image(moving)
+    ct2r_np = itk.array_from_image(moving_resampled)
+    diff_np = itk.array_from_image(diff_image)
+
+    # Rango de visualización CT: ventana HU estándar tejido blando
+    vmin_ct, vmax_ct = -200, 400
+
+    save_three_views(
+        ct1_np, "CT_1 (Fixed)",
+        os.path.join(RESULTS_DIR, "CT_1_views.png"),
+        cmap='gray', vmin=vmin_ct, vmax=vmax_ct
+    )
+    save_three_views(
+        ct2_np, "CT_2 (Moving — sin registrar)",
+        os.path.join(RESULTS_DIR, "CT_2_original_views.png"),
+        cmap='gray', vmin=vmin_ct, vmax=vmax_ct
+    )
+    save_three_views(
+        ct2r_np, "CT_2 Registrado",
+        os.path.join(RESULTS_DIR, "CT_2_registered_views.png"),
+        cmap='gray', vmin=vmin_ct, vmax=vmax_ct
+    )
+    save_three_views(
+        diff_np, "Diferencia |CT_1 - CT_2_registered|",
+        os.path.join(RESULTS_DIR, "CT_diff_views.png"),
+        cmap='hot', vmin=0, vmax=200
+    )
+
+    tiempo_etapa = time.time() - tiempo_inicio_etapa
+    print(f"[Etapa 5] Visualizaciones PNG — Tiempo: {tiempo_etapa:.1f}s ({tiempo_etapa/60:.1f} min)")
+    print(f"  - {RESULTS_DIR}/CT_1_views.png")
+    print(f"  - {RESULTS_DIR}/CT_2_original_views.png")
+    print(f"  - {RESULTS_DIR}/CT_2_registered_views.png")
+    print(f"  - {RESULTS_DIR}/CT_diff_views.png")
 
     tiempo_total = time.time() - tiempo_inicio_total
     print(f"\n=== Pipeline CT completado ===")

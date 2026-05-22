@@ -1,0 +1,303 @@
+\documentclass[12pt, letterpaper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{margin=2.5cm}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{setspace}
+\onehalfspacing
+
+\title{
+    \large Pontificia Universidad Javeriana \\
+    Departamento de Ingeniería de Sistemas \\
+    Procesamiento de Imágenes Médicas \\[1cm]
+    \LARGE \textbf{Taller 4: Registro de Imágenes Médicas} \\
+    \large RegLib Case \#20 — Intra-subject whole-body PET-CT
+}
+\author{
+    Abel Albuez Sanchez \\
+    Victoria Acero \\
+    Santiago Gil \\[0.5cm]
+    \small Maestría en Ingeniería de Sistemas, 2026
+}
+\date{Mayo 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% =============================================================================
+\section{Introducción}
+% =============================================================================
+El registro de imágenes médicas consiste en hallar la transformación geométrica
+que alinea espacialmente dos o más volúmenes adquiridos en momentos, modalidades
+o condiciones distintas, de modo que estructuras anatómicas homólogas ocupen las
+mismas coordenadas. Es una herramienta fundamental para el seguimiento
+longitudinal de pacientes, la fusión multimodal y la cuantificación de cambios a
+lo largo del tiempo.
+
+El objetivo de este taller es registrar dos sesiones de adquisición PET/CT de
+cuerpo completo pertenecientes al mismo paciente, empleando la biblioteca
+\textit{Insight Toolkit} (ITK). Se trabaja con el caso \textbf{RegLib Case \#20}
+(\textit{intra-subject whole-body PET-CT}), un conjunto de datos de referencia
+diseñado para evaluar metodologías de registro intra-sujeto. Concretamente, se
+construye un \textit{pipeline} multi-etapa que lleva la tomografía computarizada
+de la segunda sesión al espacio de la primera y, posteriormente, se transfiere
+esa misma transformación al volumen PET correspondiente, aprovechando el
+co-registro nativo entre cada PET y su CT.
+
+% =============================================================================
+\section{Descripción del problema}
+% =============================================================================
+El conjunto de datos contiene dos sesiones del mismo paciente. La primera sesión
+está compuesta por el par CT\_1 y PET\_1; la segunda, por el par CT\_2 y PET\_2.
+Dentro de cada sesión, el volumen PET ya se encuentra alineado con su respectivo
+CT, pues ambos se adquieren de forma prácticamente simultánea en el mismo equipo
+híbrido PET/CT y comparten el sistema de coordenadas.
+
+Entre sesiones, sin embargo, existen diferencias de posicionamiento del paciente
+(traslaciones, rotaciones e incluso pequeñas deformaciones posturales y
+respiratorias) que impiden comparar directamente ambas adquisiciones. El problema
+se aborda en dos pasos:
+
+\begin{enumerate}
+    \item \textbf{Registro CT:} alinear CT\_2 $\rightarrow$ CT\_1, estimando la
+    transformación geométrica que compensa las diferencias entre sesiones.
+    \item \textbf{Transferencia al PET:} aplicar esa misma transformación a
+    PET\_2 para llevarlo al espacio de PET\_1, sin necesidad de un registro
+    independiente.
+\end{enumerate}
+
+La estrategia es válida porque, al estar PET\_2 co-registrado con CT\_2 y PET\_1
+con CT\_1, la transformación que alinea CT\_2 con CT\_1 alinea igualmente PET\_2
+con PET\_1. Esto evita reoptimizar sobre las imágenes PET, que poseen menor
+resolución espacial y contraste anatómico, y garantiza la consistencia geométrica
+entre ambas modalidades.
+
+% =============================================================================
+\section{Pipeline de registro}
+% =============================================================================
+El registro de CT\_2 hacia CT\_1 se realiza mediante un esquema multi-etapa de
+complejidad creciente. Cada etapa toma como punto de partida el resultado de la
+anterior, de modo que se corrigen primero las diferencias globales y luego las
+locales.
+
+% -----------------------------------------------------------------------------
+\subsection{Etapa 1 — Registro Rígido}
+% -----------------------------------------------------------------------------
+\begin{itemize}
+    \item \textbf{Transformación:} \texttt{VersorRigid3DTransform} (rotación +
+    traslación, 6 grados de libertad).
+    \item \textbf{Inicialización:} \texttt{CenteredTransformInitializer} por
+    momentos, que alinea los centros de masa de ambas imágenes.
+    \item \textbf{Métrica:} Información Mutua de Mattes (\textit{Mattes Mutual
+    Information}), 32 \textit{bins} de histograma.
+    \item \textbf{Optimizador:} \texttt{RegularStepGradientDescent}, tasa de
+    aprendizaje $=1.0$, paso mínimo $=0.001$, 200 iteraciones.
+    \item \textbf{Interpolador:} lineal.
+\end{itemize}
+\textbf{Justificación:} la etapa rígida corrige los desplazamientos y rotaciones
+globales gruesos entre sesiones. Al limitar el modelo a seis grados de libertad
+se obtiene una alineación robusta y estable que sirve de base fiable para las
+etapas posteriores.
+
+% -----------------------------------------------------------------------------
+\subsection{Etapa 2 — Registro Affine}
+% -----------------------------------------------------------------------------
+\begin{itemize}
+    \item \textbf{Transformación:} \texttt{AffineTransform} (rotación +
+    traslación + escala + cizallamiento, 12 grados de libertad).
+    \item \textbf{Inicialización:} parámetros heredados de la etapa rígida
+    (centro, matriz y traslación).
+    \item \textbf{Métrica:} Mattes MI, 32 \textit{bins}.
+    \item \textbf{Optimizador:} \texttt{RegularStepGradientDescent}, tasa de
+    aprendizaje $=0.1$, paso mínimo $=0.0001$, 100 iteraciones.
+    \item \textbf{Multi-resolución:} 3 niveles, \texttt{ShrinkFactors}$=[4,2,1]$,
+    \texttt{Sigmas}$=[2,1,0]$ mm.
+    \item \textbf{Muestreo estocástico:} 10\% de los vóxeles (estrategia
+    \texttt{RANDOM}).
+\end{itemize}
+\textbf{Justificación:} la etapa affine refina el alineamiento global añadiendo
+escala y cizallamiento, capaces de capturar diferencias de tamaño aparente y
+deformaciones lineales que el modelo rígido no puede representar.
+
+% -----------------------------------------------------------------------------
+\subsection{Etapa 3 — Registro BSpline}
+% -----------------------------------------------------------------------------
+\begin{itemize}
+    \item \textbf{Transformación:} \texttt{BSplineTransform} de orden 3, malla
+    $5\times5\times5$ (125 nodos de control).
+    \item \textbf{Inicialización:} \texttt{BSplineTransformInitializer} sobre la
+    imagen \textit{fixed}.
+    \item \textbf{MovingInitialTransform:} la \texttt{AffineTransform} estimada
+    en la etapa 2.
+    \item \textbf{Métrica:} Mattes MI, 32 \textit{bins}.
+    \item \textbf{Optimizador:} \texttt{GradientDescentOptimizerv4}, tasa de
+    aprendizaje $=1.0$, 20 iteraciones por nivel.
+    \item \textbf{Multi-resolución:} 3 niveles, \texttt{ShrinkFactors}$=[4,2,1]$,
+    \texttt{Sigmas}$=[2,1,0]$ mm.
+    \item \textbf{Muestreo estocástico:} 10\% de los vóxeles (estrategia
+    \texttt{RANDOM}).
+\end{itemize}
+\textbf{Justificación:} la etapa BSpline introduce un modelo de deformación local
+no rígido capaz de capturar cambios de postura, movimiento de órganos y efectos
+respiratorios que no pueden modelarse con transformaciones globales. La malla de
+nodos de control permite deformaciones suaves y localizadas.
+
+% -----------------------------------------------------------------------------
+\subsection{Transferencia al par PET}
+% -----------------------------------------------------------------------------
+Una vez estimadas las transformaciones, se construye una transformación compuesta
+(\texttt{CompositeTransform}) que aplica primero la affine y luego la BSpline
+(Affine $\circ$ BSpline). Esta misma transformación se aplica directamente a
+PET\_2 \emph{sin volver a optimizar}, empleando PET\_1 como rejilla de referencia
+para definir el espacio de salida (tamaño, espaciado y origen) y un valor de
+relleno \texttt{DefaultPixelValue}$=0.0$, correspondiente al SUV mínimo apropiado
+para imágenes PET. De este modo, PET\_2 queda alineado con PET\_1 reutilizando
+toda la información geométrica obtenida del registro CT.
+
+% =============================================================================
+\section{Optimización del tiempo de cómputo}
+% =============================================================================
+El \textit{pipeline} inicial evaluaba la métrica sobre la totalidad de los
+vóxeles a resolución completa y en un único nivel, lo que resultaba en tiempos de
+cómputo elevados, especialmente en la etapa deformable. Para reducir el costo
+manteniendo la calidad del registro se introdujeron tres optimizaciones: un
+esquema multi-resolución de grueso a fino, el muestreo estocástico de la métrica
+y la reducción de la densidad de la malla BSpline. La Tabla~\ref{tab:opt} resume
+los cambios.
+
+\begin{table}[H]
+\centering
+\caption{Comparación de parámetros: configuración original frente a la optimizada.}
+\label{tab:opt}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{>{\raggedright\arraybackslash}p{1.8cm} >{\raggedright\arraybackslash}p{5.6cm} >{\raggedright\arraybackslash}p{5.6cm}}
+\toprule
+\textbf{Etapa} & \textbf{Configuración original} & \textbf{Configuración optimizada} \\
+\midrule
+Affine &
+1 nivel, resolución completa, 200 iteraciones, 50 \textit{bins}, muestreo total (100\%) &
+3 niveles (\texttt{ShrinkFactors}$=[4,2,1]$, \texttt{Sigmas}$=[2,1,0]$ mm), 100 iteraciones, 32 \textit{bins}, muestreo \texttt{RANDOM} 10\% \\
+\addlinespace
+BSpline &
+Malla $8\times8\times8$ (512 nodos), 1 nivel, 100 iteraciones, muestreo total &
+Malla $5\times5\times5$ (125 nodos), 3 niveles, 20 iteraciones/nivel, muestreo \texttt{RANDOM} 10\% \\
+\addlinespace
+Total &
+Tiempo de cómputo elevado \textit{(por medir)} &
+Reducción significativa del tiempo \textit{(por medir)} \\
+% [COMPLETAR: reemplazar "(por medir)" por los tiempos reales que imprime la
+%  consola al ejecutar register_ct.py — línea "Tiempo total: Xs (X.X min)"]
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent\textbf{Justificación de cada cambio:}
+\begin{itemize}
+    \item \textbf{Multi-resolución (grueso a fino):} al registrar primero
+    versiones submuestreadas y suavizadas de las imágenes se reduce
+    drásticamente el número de vóxeles evaluados en los niveles iniciales, se
+    acelera la convergencia y se evita caer en mínimos locales antes de refinar
+    a resolución completa.
+    \item \textbf{Muestreo estocástico (10\%):} la métrica se estima sobre un
+    subconjunto aleatorio de vóxeles en cada iteración en lugar de sobre la
+    imagen completa, lo que disminuye notablemente el costo por iteración sin
+    degradar de forma apreciable la calidad del alineamiento.
+    \item \textbf{Reducción de la malla BSpline ($5\times5\times5$):} disminuir
+    el número de nodos de control reduce la cantidad de parámetros a optimizar,
+    acelerando la etapa deformable y atenuando el riesgo de sobreajuste local.
+\end{itemize}
+
+% =============================================================================
+\section{Resultados}
+% =============================================================================
+A continuación se presentan los resultados del registro. Para cada imagen se
+muestran tres vistas ortogonales (axial, coronal y sagital) tomadas en el corte
+central de cada eje, lo que permite valorar cualitativamente la calidad del
+alineamiento en las tres direcciones del espacio.
+
+% -----------------------------------------------------------------------------
+\subsection{CT\_1 — Imagen de referencia (Fixed)}
+% -----------------------------------------------------------------------------
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{results/CT_1_views.png}
+    \caption{CT\_1: imagen de referencia. Vistas axial, coronal y sagital.}
+\end{figure}
+
+% -----------------------------------------------------------------------------
+\subsection{CT\_2 registrado}
+% -----------------------------------------------------------------------------
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{results/CT_2_registered_views.png}
+    \caption{CT\_2 luego del registro (Rígido + Affine + BSpline).}
+\end{figure}
+
+% -----------------------------------------------------------------------------
+\subsection{Diferencia CT}
+% -----------------------------------------------------------------------------
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{results/CT_diff_views.png}
+    \caption{Imagen diferencia |CT\_1 - CT\_2\_registered|. Valores bajos indican buen registro.}
+\end{figure}
+
+% -----------------------------------------------------------------------------
+\subsection{PET\_2 registrado}
+% -----------------------------------------------------------------------------
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{results/PET_2_registered_views.png}
+    \caption{PET\_2 llevado al espacio de PET\_1 mediante transferencia de transformación CT.}
+\end{figure}
+
+% -----------------------------------------------------------------------------
+\subsection{Diferencia PET}
+% -----------------------------------------------------------------------------
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{results/PET_diff_views.png}
+    \caption{Imagen diferencia |PET\_1 - PET\_2\_registered|.}
+\end{figure}
+
+% =============================================================================
+\section{Análisis y conclusiones}
+% =============================================================================
+% [COMPLETAR tras obtener resultados]
+% Párrafo 1 — Análisis del registro CT: indicar si la imagen diferencia
+% |CT_1 - CT_2_registered| se reduce progresivamente al pasar de la etapa rígida
+% a la affine y a la BSpline, y comentar dónde se observan las mayores mejoras.
+\textit{[Pendiente: análisis del registro CT — ¿mejoró el alineamiento en cada
+etapa del pipeline (rígido, affine, BSpline)?]}
+
+% [COMPLETAR tras obtener resultados]
+% Párrafo 2 — Análisis del registro PET: discutir si transferir la transformación
+% estimada en CT fue suficiente para alinear PET_2 con PET_1, a la luz de la
+% imagen diferencia PET.
+\textit{[Pendiente: análisis del registro PET — ¿fue suficiente transferir la
+transformación del CT para alinear el par PET?]}
+
+% [COMPLETAR tras obtener resultados]
+% Párrafo 3 — Limitaciones y posibles mejoras: por ejemplo, sensibilidad a la
+% inicialización, efecto del muestreo estocástico, densidad de la malla BSpline,
+% o el uso de métricas/optimizadores alternativos.
+\textit{[Pendiente: limitaciones del enfoque y posibles mejoras.]}
+
+% =============================================================================
+\section{Referencias}
+% =============================================================================
+\begin{itemize}
+    \item RegLib Case \#20: \url{https://www.na-mic.org/wiki/Projects:RegistrationLibrary:RegLib_C20}
+    \item ITK Software Guide: \url{http://www.itk.org/ItkSoftwareGuide.pdf}
+\end{itemize}
+
+\end{document}
