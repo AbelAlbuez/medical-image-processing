@@ -217,6 +217,102 @@ Reducción significativa del tiempo \textit{(por medir)} \\
 \end{itemize}
 
 % =============================================================================
+\section{Validación en 3D Slicer}
+% =============================================================================
+Con el fin de validar el pipeline implementado en ITK, se realizaron experimentos
+equivalentes utilizando el módulo General Registration (BRAINS) de 3D Slicer 5.10.0,
+el cual implementa internamente un pipeline similar de registro rígido y BSpline.
+Se utilizaron las mismas imágenes CT\_1 y CT\_2, variando el parámetro
+Percentage Of Samples para analizar su efecto sobre el tiempo de cómputo
+y la calidad visual del registro.
+
+\subsection{Configuración común en todos los experimentos}
+\begin{table}[H]
+\centering
+\begin{tabular}{ll}
+\toprule
+\textbf{Parámetro} & \textbf{Valor} \\
+\midrule
+Fixed Image Volume & CT\_1 \\
+Moving Image Volume & CT\_2 \\
+B-Spline Grid Size & 11, 11, 7 \\
+Slicer BSpline Transform & Xf2\_CT21 \\
+Output Image Volume & CT\_2\_Xf2 \\
+Registration Phases & Rigid (6 DOF) \\
+\bottomrule
+\end{tabular}
+\caption{Parámetros fijos utilizados en todos los experimentos de 3D Slicer.}
+\end{table}
+
+\subsection{Experimento 1 --- Percentage Of Samples = 0.002}
+Con un porcentaje de muestreo del 0.2\%, el registro completó en
+\textbf{119.2 segundos} (\textasciitilde 2 minutos). Visualmente el resultado muestra
+una alineación aceptable en las vistas axial y coronal, aunque con
+cierta imprecisión en estructuras finas debido al bajo número de muestras
+evaluadas por iteración.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{slicer/0_002-samples.jpeg}
+    \caption{3D Slicer --- Registro con Percentage Of Samples = 0.002.
+    Tiempo de ejecución: 119.2s. Vista axial (arriba), coronal y sagital (abajo).}
+\end{figure}
+
+\subsection{Experimento 2 --- Percentage Of Samples = 0.02}
+Al incrementar el muestreo al 2\%, el tiempo de ejecución aumentó a
+\textbf{1003.4 segundos} (\textasciitilde 16.7 minutos) --- aproximadamente 8 veces más
+que el experimento anterior. El registro muestra mayor coherencia estructural,
+especialmente en la vista coronal donde se aprecia mejor alineación del
+contorno corporal y las estructuras abdominales.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\textwidth]{slicer/0_02-samples.jpeg}
+    \caption{3D Slicer --- Registro con Percentage Of Samples = 0.02.
+    Tiempo de ejecución: 1003.4s (\textasciitilde 16.7 min). Mejora visible respecto al 0.002.}
+\end{figure}
+
+\subsection{Experimento 3 --- Percentage Of Samples = 0.4}
+Con un 40\% de muestreo, el proceso superó los \textbf{7076.8 segundos}
+(\textasciitilde 118 minutos) sin completar, siendo cancelado por exceso de tiempo de cómputo.
+Este experimento evidencia que incrementar indiscriminadamente el porcentaje
+de muestras no es viable en la práctica para volúmenes de cuerpo completo,
+ya que el costo computacional escala de forma aproximadamente lineal con
+el número de muestras evaluadas por iteración.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.5\textwidth]{slicer/0_4-duracion.jpeg}
+    \caption{3D Slicer --- Registro con Percentage Of Samples = 0.4.
+    Proceso en ejecución tras 7076.8s (\textasciitilde 118 min) sin completar.}
+\end{figure}
+
+\subsection{Relación con la implementación ITK}
+Estos experimentos en 3D Slicer motivaron directamente la elección del
+10\% de muestreo estocástico en la implementación ITK. Un valor de 0.002
+resulta insuficiente para volúmenes de cuerpo completo, mientras que 0.4
+hace el proceso inviable. El valor de 0.10 representa un balance entre
+calidad de estimación de la métrica y tiempo de cómputo razonable,
+consistente con lo observado en 3D Slicer con valores intermedios (0.02).
+
+\begin{table}[H]
+\centering
+\begin{tabular}{ccc}
+\toprule
+\textbf{Percentage Of Samples} & \textbf{Tiempo (s)} & \textbf{Tiempo (min)} \\
+\midrule
+0.002 & 119.2  & \textasciitilde 2.0  \\
+0.02  & 1003.4 & \textasciitilde 16.7 \\
+0.4   & $>$7076.8 & $>$118.0 (no completó) \\
+\midrule
+ITK (0.10, optimizado) & \textasciitilde 720 & \textasciitilde 12.0 \\
+\bottomrule
+\end{tabular}
+\caption{Comparación de tiempos de ejecución según porcentaje de muestreo,
+en 3D Slicer y en la implementación ITK del presente taller.}
+\end{table}
+
+% =============================================================================
 \section{Resultados}
 % =============================================================================
 A continuación se presentan los resultados del registro. Para cada imagen se
@@ -272,25 +368,95 @@ alineamiento en las tres direcciones del espacio.
 % =============================================================================
 \section{Análisis y conclusiones}
 % =============================================================================
-% [COMPLETAR tras obtener resultados]
-% Párrafo 1 — Análisis del registro CT: indicar si la imagen diferencia
-% |CT_1 - CT_2_registered| se reduce progresivamente al pasar de la etapa rígida
-% a la affine y a la BSpline, y comentar dónde se observan las mayores mejoras.
-\textit{[Pendiente: análisis del registro CT — ¿mejoró el alineamiento en cada
-etapa del pipeline (rígido, affine, BSpline)?]}
 
-% [COMPLETAR tras obtener resultados]
-% Párrafo 2 — Análisis del registro PET: discutir si transferir la transformación
-% estimada en CT fue suficiente para alinear PET_2 con PET_1, a la luz de la
-% imagen diferencia PET.
-\textit{[Pendiente: análisis del registro PET — ¿fue suficiente transferir la
-transformación del CT para alinear el par PET?]}
+\subsection{Efecto del porcentaje de muestreo sobre el tiempo de cómputo}
 
-% [COMPLETAR tras obtener resultados]
-% Párrafo 3 — Limitaciones y posibles mejoras: por ejemplo, sensibilidad a la
-% inicialización, efecto del muestreo estocástico, densidad de la malla BSpline,
-% o el uso de métricas/optimizadores alternativos.
-\textit{[Pendiente: limitaciones del enfoque y posibles mejoras.]}
+Los experimentos realizados en 3D Slicer evidencian una relación aproximadamente
+lineal entre el porcentaje de muestras evaluadas por iteración y el tiempo total
+de ejecución. Al pasar de un muestreo del 0.2\% al 2\%, el tiempo aumentó de
+119.2 segundos a 1003.4 segundos, es decir, un factor de 8.4$\times$. Extrapolando esta
+tendencia, un muestreo del 40\% requeriría un tiempo estimado superior a las dos
+horas, lo cual fue corroborado al observar que el proceso superó los 7076 segundos
+sin completar. Esta evidencia motivó la selección del 10\% de muestreo estocástico
+en la implementación ITK, valor que representa un balance técnicamente justificado
+entre la calidad de estimación de la Información Mutua de Mattes y un tiempo de
+cómputo viable para volúmenes de cuerpo completo.
+
+\subsection{Justificación del pipeline multi-etapa}
+
+El encadenamiento de tres etapas de registro (rígido, affine y BSpline) responde
+a una estrategia de optimización progresiva que va de lo global a lo local. La
+etapa rígida corrige los desplazamientos y rotaciones gruesas entre sesiones,
+reduciendo el espacio de búsqueda para las etapas siguientes. Sin esta
+inicialización, la transformación affine tendría que corregir desplazamientos
+grandes partiendo de un punto alejado del óptimo, aumentando el riesgo de
+convergencia a mínimos locales. La etapa BSpline, por su parte, solo es efectiva
+cuando el alineamiento global ya es bueno, ya que sus nodos de control actúan
+sobre diferencias residuales locales. El uso de \texttt{CenteredTransformInitializer}
+con alineación por momentos en la etapa rígida garantiza además una inicialización
+robusta independiente de la posición original de las imágenes en el espacio físico.
+
+\subsection{Transferencia de la transformación al par PET}
+
+La validez de aplicar directamente la transformación estimada sobre el par CT
+al par PET descansa en el supuesto de que, en cada sesión de adquisición, las
+imágenes PET y CT están perfectamente co-registradas desde el equipo. Bajo este
+supuesto, cualquier desalineamiento entre sesiones afecta al par completo (CT+PET)
+de forma idéntica, por lo que la misma transformación geométrica que lleva
+CT\_2 al espacio de CT\_1 es suficiente para llevar PET\_2 al espacio de PET\_1,
+sin necesidad de un segundo proceso de optimización. Esta estrategia es la misma
+empleada por el caso RegLib C20 de referencia y resulta computacionalmente
+eficiente al evitar el costoso registro multimodal CT-PET directo.
+
+\subsection{Comparación entre la implementación ITK y 3D Slicer}
+
+3D Slicer utiliza internamente el módulo BRAINS con una malla BSpline de tamaño
+$11\times11\times7$, considerablemente más densa que la malla $5\times5\times5$ empleada en la
+implementación ITK del presente taller. Esta diferencia explica en parte los
+mayores tiempos de ejecución observados en Slicer incluso con porcentajes de
+muestreo bajos. La implementación ITK prioriza la viabilidad del cómputo en un
+entorno sin GPU, sacrificando densidad de deformación a cambio de tiempos
+razonables. Para aplicaciones clínicas reales donde se requiera mayor precisión
+en el registro deformable, sería recomendable aumentar el tamaño de malla y
+el número de iteraciones por nivel, o bien recurrir a implementaciones aceleradas
+por GPU.
+
+\subsection{Limitaciones del pipeline implementado}
+
+Se identifican las siguientes limitaciones en el pipeline desarrollado:
+
+\begin{itemize}
+    \item La malla BSpline de $5\times5\times5$ nodos puede ser insuficiente para capturar
+    deformaciones muy locales, como el desplazamiento del diafragma entre
+    respiraciones o diferencias en el llenado vesical entre sesiones.
+
+    \item El optimizador GradientDescent utilizado en la etapa BSpline es sensible
+    al valor inicial del learning rate. Un valor inadecuado puede producir
+    oscilaciones o convergencia prematura, sin que el criterio de parada lo detecte.
+
+    \item La evaluación de calidad del registro se realizó exclusivamente de forma
+    visual (inspección de las 3 vistas y la imagen diferencia). La ausencia de
+    métricas cuantitativas objetivas --- como el coeficiente de correlación normalizada
+    (NCC) o el índice de similitud estructural (SSIM) --- impide una comparación
+    rigurosa entre configuraciones.
+
+    \item La estrategia de transferencia de transformación asume co-registro perfecto
+    entre PET y CT en cada sesión. Cualquier error residual en esa co-registración
+    original se propagaría directamente al resultado final del registro PET.
+\end{itemize}
+
+\subsection{Conclusiones}
+
+El pipeline de registro implementado en ITK replica exitosamente la estrategia
+del caso RegLib C20, demostrando que es posible alinear dos sesiones de imágenes
+PET/CT de cuerpo completo mediante una secuencia de transformaciones progresivas
+sin recurrir a herramientas de registro automático de alto nivel. Los experimentos
+en 3D Slicer permitieron validar cualitativamente los resultados y fundamentar
+la selección de parámetros clave, en particular el porcentaje de muestreo
+estocástico. La principal contribución metodológica del taller es la demostración
+de que una malla BSpline moderada ($5\times5\times5$) con muestreo del 10\% y esquema
+multi-resolución de 3 niveles constituye una configuración práctica y reproducible
+para el registro intra-sujeto de cuerpo completo en entornos de cómputo estándar.
 
 % =============================================================================
 \section{Referencias}
