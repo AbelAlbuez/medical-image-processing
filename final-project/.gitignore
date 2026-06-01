@@ -1,0 +1,37 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Resultados (no versionar)
+output/
+result/
+comparison_results/
+
+# Datos médicos (pesados)
+images/*.nii
+images/*.nii.gz
+*.nii
+*.nii.gz
+
+# Empaquetados
+*.zip
+*.tar
+*.tar.gz
+
+# Colab / Drive
+/content
+
+# Caches Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.ipynb_checkpoints/
+
+# CSVs exportados grandes del EDA
+EDA_*_completo.csv
+
+# Sistema
+.DS_Store
+Thumbs.db
