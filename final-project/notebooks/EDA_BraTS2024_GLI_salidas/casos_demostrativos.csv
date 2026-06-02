@@ -1,0 +1,7 @@
+case_id,motivo,TumorTotal_cc,NETC,SNFH,ET,RC
+BraTS-GLI-02565-105,Típico (mediana de tumor),52.732,0.021,50.717,1.771,0.223
+BraTS-GLI-02489-100,Tumor grande (~p95),205.267,16.723,140.797,47.028,0.719
+BraTS-GLI-02595-100,Tumor pequeño (~p5),2.422,0.0,1.148,0.534,0.74
+BraTS-GLI-02617-101,Post-resección (RC>0),194.513,0.0,75.397,1.374,117.742
+BraTS-GLI-02479-101,Solo edema (sin ET),168.12,0.0,162.351,0.0,5.769
+BraTS-GLI-02480-101,NETC dominante,80.822,29.578,25.584,25.584,0.076
