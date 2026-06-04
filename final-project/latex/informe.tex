@@ -454,6 +454,83 @@ $\alpha$ & cierre & Dice & $\alpha$ & cierre & Dice \\
 \end{tabular}
 \end{table}
 
+\subsection{Estrategias de mejora del post-procesamiento}
+Se exploró si técnicas clásicas de post-proceso elevan el Dice del ET, manteniendo la
+regla anti-fuga: el GT solo ubica la semilla y evalúa, nunca construye la máscara ni
+ajusta parámetros por caso (el radio de cierre y $\alpha$ son globales, por barrido sobre
+el promedio). Se evaluaron cuatro variantes por método: \emph{base}, \emph{+morfología}
+(cierre + selección de componente conexo), \emph{+sustracción} (método sobre
+$S=\mathrm{clip}(T1c-T1n,0)$, con \textit{histogram matching} de T1n a T1c) y la
+combinación de ambas. Tres hallazgos:
+
+\textbf{(a) Sin apertura morfológica.} La apertura destruía el ET pequeño (lo dejaba en
+Dice $0{,}000$); eliminarla y conservar solo \emph{cierre + componente conexo} evita ese
+colapso.
+
+\textbf{(b) Componente anclado a la semilla.} Quedarse con el componente conexo
+\emph{más grande} falla cuando el método no aísla el ET: en Otsu, el blob dominante es
+tejido sano y el solape con el ET es nulo (Dice $0{,}000$ en cuatro casos). Anclar el
+componente al vóxel de ET más brillante \emph{rescata} esos casos
+(Tabla~\ref{tab:rescate}). El anclaje solo afecta a Otsu: el crecimiento de regiones y
+el \textit{watershed} ya producen un único componente sembrado en el ET, y la GMM produce
+un único blob (su semilla a veces cae fuera, con \textit{fallback} al mayor).
+
+\textbf{(c) La sustracción T1c$-$T1n no mejoró} (resultado honesto, en contra de la
+intuición): rebaja el Dice medio de todos los métodos respecto a su base.
+
+La Tabla~\ref{tab:mejora} resume el Dice medio por método y variante con el componente
+anclado, y la Fig.~\ref{fig:mejora} lo ilustra.
+
+\begin{table}[h]
+\centering
+\caption{Dice medio por método y variante (post-proceso con componente anclado a la
+semilla). Ningún método alcanza $0{,}50$.}
+\label{tab:mejora}
+\begin{tabular}{lcccc}
+\toprule
+Método & base & +morf. & +sust. & +sust+morf. \\
+\midrule
+\textbf{Otsu} & 0,164 & \textbf{0,353} & 0,117 & 0,326 \\
+RegionGrowing & 0,320 & 0,342 & 0,243 & 0,267 \\
+Watershed     & 0,213 & 0,223 & 0,187 & 0,197 \\
+GMM multimodal & 0,094 & 0,080 & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[h]
+\centering
+\caption{Rescate de Otsu (+morfología) al anclar el componente a la semilla: los cuatro
+casos que el componente \emph{mayor} dejaba en $0{,}000$.}
+\label{tab:rescate}
+\begin{tabular}{lcc}
+\toprule
+Caso & componente mayor & componente anclado \\
+\midrule
+02063-106 & 0,000 & 0,181 \\
+00529-100 & 0,000 & 0,322 \\
+02062-100 & 0,000 & 0,413 \\
+02063-102 & 0,000 & \textbf{0,638} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{figuras/mej_ranking_v3.png}\\[2pt]
+\includegraphics[width=\columnwidth]{figuras/mej_otsu_02062.png}
+\caption{Arriba: Dice por método y variante (línea roja = 0,5). Abajo: Otsu en
+02062-100 --- base, componente mayor (selecciona tejido sano, Dice $0{,}000$) y
+componente anclado a la semilla (verde), que recupera el realce.}
+\label{fig:mejora}
+\end{figure}
+
+\textbf{Lectura honesta.} Con el post-proceso anclado, la mejor variante mejorada
+---Otsu con cierre + componente anclado, Dice $0{,}353$--- supera \emph{por primera vez}
+al mejor método base (crecimiento de regiones, $0{,}320$), pero la ganancia es marginal
+($+0{,}033$) y \textbf{ningún método cruza $0{,}50$ de Dice medio}. El post-proceso
+clásico exhaustivo no cambia la conclusión: para el ET, lo clásico es insuficiente.
+
 % ════════════════════════════════════════════════════════════════
 \section{Reconstrucción 3D}
 % ════════════════════════════════════════════════════════════════
@@ -592,9 +669,13 @@ Datos & lectura directa desde \texttt{.zip} (BraTS 2024 GLI) \\
 El hallazgo central es claro y honesto: \textbf{los métodos
 clásicos basados en intensidad son insuficientes para segmentar el
 tumor realzante en T1c} en BraTS~2024 GLI post-tratamiento. Ningún
-método supera un Dice medio de $0{,}50$; el mejor ---crecimiento de
+método supera un Dice medio de $0{,}50$; el mejor base ---crecimiento de
 regiones, $0{,}320$--- es apenas ``el menos malo'', y la
-multimodalidad mediante GMM no ayudó (sobre-segmentación). El
+multimodalidad mediante GMM no ayudó (sobre-segmentación). Ni
+siquiera el post-proceso clásico exhaustivo cambia la conclusión:
+con cierre morfológico y componente conexo anclado a la semilla,
+Otsu alcanza su mejor valor ($0{,}353$), que supera por primera vez
+al mejor método base pero sigue por debajo de $0{,}50$. El
 escenario post-tratamiento, con su cavidad de resección oscura,
 agrava el problema y obligó a corregir la estrategia de siembra. En
 contraste, el registro rígido por información mutua sí resuelve con

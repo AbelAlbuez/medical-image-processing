@@ -1,0 +1,15 @@
+metodo,variante,v1,v2,delta
+Otsu,base,0.1644,0.1644,0.0
+Otsu,mas_morfologia,0.1498,0.1587,0.0089
+Otsu,mas_sustraccion,0.1166,0.1166,0.0
+Otsu,mas_sustraccion_morfologia,0.0216,0.128,0.1064
+RegionGrowing,base,0.3202,0.3202,0.0
+RegionGrowing,mas_morfologia,0.1682,0.3418,0.1737
+RegionGrowing,mas_sustraccion,0.2425,0.2425,0.0
+RegionGrowing,mas_sustraccion_morfologia,0.0946,0.2665,0.1719
+Watershed,base,0.2127,0.2127,0.0
+Watershed,mas_morfologia,0.1496,0.2227,0.0731
+Watershed,mas_sustraccion,0.1868,0.1868,0.0
+Watershed,mas_sustraccion_morfologia,0.1223,0.1973,0.075
+GMM_multimodal,base,0.0939,0.0939,0.0
+GMM_multimodal,mas_morfologia,0.2024,0.08,-0.1224
