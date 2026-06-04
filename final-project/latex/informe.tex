@@ -73,17 +73,29 @@ SimpleITK, información mutua de Mattes, \textit{marching cubes}.
 \end{IEEEkeywords}
 
 % ════════════════════════════════════════════════════════════════
-\section{Introducción y objetivos}
+\section{Problema, justificación y objetivos}
 % ════════════════════════════════════════════════════════════════
-Los gliomas son los tumores cerebrales primarios más frecuentes y
-su seguimiento por resonancia magnética (RM) es central en la
-práctica clínica. En el escenario \emph{post-tratamiento}, el
-\emph{tumor realzante} (ET) ---tejido que capta contraste en T1c---
-es un marcador de actividad tumoral residual o recurrente, y por
-ello un objetivo de interés clínico directo. El reto BraTS~2024
-GLI~\cite{baid2021brats} introduce explícitamente la cavidad de
-resección como una clase adicional, lo que altera las hipótesis de
-intensidad sobre las que descansan los métodos clásicos.
+Los gliomas son los tumores cerebrales primarios más frecuentes en
+adultos y su seguimiento por resonancia magnética (RM) es central
+en la práctica clínica~\cite{louis2021who,mesfin2024gliomas}. En el
+escenario \emph{post-tratamiento}, el \emph{tumor realzante} (ET)
+---tejido que capta contraste en T1c--- es el marcador imagenológico
+de actividad tumoral residual o recurrente y un sustituto habitual
+de la respuesta a la terapia~\cite{bhattacharya2024posttreatment}.
+Delimitarlo manualmente es costoso y poco reproducible: la
+variabilidad inter- e intra-observador de la segmentación experta
+es alta incluso entre radiólogos especializados
+~\cite{visser2019interobserver}, lo que justifica el interés por
+métodos automáticos.
+
+El reto BraTS~2024 GLI Post-Treatment~\cite{deverdier2024brats,baid2021brats}
+introduce por primera vez la \emph{cavidad de resección} (RC) como
+clase explícita, alterando las hipótesis de intensidad sobre las que
+descansan los métodos clásicos: el ET, lejos de ser un objeto
+brillante y compacto, suele aparecer como un \emph{anillo} delgado
+y heterogéneo alrededor de una cavidad oscura. Este escenario es
+un banco de pruebas natural para preguntar hasta dónde llegan los
+métodos clásicos sin el apoyo del aprendizaje profundo.
 
 Este trabajo se restringe deliberadamente a \textbf{métodos
 clásicos} (sin aprendizaje profundo) implementados sobre
@@ -99,12 +111,76 @@ y se ejecuta leyendo los datos directamente desde los archivos
 comprimidos del reto.
 
 % ════════════════════════════════════════════════════════════════
-\section{Materiales y dataset}
+\section{Estado del arte}
 % ════════════════════════════════════════════════════════════════
-Se emplea el subconjunto \textit{BraTS 2024 GLI Post-Treatment}.
-Cada caso aporta cuatro modalidades co-registradas (T1n, T1c, T2w,
-T2-FLAIR) y una segmentación experta \texttt{seg} con cuatro
-etiquetas: \texttt{1=NETC} (núcleo no realzante), \texttt{2=SNFH}
+La literatura reciente sobre segmentación de gliomas en BraTS está
+dominada por el aprendizaje profundo, en particular por la
+familia \textsc{nnU-Net}; el contexto clásico-híbrido es minoritario
+pero existe. A continuación se resumen tres trabajos representativos
+que enmarcan este estudio.
+
+\textbf{Győrfi \emph{et al.}~(2021)~\cite{gyorfi2021ensemble}.}
+Proponen una canalización \emph{clásico-híbrida} para BraTS basada
+en normalización de histogramas, un atlas que codifica la
+\emph{desviación de la normalidad} y un ensamble de árboles
+(125 árboles en bosques aleatorios) sobre características
+multimodales por vóxel. El trabajo reporta un Dice global cercano
+al $86\%$ con un registro afín previo en aproximadamente
+$58$~s de CPU, posicionando los métodos basados en intensidad y
+atlas como una alternativa competitiva en hardware modesto. No
+obstante, su evaluación es anterior a la introducción de la
+cavidad de resección y se centra en el tumor completo, no en el
+realzante por sí solo.
+
+\textbf{Baig \emph{et al.}~(2024)~\cite{baig2024nnunet}.} Estudian
+explícitamente el escenario \emph{post-tratamiento} con
+\textsc{nnU-Net 3D} sobre BraTS 2023/2024, con cuatro modalidades
+(T1n, T1c, T2w, T2-FLAIR) y cinco etiquetas (incluyendo RC).
+Comparan tres entrenamientos ---redes pre-tratamiento,
+post-tratamiento y combinada--- y reportan Dice por sub-región
+entre $0{,}82$ y $0{,}94$. Su hallazgo más relevante es que la red
+\emph{combinada} reduce los falsos positivos sobre la cavidad de
+resección, evidenciando que el caso post-quirúrgico exige
+información de contexto que no está en una sola modalidad.
+
+\textbf{Luque \emph{et al.}~(2024)~\cite{luque2024extension}.}
+Aplican \textsc{nnU-Net} con \emph{Cross Pseudo Supervision}
+(semi-supervisado) para estimar la \emph{extensión de la resección}
+(EOR) en gliomas. Reportan un Dice externo de $0{,}52$ sobre
+imágenes no vistas y, al usar la segmentación para clasificar el
+grado de resección, alcanzan precisión $0{,}90$ y sensibilidad
+$0{,}87$. El trabajo confirma que la tarea \emph{anatómica} es
+difícil incluso para redes profundas modernas, pero que los mapas
+resultantes ya son útiles para la decisión clínica.
+
+\textbf{Hueco que llena este trabajo.} El estado del arte está
+dominado por aprendizaje profundo y, en el escenario
+post-tratamiento, ningún trabajo conocido por los autores cuantifica
+el \emph{techo} de los métodos puramente clásicos basados en
+intensidad para el ET. Este informe no compite con \textsc{nnU-Net}:
+caracteriza su \emph{línea de base} sin aprendizaje profundo,
+incluyendo post-proceso, ensambles y un \emph{ablation} del
+preprocesamiento, y muestra que el límite es estructural
+(forma del realce) y no de umbral.
+
+% ════════════════════════════════════════════════════════════════
+\section{Descripción de la base de datos}
+% ════════════════════════════════════════════════════════════════
+Se emplea el subconjunto \textit{BraTS 2024 GLI Post-Treatment}
+~\cite{deverdier2024brats}. Es la \emph{primera} edición del reto
+BraTS centrada explícitamente en el escenario post-tratamiento;
+su novedad principal frente a ediciones previas es la inclusión
+de la \emph{cavidad de resección} (RC) como clase distinta. La
+cohorte completa abarca del orden de $\sim$2200 pacientes
+adultos provenientes de siete instituciones, con volúmenes en
+formato \textsc{NIfTI} (\texttt{.nii.gz}), cuatro modalidades de
+resonancia magnética por caso ya \emph{co-registradas} a un
+espacio común y \emph{esqueletizadas} (\textit{skull-stripping}
+aplicado), y una segmentación experta consensuada por
+radiólogos. Las modalidades son \texttt{T1n} (T1 nativo),
+\texttt{T1c} (T1 con contraste de gadolinio), \texttt{T2w} y
+\texttt{T2-FLAIR}; las cuatro etiquetas anatómicas son
+\texttt{1=NETC} (núcleo no realzante), \texttt{2=SNFH}
 (edema/FLAIR hiperintenso), \texttt{3=ET} (realce) y \texttt{4=RC}
 (cavidad de resección). \textbf{El objetivo de este trabajo es la
 etiqueta~3 (ET).} Los volúmenes se leen directamente desde los
@@ -210,6 +286,50 @@ caso (escala cruda); la dispersión justifica normalizar.}
 corte del centroide. El caso sin ET no presenta realce.}
 \label{fig:casos}
 \end{figure}
+
+% ════════════════════════════════════════════════════════════════
+\section{Descripción de la línea de procesamiento}
+% ════════════════════════════════════════════════════════════════
+La canalización está organizada en \textbf{seis módulos
+numerados}, cada uno con su propio reporte HTML, sus figuras y
+sus archivos de salida (CSV/JSON), y todos reproducibles desde
+\textsc{Python~3.11} con \textsc{SimpleITK}
+~\cite{lloyd2010itk}:
+
+\begin{enumerate}
+  \item \textbf{EDA.} Caracterización de geometría, intensidades y
+        separabilidad por modalidad sobre 100 casos; selecciona
+        T1c como modalidad objetivo y los casos demostrativos
+        (Sec.~III).
+  \item \textbf{Limpieza T1c.} Reducción de ruido con filtro de
+        Wiener, corrección del campo de sesgo con
+        N4~\cite{tustison2010n4} y normalización por percentiles
+        (Sec.~V).
+  \item \textbf{Registro rígido.} Recuperación demostrativa de
+        una perturbación rígida conocida con información mutua de
+        Mattes~\cite{mattes2003} sobre transformación Euler3D
+        multi-resolución (Sec.~VI).
+  \item \textbf{Segmentación clásica del ET.} Otsu multinivel,
+        crecimiento de regiones, \textit{watershed} por
+        marcadores y mezcla de gaussianas multimodal
+        (Sec.~VII), incluyendo el hallazgo sobre la semilla
+        (cavidad de resección $\to$ ET más brillante,
+        $\alpha=0{,}65$) y el ensamble por unión con post-proceso.
+  \item \textbf{Reconstrucción 3D.} Mallas por \textit{marching
+        cubes}~\cite{lorensen1987marching} de la predicción y el
+        \textit{ground truth} para validación de escala
+        (Sec.~VIII).
+  \item \textbf{Visualización.} Mosaicos 2D (axial/coronal/sagital)
+        y un visor 3D web autocontenido para inspección visual.
+\end{enumerate}
+
+Las tres reglas transversales que se respetan a lo largo de la
+canalización son: (i) \emph{el \textit{ground truth} solo ubica la
+semilla y evalúa, nunca construye la máscara}; (ii) los
+hiperparámetros (umbral relativo $\alpha$, radio de cierre, etc.)
+son \emph{globales}, ajustados sobre el promedio de los casos y no
+por caso; (iii) la lectura es directa desde \texttt{.zip}, sin
+copiar el dataset al disco.
 
 % ════════════════════════════════════════════════════════════════
 \section{Preprocesamiento (T1c)}
@@ -846,6 +966,54 @@ W.~E.~Lorensen and H.~E.~Cline,
 algorithm,''
 \emph{ACM SIGGRAPH Computer Graphics}, vol.~21, no.~4,
 pp.~163--169, 1987.
+
+\bibitem{deverdier2024brats}
+M.~Correia~de~Verdier \emph{et al.},
+``The 2024 Brain Tumor Segmentation (BraTS) Challenge: Glioma
+Segmentation on Post-treatment MRI,''
+\emph{arXiv:2405.18368}, 2024.
+
+\bibitem{baig2024nnunet}
+M.~M.~Baig \emph{et al.},
+``Adapting nnU-Net for the BraTS 2024 post-treatment glioma
+segmentation challenge,''
+\emph{Neuro-Oncology Advances}, vol.~6, no.~1, art.~vdae140,
+2024.
+
+\bibitem{luque2024extension}
+L.~Luque \emph{et al.},
+``Standardized evaluation of the extent of resection in adult
+gliomas using semi-supervised deep learning,''
+\emph{Frontiers in Radiology}, vol.~4, art.~1357341, 2024.
+
+\bibitem{gyorfi2021ensemble}
+Á.~Győrfi, L.~Szilágyi and L.~Kovács,
+``A fully automatic and efficient brain tumor segmentation
+framework based on ensemble learning and atlas-based normality
+deviation,''
+\emph{Applied Sciences}, vol.~11, no.~2, art.~564, 2021.
+
+\bibitem{visser2019interobserver}
+M.~Visser \emph{et al.},
+``Inter-rater agreement in glioma segmentations on longitudinal
+MRI,''
+\emph{NeuroImage: Clinical}, vol.~22, art.~101727, 2019.
+
+\bibitem{louis2021who}
+D.~N.~Louis \emph{et al.},
+``The 2021 WHO Classification of Tumors of the Central Nervous
+System: a summary,''
+\emph{Neuro-Oncology}, vol.~23, no.~8, pp.~1231--1251, 2021.
+
+\bibitem{mesfin2024gliomas}
+F.~B.~Mesfin and M.~A.~Al-Dhahir, ``Gliomas,'' in
+\emph{StatPearls}, Treasure Island, FL, USA: StatPearls
+Publishing, 2024.
+
+\bibitem{bhattacharya2024posttreatment}
+D.~Bhattacharya \emph{et al.},
+``Imaging assessment of post-treatment gliomas: a review,''
+\emph{Clinical Radiology}, vol.~79, no.~3, pp.~e376--e392, 2024.
 
 \end{thebibliography}
 
