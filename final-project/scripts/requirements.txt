@@ -8,3 +8,5 @@ matplotlib>=3.8
 scipy>=1.11
 scikit-learn>=1.4
 scikit-image>=0.22
+trimesh>=4.0
+pygltflib>=1.16

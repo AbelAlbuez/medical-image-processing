@@ -73,6 +73,7 @@ Cada módulo deja **tres tipos de salida**: volúmenes `.nii.gz`, figuras `.png`
 | 3 | **Registro** (demostrativo) | **Mattes MI + Euler3D rígido** multi-resolución: perturbación rígida conocida → recuperación | T1c (fijo) | `<caso>-desalineado/-recuperado.nii.gz`, `.tfm`, `metricas_registro.csv`, curva | `registro_reporte.html` |
 | 4 | **Segmentación ET** | 4 métodos clásicos sobre T1c limpio: **Otsu, RegionGrowing, Watershed, GMM multimodal** | T1c limpio + `seg` (GT) | `<caso>-<metodo>-ET.nii.gz`, `metricas_segmentacion.csv`, `metricas_resumen.csv` | `segmentacion_reporte.html` |
 | 5 | **Visualización** | Mosaicos 3 vistas (axial/sagital/coronal) centrados en el ET + análisis post-mortem | T1c limpio + máscaras del módulo 4 | mosaicos/overlays PNG | `visualizacion_reporte.html` |
+| 6 | **Reconstrucción 3D** | Mallas ET predicho (RegionGrowing) vs GT + visor web | máscaras de segmentación + `seg` (GT) | `.obj`/`.glb` por caso + `metricas_3d.csv` | `reconstruccion3d_reporte.html` + `visor_3d.html` |
 
 - El **registro** es **propio** del equipo (no proviene del código reutilizado de Santiago).
 - La **segmentación** usa **9 casos**: 8 con ET (rango de volumen) + 1 sin ET (robustez).
@@ -114,6 +115,12 @@ más brillante** y crece por **ventana brillante** `[α·I, max]` (α=0.65). El 
 ubicación de la semilla (inicialización semi-automática); la máscara final sale del
 crecimiento sobre T1c, no del GT.
 
+**Reconstrucción 3D** (`output/reconstruccion3d/outputs/metricas_3d.csv`)
+- Mallas (marching cubes) de los 8 casos con ET: predicción (RegionGrowing) vs GT.
+- El volumen de la malla GT reproduce el volumen de ET del EDA en el mismo orden de magnitud
+  (p. ej. caso `02060-100`: malla GT **19 266 mm³** vs EDA **19 975 mm³**), lo que valida la
+  escala física (spacing en mm).
+
 ---
 
 ## Cómo ejecutar
@@ -133,11 +140,18 @@ python 02_limpieza/limpieza.py
 python 03_registro/registro.py
 python 04_segmentacion/segmentacion.py     # admite --no_product para el sweep posicional
 python 05_visualizacion/visualizacion.py
+python 06_reconstruccion3d/reconstruccion3d.py
 ```
 
-Los módulos 2–5 leen `output/eda/outputs/parametros_eda.json` (casos demostrativos), así que
+Los módulos 2–6 leen `output/eda/outputs/parametros_eda.json` (casos demostrativos), así que
 el **EDA debe ejecutarse primero**. El módulo 4 limpia automáticamente el T1c de los casos
-nuevos que aún no estén en `output/limpieza/`.
+nuevos que aún no estén en `output/limpieza/`. El módulo 6 reutiliza las máscaras del módulo 4.
+
+**Visor 3D para la exposición.** El módulo 6 genera mallas en `.obj` (para Slicer/Blender) y
+`.glb`, más un **visor web interactivo autocontenido** en `output/reconstruccion3d/visor_3d.html`
+(Three.js servido desde `lib/` local — **funciona sin internet**): superpone el ET predicho
+(naranja) y el GT (verde translúcido) por caso, con rotar/zoom/pan, toggles y el Dice del caso.
+Dependencias extra del módulo 6: `trimesh` y `pygltflib` (ya en `requirements.txt`).
 
 ---
 
