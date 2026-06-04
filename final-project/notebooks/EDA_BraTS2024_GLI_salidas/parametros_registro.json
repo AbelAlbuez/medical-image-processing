@@ -1,19 +1,17 @@
 {
-  "modalidad_fija_recomendada": "T2w",
+  "modalidad_fija_recomendada": "T1n",
   "spacing_objetivo": "1.00x1.00x1.00",
+  "orientacion": "LAS",
   "metrica_recomendada": "Informacion mutua (Mattes) - multimodal",
   "transformacion": "Rigida (Euler3D / VersorRigid3D)",
   "registro_intra_sujeto_necesario": false,
-  "registro_a_atlas_recomendado": true,
-  "pct_casos_coregistrados": 100.0,
   "pct_casos_iso_1mm": 100.0,
   "casos_demostrativos": [
-    "BraTS-GLI-02565-105",
-    "BraTS-GLI-02489-100",
-    "BraTS-GLI-02595-100",
-    "BraTS-GLI-02617-101",
-    "BraTS-GLI-02479-101",
-    "BraTS-GLI-02480-101"
+    "BraTS-GLI-02827-100",
+    "BraTS-GLI-02119-101",
+    "BraTS-GLI-02923-101",
+    "BraTS-GLI-02514-102",
+    "BraTS-GLI-02859-100"
   ],
-  "conclusion": "Las modalidades ya vienen coregistradas entre sí; el coregistro intra-sujeto es redundante. El registro aporta valor como registro a un atlas/plantilla o como demostración de la técnica sobre los casos demostrativos."
+  "conclusion": "Las modalidades ya vienen coregistradas e isotrópicas; el coregistro intra-sujeto es redundante. El registro se usa como demostración de la técnica (perturbación rígida conocida -> recuperación)."
 }

@@ -1,0 +1,4 @@
+case_id,dice_cerebro_antes,dice_cerebro_despues,mse_antes,mse_despues,iteraciones,metrica_MI_final,segundos,TRE_mm
+BraTS-GLI-02827-100,0.9071,0.9628,15731.8623,110.81334,150,-1.19571,107.0,0.0021
+BraTS-GLI-02119-101,0.9132,0.9632,1793.01062,35.68923,150,-1.14056,90.5,0.0029
+BraTS-GLI-02923-101,0.9148,0.9648,215758.45312,4325.13379,150,-1.26313,88.7,0.0058

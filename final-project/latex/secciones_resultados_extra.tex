@@ -1,0 +1,124 @@
+% =============================================================================
+% Bloque para pegar en latex/informe.tex
+% después de \subsection{Análisis por caso} dentro de la sección Resultados.
+%
+% Si no están ya en el preámbulo, añadir:
+%     \usepackage{xcolor,colortbl}
+%     \usepackage{booktabs}
+%     \usepackage{listings}
+%     \definecolor{cellgood}{RGB}{212,237,218}
+% =============================================================================
+
+\subsection{Métricas de calidad contra GT real}
+\label{subsec:metricas-gt}
+
+Para cuantificar la fidelidad geométrica del interpolado contrasté, para cada
+par $(A, B)$, el contorno reconstruido a $t = 0.5$ contra el slice real
+intermedio (\emph{ground truth}) del dataset BraTS. Reporto cuatro métricas:
+\emph{Dice} y \emph{IoU} de solapamiento de región (mejor cuanto mayor;
+calculadas rasterizando ambos polígonos en una grilla $512\!\times\!512$),
+distancia de Hausdorff bidireccional entre vértices (mejor cuanto menor) y
+error relativo de área $\mathrm{areaErr}=|A_{\text{interp}}-A_{\text{gt}}|/A_{\text{gt}}$.
+
+\begin{table}[h]
+  \centering
+  \small
+  \begin{tabular}{lcccccc}
+    \toprule
+    Caso & Par $(A \!\to\! B)$ & Dice & IoU & Hausdorff & AreaErr & Self-int \\
+    \midrule
+    00008-100 & $70 \!\to\! 72$ &
+      \cellcolor{cellgood}0.855 & \cellcolor{cellgood}0.746 &
+      \cellcolor{cellgood}1.265 & \cellcolor{cellgood}0.142 & No \\
+    00008-101 & $70 \!\to\! 72$ &
+      \cellcolor{cellgood}0.854 & \cellcolor{cellgood}0.746 &
+      \cellcolor{cellgood}0.896 & \cellcolor{cellgood}0.056 & No \\
+    \midrule
+    \textbf{Promedio} & --- &
+      \textbf{0.855} & \textbf{0.746} &
+      \textbf{1.081} & \textbf{0.099} & --- \\
+    \bottomrule
+  \end{tabular}
+  \caption{Métricas del interpolado lineal a $t=0.5$ contra el slice GT real
+  intermedio. El sombreado verde indica que la celda cumple el umbral de
+  calidad (Dice $\geq 0.80$, IoU $\geq 0.65$, Hausdorff $\leq 2.0$,
+  AreaErr $\leq 0.20$).}
+  \label{tab:metricas-gt}
+\end{table}
+
+Es importante remarcar una diferencia metodológica con el trabajo de Santiago.
+Él reporta $\mathrm{Dice} \approx 0.997$ sobre el dataset completo, midiendo
+contra el GT \emph{sintético} reconstruido del propio dataset (es decir,
+contra la misma malla que su pipeline produce); por construcción esa
+comparación tiende a saturar en 1. En cambio, mi protocolo descarta el slice
+intermedio del par y mide el interpolado contra el GT \emph{real} de ese
+slice, lo que castiga cualquier desviación topológica o de forma. Ambos
+enfoques son válidos y complementarios, pero no son directamente comparables:
+los valores $\sim\!0.85$ que reporto reflejan la dificultad intrínseca de
+predecir un slice ausente a partir de sus vecinos.
+
+
+\subsection{Experimento de stress sobre el resolver}
+\label{subsec:stress}
+
+Para validar el módulo \texttt{SelfIntersectionResolver} diseñé un experimento
+que fuerza una correspondencia patológica entre $A$ y $B$:
+
+\begin{enumerate}
+  \item Tomo el par del caso 00008-100 (\texttt{slice\_0070.obj},
+        \texttt{slice\_0072.obj}).
+  \item Rotación cíclica de los vértices de $B$ por $k = n/2$ posiciones,
+        donde $n$ es la cantidad de vértices de $B$. Esto desalinea por
+        completo la correspondencia angular inicial y, sin compensación,
+        forzaría que los segmentos del interpolado a $t=0.5$ se crucen
+        entre sí.
+  \item Interpolo a $t = 0.5$ con el binario y, si aparecen
+        auto-intersecciones, las resuelvo con \texttt{SelfIntersectionResolver}.
+\end{enumerate}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.95\textwidth]{../src/interpolation-lineal/output/stress_test/2026-05-31_16-48-37/stress_comparison.png}
+  \caption{Comparativa lado a lado del experimento de stress sobre
+  \texttt{BraTS-GLI-00008-100}. Izquierda: corrida normal con $B$ original.
+  Derecha: $B$ rotado en $k = n/2 = 12$ vértices. En ambos casos el
+  contorno verde es el interpolado a $t=0.5$. La búsqueda de rotación
+  óptima del binario, seguida del resolver, recupera una topología
+  válida incluso bajo la rotación adversarial.}
+  \label{fig:stress}
+\end{figure}
+
+El experimento demuestra que el pipeline completo
+(rotación óptima $+$ resampling $+$ interpolación $+$ resolver) es robusto
+frente a perturbaciones del orden cíclico de los vértices de entrada, que es
+exactamente el tipo de inconsistencia esperable cuando los contornos vienen
+de slices independientes sin un punto de inicio canónico.
+
+
+\subsection{Salida para reconstrucción 3D}
+\label{subsec:multi-t}
+
+El binario escribe siempre los vértices con $z = 0$, lo cual es suficiente
+para inspeccionar el resultado en 2D pero impide apilar varios contornos
+interpolados en un volumen tridimensional para reconstrucción posterior
+(p.ej.\ Poisson o marching cubes en VTK/ParaView). Para cerrar ese hueco
+implementé \texttt{scripts/generate\_multi\_t.py}, que genera 11 capas
+intermedias ($t = 0.0, 0.1, \ldots, 1.0$) con la coordenada $z$ real
+interpolada linealmente entre los dos slices originales:
+$z(t) = z_A + t \cdot (z_B - z_A)$.
+
+\begin{lstlisting}[language=bash,basicstyle=\small\ttfamily]
+# Genera 11 contornos interpolados con z real entre los slices 70 y 72
+python scripts/generate_multi_t.py \
+    data/contours/BraTS-GLI-00008-100/slice_0070.obj \
+    data/contours/BraTS-GLI-00008-100/slice_0072.obj \
+    70 72
+\end{lstlisting}
+
+Cada corrida deposita los 11 \texttt{.obj} más un
+\texttt{preview\_3d.png} y un \texttt{index.csv} (columnas
+\texttt{t, z, filename, n\_vertices, self\_int}) en una subcarpeta con
+\emph{timestamp} dentro de \texttt{src/interpolation-lineal/output/multi\_t/}.
+Este \texttt{index.csv} es el punto de integración con el pipeline de
+reconstrucción de Santiago: él consume directamente el listado para apilar
+los contornos y alimentar su superficie de marching cubes.

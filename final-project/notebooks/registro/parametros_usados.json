@@ -1,0 +1,25 @@
+{
+  "modalidad": "t1n",
+  "necesita_intra": false,
+  "NBINS_MI": 50,
+  "MUESTREO": 0.1,
+  "ITERS": 150,
+  "SHRINK": [
+    4,
+    2
+  ],
+  "SIGMAS": [
+    2,
+    1
+  ],
+  "ROT_DEG": [
+    6.0,
+    4.0,
+    -5.0
+  ],
+  "TRA_MM": [
+    5.0,
+    -4.0,
+    3.0
+  ]
+}

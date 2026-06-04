@@ -35,3 +35,15 @@ EDA_*_completo.csv
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Auxiliares LaTeX y backups locales
+latex/informe.tex.bak
+latex/informe.tex.geometria.bak
+latex/informe.fls
+latex/informe.fdb_latexmk
+
+# Salidas pesadas de notebooks (>50MB o intermedios)
+notebooks/segmentacion_visualizacion_salidas/visualizacion/report.html
+notebooks/segmentacion_visualizacion_salidas/visualizacion/3d/*_preview3d.html
+notebooks/segmentacion_visualizacion_salidas/limpieza/**/*.npy
+notebooks/segmentacion_visualizacion_salidas/segmentacion/**/*.npy
