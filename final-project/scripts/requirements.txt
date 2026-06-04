@@ -1,0 +1,10 @@
+# Pipeline clásico de segmentación de Tumor Realzante (ET) en BraTS 2024 GLI.
+# Python 3.11. Instalar dentro de scripts/.venv (ver comandos al final del proyecto).
+SimpleITK>=2.3
+nibabel>=5.2
+numpy>=1.26,<2.2
+pandas>=2.1
+matplotlib>=3.8
+scipy>=1.11
+scikit-learn>=1.4
+scikit-image>=0.22
