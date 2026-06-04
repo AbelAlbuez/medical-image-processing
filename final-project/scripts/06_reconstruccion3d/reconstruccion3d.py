@@ -345,11 +345,14 @@ function addMalla(b64, tipo){
     if(!b64){ resolve(false); return; }
     try{
       loader.parse(b64ToArrayBuffer(b64), '', (gltf) => {
+        // emissive del propio color: garantiza que la malla muestre color aunque la
+        // iluminación o las normales fallen (evita que se vea negra).
         const mat = tipo==='pred'
-          ? new THREE.MeshStandardMaterial({color:C_PRED, metalness:0.1, roughness:0.6,
-              transparent:true, opacity:0.55, side:THREE.DoubleSide})
-          : new THREE.MeshStandardMaterial({color:C_GT, metalness:0.1, roughness:0.6,
-              transparent:true, opacity:0.35, depthWrite:false, side:THREE.DoubleSide});
+          ? new THREE.MeshStandardMaterial({color:C_PRED, emissive:C_PRED, emissiveIntensity:0.30,
+              metalness:0.1, roughness:0.6, transparent:true, opacity:0.55, side:THREE.DoubleSide})
+          : new THREE.MeshStandardMaterial({color:C_GT, emissive:C_GT, emissiveIntensity:0.25,
+              metalness:0.1, roughness:0.6, transparent:true, opacity:0.35,
+              depthWrite:false, side:THREE.DoubleSide});
         gltf.scene.traverse(o => {
           if(o.isMesh){
             if(o.geometry && o.geometry.computeVertexNormals) o.geometry.computeVertexNormals();
