@@ -16,15 +16,19 @@
 \usepackage{multirow}
 \usepackage{makecell}
 
-% ── Colores para celdas de tabla ─────────────────────────────────
+% ── Colores para celdas de tabla (semáforo) ──────────────────────
 \definecolor{cellgood}{RGB}{212,237,218}
 \definecolor{cellmid}{RGB}{255,243,205}
 \definecolor{cellbad}{RGB}{248,215,218}
+\newcommand{\cg}[1]{\cellcolor{cellgood}#1}   % Dice >= 0,80
+\newcommand{\cm}[1]{\cellcolor{cellmid}#1}    % 0,50 <= Dice < 0,80
+\newcommand{\cb}[1]{\cellcolor{cellbad}#1}    % Dice < 0,50
+\newcommand{\na}{\cellcolor{gray!18}N/A}
 
 % ── Metadatos ────────────────────────────────────────────────────
-\title{Segmentación clásica de gliomas en BraTS 2024 (GLI) y
-registro rígido por información mutua: un estudio de las
-limitaciones de los métodos sin aprendizaje profundo}
+\title{Segmentación clásica del tumor realzante (ET) en T1c
+sobre BraTS 2024 GLI: alcances y límites de los métodos sin
+aprendizaje profundo}
 
 \author{\IEEEauthorblockN{Abel Albuez, Victoria Acero y Santiago Gil}
 \IEEEauthorblockA{Maestría en Ingeniería de Sistemas y Computación\\
@@ -38,678 +42,574 @@ Repositorio: \url{https://github.com/AbelAlbuez/medical-image-processing}}}
 
 % ── Abstract ─────────────────────────────────────────────────────
 \begin{abstract}
-Se presenta un proyecto de procesamiento de imágenes médicas
-sobre el dataset \textit{BraTS 2024 Adult Glioma} (GLI),
-estructurado en tres bloques: (i) un análisis exploratorio (EDA)
-de 25 casos multimodales (T1n, T1c, T2w, T2-FLAIR); (ii) un
-pipeline de segmentación automática del tumor cerebral
-\emph{completo} (\texttt{seg > 0}) en la modalidad FLAIR mediante
-métodos clásicos basados en intensidad ---Otsu multinivel,
-modelos de mezcla Gaussiana (GMM), crecimiento de regiones
-sembrado en el centroide del \emph{ground truth} y watershed por
-marcadores--- sin recurrir a aprendizaje profundo; y (iii) una
-demostración cuantitativa de registro rígido por información mutua
-de Mattes con transformación Euler3D y esquema multi-resolución,
-sobre tres casos representativos. El hallazgo central del bloque
-de segmentación es que los métodos puramente basados en intensidad
-son \textbf{insuficientes} para el tumor completo en casos
-post-tratamiento (Dice medio $0{,}33$ con Otsu, el mejor método;
-$0{,}18$ con crecimiento de regiones), principalmente porque la
-cavidad de resección es hipointensa en FLAIR y rompe la hipótesis
-de un único modo brillante. El registro, en cambio, recupera la
-perturbación rígida impuesta con un \emph{Target Registration
-Error} (TRE) residual sub-vóxel (media $0{,}004$~mm), confirmando
-la robustez del motor Mattes\,MI\,+\,Euler3D incluso cuando las
-modalidades del dataset ya están coregistradas de fábrica.
+Se aborda la segmentación automática del \emph{tumor realzante}
+(\textit{enhancing tumor}, ET; etiqueta~3 de BraTS) sobre la
+modalidad T1 con contraste (T1c) empleando exclusivamente métodos
+clásicos de \textsc{SimpleITK}, sin aprendizaje profundo. Un
+análisis exploratorio sobre 100 casos de \textit{BraTS 2024 GLI
+Post-Treatment} (78 con ET presente) muestra que T1c es la
+modalidad más separable para el realce (razón discriminante de
+Fisher mediana de $1{,}32$ frente a $0{,}47$ en T2-FLAIR). Tras
+una limpieza de T1c (Wiener $\rightarrow$ N4 $\rightarrow$
+normalización por percentiles) se evalúan cuatro métodos
+---Otsu multinivel, crecimiento de regiones, \textit{watershed}
+por marcadores y mezcla de gaussianas multimodal--- sobre nueve
+casos. El hallazgo central es que \textbf{los métodos clásicos por
+intensidad son insuficientes para el ET}: ningún método supera un
+Dice medio de $0{,}50$, y el mejor ---crecimiento de regiones, con
+Dice medio de $0{,}320$--- es apenas ``el menos malo''. La mezcla
+de gaussianas multimodal \emph{sobre-segmenta} (sensibilidad
+$0{,}63$ pero Dice $0{,}094$), evidenciando que añadir modalidades
+no compensó la falta de un modelo de forma. Complementariamente,
+un registro rígido por información mutua de Mattes recupera una
+perturbación conocida con un error de registro objetivo (TRE)
+medio de $0{,}007$~mm, y una reconstrucción 3D por
+\textit{marching cubes} valida la escala física de las mallas.
 \end{abstract}
 
 \begin{IEEEkeywords}
-BraTS 2024, gliomas, segmentación clásica, Otsu, GMM,
-crecimiento de regiones, watershed, registro rígido,
-información mutua, ITK, SimpleITK.
+BraTS 2024 GLI, tumor realzante, T1c, segmentación clásica,
+SimpleITK, información mutua de Mattes, \textit{marching cubes}.
 \end{IEEEkeywords}
 
-% =====================================================================
+% ════════════════════════════════════════════════════════════════
 \section{Introducción y objetivos}
-\label{sec:intro}
-% =====================================================================
-Los gliomas adultos son los tumores cerebrales primarios más
-frecuentes y presentan una alta heterogeneidad morfológica e
-intensitaria que dificulta su delineación automática en
-resonancia magnética (RM). La iniciativa BraTS (\textit{Brain
-Tumor Segmentation Challenge}) provee anualmente un dataset
-multimodal con segmentaciones expertas que se ha convertido en
-el estándar de facto para evaluar algoritmos de segmentación de
-gliomas~\cite{baid2021brats}. La edición 2024 (track GLI) amplía
-la cohorte y reorganiza las etiquetas para distinguir entre
-\emph{Necrotic Tumor Core} (NETC), \emph{Surrounding Non-enhancing
-FLAIR Hyperintensity} (SNFH), \emph{Enhancing Tumor} (ET) y
-\emph{Resection Cavity} (RC).
+% ════════════════════════════════════════════════════════════════
+Los gliomas son los tumores cerebrales primarios más frecuentes y
+su seguimiento por resonancia magnética (RM) es central en la
+práctica clínica. En el escenario \emph{post-tratamiento}, el
+\emph{tumor realzante} (ET) ---tejido que capta contraste en T1c---
+es un marcador de actividad tumoral residual o recurrente, y por
+ello un objetivo de interés clínico directo. El reto BraTS~2024
+GLI~\cite{baid2021brats} introduce explícitamente la cavidad de
+resección como una clase adicional, lo que altera las hipótesis de
+intensidad sobre las que descansan los métodos clásicos.
 
-El presente proyecto se enmarca en el curso de Procesamiento de
-Imágenes Médicas de la Maestría en Ingeniería de Sistemas y
-Computación de la Pontificia Universidad Javeriana, cuyo requisito
-explícito es resolver tareas de análisis de imagen \textbf{sin
-recurrir a aprendizaje profundo}. Bajo esa restricción, los
-objetivos son:
-\begin{enumerate}
-  \item Caracterizar mediante un EDA cuantitativo el dataset
-        BraTS 2024 GLI y derivar parámetros operativos (modalidad
-        fija para registro, métrica recomendada, semillas).
-  \item Implementar un pipeline reproducible de \textbf{segmentación
-        automática del tumor completo} (\texttt{seg > 0}) sobre la
-        modalidad T2-FLAIR usando cuatro familias clásicas (Otsu,
-        GMM, crecimiento de regiones, watershed) y cuantificar
-        sus límites contra \emph{ground truth}.
-  \item Demostrar cuantitativamente, sobre tres casos, un motor de
-        \textbf{registro rígido por información mutua} (Mattes\,MI
-        + Euler3D multi-resolución) recuperando una perturbación
-        conocida.
-\end{enumerate}
-La hipótesis de trabajo es que, aun con una cuidadosa cadena de
-preprocesamiento (Wiener + N4 + normalización por percentiles),
-los métodos clásicos basados solamente en intensidad serán
-insuficientes para casos con cavidad de resección, justificando
-empíricamente la necesidad de información de forma, atlas o
-aprendizaje en pipelines clínicos modernos.
+Este trabajo se restringe deliberadamente a \textbf{métodos
+clásicos} (sin aprendizaje profundo) implementados sobre
+\textsc{ITK/SimpleITK}~\cite{lloyd2010itk}, con el objetivo de
+caracterizar honestamente sus \emph{alcances y límites} para el ET.
+Los objetivos concretos son: (i) un análisis exploratorio (EDA)
+que justifique la modalidad objetivo; (ii) una limpieza de T1c;
+(iii) un registro rígido demostrativo por información mutua;
+(iv) la segmentación del ET con cuatro métodos clásicos; y
+(v) una reconstrucción 3D de las máscaras para inspección visual.
+La canalización completa se organiza en seis módulos reproducibles
+y se ejecuta leyendo los datos directamente desde los archivos
+comprimidos del reto.
 
-% =====================================================================
+% ════════════════════════════════════════════════════════════════
 \section{Materiales y dataset}
-\label{sec:dataset}
-% =====================================================================
-Se trabajó sobre una muestra de \textbf{25 casos} del subconjunto
-público BraTS 2024 GLI. Cada caso contiene cuatro volúmenes
-multimodales 3D ---T1 nativo (T1n), T1 con contraste (T1c), T2
-ponderado (T2w) y T2 FLAIR (T2f)--- y una segmentación experta
-(\texttt{seg}) con las etiquetas NETC, SNFH, ET y RC. Como
-muestra la Tabla~\ref{tab:geometria}, los 25 volúmenes comparten
-geometría exactamente: forma $182\times 218\times 182$, espaciado
-isotrópico de $1\,$mm y orientación LAS, lo que descarta la
-necesidad de remuestreo o reorientación previas.
+% ════════════════════════════════════════════════════════════════
+Se emplea el subconjunto \textit{BraTS 2024 GLI Post-Treatment}.
+Cada caso aporta cuatro modalidades co-registradas (T1n, T1c, T2w,
+T2-FLAIR) y una segmentación experta \texttt{seg} con cuatro
+etiquetas: \texttt{1=NETC} (núcleo no realzante), \texttt{2=SNFH}
+(edema/FLAIR hiperintenso), \texttt{3=ET} (realce) y \texttt{4=RC}
+(cavidad de resección). \textbf{El objetivo de este trabajo es la
+etiqueta~3 (ET).} Los volúmenes se leen directamente desde los
+\texttt{.zip} del reto, extrayendo puntualmente cada par
+caso/modalidad sin descomprimir el archivo completo. Se procesa un
+subconjunto de 100~casos del conjunto de entrenamiento (el que
+posee \texttt{seg}); de ellos, \textbf{78 contienen ET}.
 
-\begin{table}[H]
+La Tabla~\ref{tab:geometria} resume la geometría, homogénea en
+todo el subconjunto (verificada por el EDA).
+
+\begin{table}[h]
 \centering
-\caption{Geometría de los 25 casos analizados (homogénea en
-todo el subset).}
+\caption{Geometría del subconjunto (uniforme en los 100 casos).}
 \label{tab:geometria}
-\small
-\begin{tabular}{lc}
+\begin{tabular}{ll}
 \toprule
 Propiedad & Valor \\
 \midrule
-Forma del volumen (vóxeles) & $182\times 218\times 182$ \\
-Espaciado (mm)             & $1{,}00 \times 1{,}00 \times 1{,}00$ \\
-Orientación                 & LAS \\
-Casos isotrópicos a 1\,mm  & 100\% \\
+Dimensiones (vóxeles) & $182 \times 218 \times 182$ \\
+Espaciado & $1{,}0 \times 1{,}0 \times 1{,}0$~mm (isotrópico) \\
+Casos procesados & 100 \\
+Casos con ET (\texttt{seg==3}) & 78 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Distribución de intensidades por modalidad}
-La Figura~\ref{fig:eda_intensidad} resume la distribución de
-intensidades por modalidad sobre los 25 casos. Las cuatro
-modalidades difieren tanto en rango dinámico como en forma del
-histograma, motivando la normalización por percentiles que se
-describe en la Sección~\ref{sec:preproc}.
+\subsection{Separabilidad del ET por modalidad}
+Para justificar la modalidad objetivo se midió la separabilidad
+entre los vóxeles de ET y el tejido cerebral sano por modalidad,
+mediante la razón discriminante de Fisher (FDR) y la distancia de
+Bhattacharyya (Tabla~\ref{tab:separabilidad},
+Fig.~\ref{fig:separabilidad}). \textbf{T1c es claramente la
+modalidad más separable para el ET} (FDR mediano $1{,}32$, casi el
+triple que T2-FLAIR), lo que confirma la elección de T1c como
+soporte de la segmentación.
 
-\begin{figure}[H]
+\begin{table}[h]
 \centering
-\includegraphics[width=\columnwidth]{figuras/eda_intensidad_modalidad.png}
-\caption{Distribuciones de intensidad por modalidad sobre los 25
-casos (T1n, T1c, T2w, T2-FLAIR).}
-\label{fig:eda_intensidad}
-\end{figure}
-
-\subsection{Separabilidad sub-región vs.\ tejido sano}
-Para anticipar el desempeño esperado de una segmentación por
-umbral, se calcularon dos métricas de separabilidad entre cada
-sub-región y el tejido sano: el \emph{Fisher Discriminant Ratio}
-(FDR; mayor = más separable) y la distancia de Bhattacharyya
-(mayor = más separable). Los valores se reportan en la
-Tabla~\ref{tab:separabilidad}.
-
-\begin{table}[H]
-\centering
-\caption{Separabilidad de cada sub-región respecto a tejido
-sano, por modalidad. \emph{FDR}: Fisher Discriminant Ratio
-(\;$\uparrow$ mejor\;). \emph{Bhatt.}: distancia de
-Bhattacharyya (\;$\uparrow$ mejor\;).}
+\caption{Separabilidad ET vs.\ tejido sano por modalidad
+(mediana y media sobre los 78 casos con ET).}
 \label{tab:separabilidad}
-\small
-\begin{tabular}{llcccc}
+\begin{tabular}{lcccc}
 \toprule
-Métrica & Sub-región & T1n & T1c & T2w & T2-FLAIR \\
+Modalidad & FDR mediana & FDR media & Bhatt.\ med. & Bhatt.\ media \\
 \midrule
-\multirow{4}{*}{FDR}
- & NETC & 0.611 & 0.672 & 0.551 & 0.550 \\
- & SNFH & 0.851 & 0.858 & 0.740 & 0.604 \\
- & ET   & 0.663 & 0.731 & 0.710 & 0.670 \\
- & RC   & 0.639 & 0.638 & 0.564 & 0.659 \\
-\midrule
-\multirow{4}{*}{Bhatt.}
- & NETC & 0.145 & 0.079 & 0.204 & 0.211 \\
- & SNFH & 0.026 & 0.018 & 0.057 & \textbf{0.163} \\
- & ET   & 0.089 & 0.070 & 0.069 & 0.089 \\
- & RC   & 0.134 & 0.134 & 0.188 & 0.082 \\
+\textbf{T1c} & \textbf{1,317} & 1,461 & 0,375 & 0,403 \\
+T2-FLAIR     & 0,472 & 0,818 & 0,153 & 0,238 \\
+T2w          & 0,341 & 0,667 & 0,178 & 0,250 \\
+T1n          & 0,099 & 0,227 & 0,126 & 0,177 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-La SNFH (edema/infiltración no-realzante, principal componente
-del \emph{tumor completo}) es claramente más separable en T2-FLAIR
-($\mathrm{Bhatt.}=0{,}163$ frente a $\leq 0{,}06$ en las otras
-modalidades). Este resultado justifica empíricamente la elección
-de FLAIR como modalidad de trabajo para la segmentación del
-objetivo \texttt{seg > 0}.
-
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
 \includegraphics[width=\columnwidth]{figuras/eda_separabilidad.png}
-\caption{Separabilidad sub-región vs.\ tejido sano: heatmaps
-de FDR y Bhattacharyya por modalidad y sub-región.}
-\label{fig:eda_sep}
+\caption{Separabilidad ET vs.\ tejido sano por modalidad (FDR y
+Bhattacharyya medianos). T1c domina, justificando su uso para ET.}
+\label{fig:separabilidad}
 \end{figure}
 
-\subsection{Umbrales Otsu y grado de bimodalidad}
-Se estimaron umbrales Otsu multinivel (dos cortes) sobre cada
-modalidad y se cuantificó el grado de bimodalidad del histograma
-(razón inter/intra-clase). Como referencia global, la
-Tabla~\ref{tab:otsu} reporta los valores medianos.
+\subsection{Umbral de Otsu y casos demostrativos}
+El umbral alto de Otsu (n=3) sobre T1c en escala cruda tiene una
+mediana de $3120$ y un rango de $352$ a $6435$ entre casos
+(Fig.~\ref{fig:otsu}), lo que evidencia una fuerte variabilidad
+inter-caso de la intensidad y motiva la normalización del
+módulo siguiente. El volumen de ET tiene una mediana de
+$4814$~mm$^3$ (rango $66$--$87\,993$~mm$^3$). A partir de esta
+distribución se seleccionaron automáticamente casos demostrativos
+que cubren el rango de tamaño de ET más un caso \emph{sin} ET
+(Tabla~\ref{tab:demostrativos},
+Fig.~\ref{fig:casos}).
 
-\begin{table}[H]
+\begin{table}[h]
 \centering
-\caption{Umbrales Otsu multinivel medianos y bimodalidad por
-modalidad (sobre 25 casos).}
-\label{tab:otsu}
-\small
-\begin{tabular}{lccc}
+\caption{Casos demostrativos seleccionados por el EDA.}
+\label{tab:demostrativos}
+\begin{tabular}{lll}
 \toprule
-Modalidad & Otsu bajo & Otsu alto & Bimodalidad \\
+Categoría & Caso & Volumen ET (mm$^3$) \\
 \midrule
-T1c       & 759.17 & 1710.55 & 0.229 \\
-T1n       & 505.17 &  822.55 & 0.533 \\
-T2-FLAIR  & 393.97 &  698.63 & 0.369 \\
-T2w       & 791.70 & 1332.09 & \textbf{0.587} \\
+Pequeño    & BraTS-GLI-00529-100 & 501 \\
+Mediano    & BraTS-GLI-02063-102 & 4\,812 \\
+Grande     & BraTS-GLI-02060-100 & 19\,975 \\
+Sin ET     & BraTS-GLI-00005-100 & 0 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
-\includegraphics[width=\columnwidth]{figuras/eda_otsu_bimodalidad.png}
-\caption{Umbrales Otsu (líneas verticales) sobre el histograma
-agregado y grado de bimodalidad por modalidad.}
-\label{fig:eda_otsu}
+\includegraphics[width=\columnwidth]{figuras/eda_otsu_t1c.png}
+\caption{Distribución del umbral alto de Otsu (n=3) en T1c por
+caso (escala cruda); la dispersión justifica normalizar.}
+\label{fig:otsu}
 \end{figure}
 
-\subsection{Variabilidad inter-caso y casos demostrativos}
-Existe una alta varianza inter-caso del volumen tumoral total
-(de $\sim$\,$4{,}5\,$k vóxeles en el caso más pequeño hasta
-$\sim$\,$195\,$k en el más grande), así como del p99 de intensidad.
-La Figura~\ref{fig:eda_var} ilustra esa dispersión. Para los
-bloques de segmentación y registro se eligieron cinco casos
-representativos cubriendo distintas situaciones clínicas, listados
-en la Tabla~\ref{tab:demo}.
-
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
-\includegraphics[width=\columnwidth]{figuras/eda_variabilidad_casos.png}
-\caption{Variabilidad inter-caso de las medias y p99 de
-intensidad por modalidad.}
-\label{fig:eda_var}
+\includegraphics[width=\columnwidth]{figuras/eda_casos_demostrativos.png}
+\caption{Casos demostrativos: T1c con el ET (contorno rojo) en el
+corte del centroide. El caso sin ET no presenta realce.}
+\label{fig:casos}
 \end{figure}
 
-\begin{table}[H]
+% ════════════════════════════════════════════════════════════════
+\section{Preprocesamiento (T1c)}
+% ════════════════════════════════════════════════════════════════
+Sobre T1c se aplica, en este orden: (1) reducción de ruido con
+filtro de Wiener adaptativo (ventana~3); (2) corrección del campo
+de sesgo con N4~\cite{tustison2010n4} (\textit{shrink}~4); y
+(3) normalización por percentiles $[0{,}5,\,99{,}5]$ a $[0,1]$
+dentro del cerebro. El denoise precede a N4 para evitar que el
+ruido se modele como estructura, y la normalización al final fija
+la escala entre casos (Tabla~\ref{tab:geometria} mostró que la
+geometría es homogénea, por lo que no se requiere remuestreo).
+
+La Tabla~\ref{tab:limpieza} resume, para los nueve casos de la
+segmentación, la intensidad antes (escala cruda) y después de la
+limpieza; todos los volúmenes quedan en $[0,1]$, lo que homogeneiza
+la escala dispar de partida (medias crudas de $335$ a $3096$).
+La Fig.~\ref{fig:limpieza} ilustra el efecto.
+
+\begin{table}[h]
 \centering
-\caption{Cinco casos demostrativos seleccionados para los
-experimentos. Volúmenes en vóxeles (ground truth).}
-\label{tab:demo}
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{llrrrrr}
+\caption{Estadísticas de intensidad dentro del cerebro antes y
+después de la limpieza (9 casos de segmentación).}
+\label{tab:limpieza}
+\begin{tabular}{lccccc}
 \toprule
-Caso & Motivo & Total & NETC & SNFH & ET & RC \\
+Caso & ET & media$_\text{orig}$ & p99$_\text{orig}$ & media$_\text{limp}$ & std$_\text{limp}$ \\
 \midrule
-02827-100 & Típico (mediana)        & 57050 & 0    & 13208  & 0    & 43842 \\
-02119-101 & Tumor grande ($\sim$p95)& 195115& 2701 & 174405 & 2409 & 15600 \\
-02923-101 & Tumor pequeño ($\sim$p5)& 10036 & 0    & 4798   & 0    & 5238 \\
-02514-102 & Post-resección (RC$>0$)  & 156341& 0    & 62326  & 5185 & 88830 \\
-02859-100 & Sólo edema (sin ET)     & 64735 & 0    & 62422  & 0    & 2313 \\
+02063-106 & sí & 359,2  & 669,0  & 0,350 & 0,117 \\
+00529-100 & sí & 1973,7 & 3299,2 & 0,507 & 0,131 \\
+02062-100 & sí & 385,9  & 683,0  & 0,384 & 0,108 \\
+02063-102 & sí & 334,7  & 616,2  & 0,365 & 0,112 \\
+00498-100 & sí & 1651,9 & 2986,4 & 0,451 & 0,114 \\
+00463-101 & sí & 2133,1 & 4300,3 & 0,305 & 0,124 \\
+02060-100 & sí & 690,8  & 1358,0 & 0,340 & 0,128 \\
+00046-101 & sí & 3096,0 & 7022,2 & 0,280 & 0,128 \\
+00005-100 & no & 2081,6 & 4334,2 & 0,374 & 0,103 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Nótese que en cuatro de los cinco casos la sub-región
-\emph{Resection Cavity} (RC) es significativa, y en tres de ellos
-es la sub-región dominante. Esto será determinante para entender
-las limitaciones reportadas en la Sección~\ref{sec:disc}.
-
-\subsection{Semilla automática para crecimiento de regiones}
-Como insumo del método de crecimiento de regiones se identificó,
-por caso, un punto candidato a semilla preferentemente dentro de
-ET (o, en su defecto, dentro del tumor completo) con su intensidad
-T1c asociada. La Figura~\ref{fig:eda_seed} muestra el
-solapamiento de las intensidades de semilla con la distribución
-de tejido sano, anticipando que la semilla por sí sola no es
-discriminante.
-
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
-\includegraphics[width=\columnwidth]{figuras/eda_semilla_t1c.png}
-\caption{Intensidades T1c en el voxel semilla (por caso) frente
-a la distribución global de T1c en tejido sano.}
-\label{fig:eda_seed}
+\includegraphics[width=\columnwidth]{figuras/limp_02060-100.png}
+\caption{Limpieza de T1c (caso 02060-100): original, resultado
+(Wiener$\to$N4$\to$normalización) e histograma cerebral.}
+\label{fig:limpieza}
 \end{figure}
 
-\subsection{Parámetros derivados para el bloque de registro}
-A partir del EDA (archivo \texttt{parametros\_registro.json}) se
-fijaron los parámetros operativos del registro: modalidad fija
-recomendada \textbf{T1n}, métrica \textbf{Información Mutua de
-Mattes} (apropiada para escenarios multimodales), transformación
-\textbf{rígida Euler3D} y un \textbf{100\%} de casos
-isotrópicos a $1\,$mm. Crucialmente, el EDA verifica que las
-cuatro modalidades por caso ya están coregistradas, por lo que
-el registro intra-sujeto es \emph{redundante} y se plantea como
-un ejercicio \textbf{demostrativo} (perturbación rígida conocida
-$\to$ recuperación).
+% ════════════════════════════════════════════════════════════════
+\section{Registro rígido demostrativo}
+% ════════════════════════════════════════════════════════════════
+Se incluye una demostración cuantitativa de registro rígido por
+información mutua de Mattes~\cite{mattes2003} con transformación
+Euler3D y esquema multi-resolución. Tomando T1c como volumen fijo,
+se le aplica una perturbación rígida \emph{conocida}
+(rotación $(6,4,-5)^\circ$, traslación $(5,-4,3)$~mm) para generar
+un volumen desalineado, y se registra para recuperarla. La métrica
+se configura con 50 \textit{bins}, muestreo aleatorio del $10\%$
+(semilla 42), inicialización por geometría
+(\textit{CenteredTransformInitializer}), optimizador
+\textit{gradient descent line search}, factores de reducción
+$[4,2]$ y sigmas $[2,1]$.
 
-% =====================================================================
-\section{Preprocesamiento}
-\label{sec:preproc}
-% =====================================================================
-Antes de toda segmentación se aplica un pipeline de limpieza de
-intensidades común a todos los métodos, encadenado en el orden:
+Como la perturbación es conocida, el error de registro objetivo
+(TRE) mide directamente la calidad: en los cuatro casos es
+\emph{sub-vóxel} ($\approx 0{,}007$~mm), y el Dice del cerebro
+mejora de $0{,}906$ a $0{,}963$ (Tabla~\ref{tab:registro},
+Fig.~\ref{fig:registro}). El registro recupera con precisión la
+transformación impuesta; es el único bloque del trabajo con un
+resultado cuantitativamente sólido, en contraste con la
+segmentación.
 
-\begin{enumerate}
-  \item \textbf{Filtro de Wiener} con kernel de tamaño $3$ para
-        atenuar ruido gaussiano sin penalizar bordes.
-  \item \textbf{Corrección de campo de sesgo N4} (Tustison
-        \emph{et al.}~\cite{tustison2010n4}) con factor de
-        \emph{shrink}$=4$ para eliminar el sesgo lento de
-        intensidad típico de RM.
-  \item \textbf{Normalización por percentiles}: recorte al
-        intervalo $[p_{0{,}5}, p_{99{,}5}]$ y reescalado lineal a
-        $[0,1]$ por volumen, descartando los extremos sin
-        eliminar señal anatómica relevante.
-\end{enumerate}
+\begin{table*}[t]
+\centering
+\caption{Registro rígido demostrativo (perturbación conocida
+$\rightarrow$ recuperación). TRE sub-vóxel y mejora del Dice de
+cerebro en los cuatro casos.}
+\label{tab:registro}
+\begin{tabular}{lccccccc}
+\toprule
+Caso & TRE (mm) & Dice cerebro antes & Dice cerebro después &
+MSE antes & MSE después & MI final & Tiempo (s) \\
+\midrule
+00529-100 & 0,0064 & 0,9076 & 0,9633 & 205\,707 & 3\,109 & $-1{,}029$ & 8,1 \\
+02063-102 & 0,0095 & 0,9110 & 0,9646 & 5\,635   & 188   & $-1{,}000$ & 6,7 \\
+02060-100 & 0,0082 & 0,9196 & 0,9621 & 27\,553  & 1\,106 & $-0{,}982$ & 7,2 \\
+00005-100 & 0,0054 & 0,8865 & 0,9607 & 242\,177 & 3\,676 & $-0{,}765$ & 7,0 \\
+\midrule
+\textbf{Promedio} & \textbf{0,0074} & \textbf{0,9062} & \textbf{0,9627}
+& 120\,268 & 2\,020 & $-0{,}944$ & 7,25 \\
+\bottomrule
+\end{tabular}
+\end{table*}
 
-El volumen normalizado se almacena en
-\texttt{limpieza/<caso>/<caso>-t2f\_limpio.npy} y constituye la
-entrada única para los cuatro métodos de segmentación de la
-Sección~\ref{sec:seg}. La razón de aplicar la limpieza a FLAIR
-(\texttt{t2f}) es la conclusión del EDA: FLAIR es la modalidad
-con mayor separabilidad para el SNFH/tumor-completo.
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{figuras/reg_02060-100.png}\\[2pt]
+\includegraphics[width=0.86\columnwidth]{figuras/reg_convergencia.png}
+\caption{Arriba: fija, desalineada y recuperada (caso 02060-100).
+Abajo: convergencia de la información mutua de Mattes; la métrica
+desciende y se estabiliza.}
+\label{fig:registro}
+\end{figure}
 
-% =====================================================================
-\section{Segmentación clásica del tumor completo}
-\label{sec:seg}
-% =====================================================================
-Se implementaron cuatro familias clásicas de segmentación, todas
-operando sobre el mismo volumen FLAIR preprocesado y con el mismo
-objetivo: producir una máscara binaria del \textbf{tumor completo}
-(unión de NETC, SNFH, ET y RC, es decir, \texttt{seg > 0}).
+% ════════════════════════════════════════════════════════════════
+\section{Segmentación clásica del ET}
+% ════════════════════════════════════════════════════════════════
+Sobre T1c limpio se evaluaron cuatro métodos clásicos, con el ET
+(\texttt{seg==3}) como referencia: \textbf{Otsu} multinivel
+(n=3~\cite{otsu1979}, clase más brillante); \textbf{crecimiento de
+regiones}; \textbf{watershed} por marcadores~\cite{vincent1991watersheds};
+y \textbf{mezcla de gaussianas} (GMM~\cite{pedregosa2011scikit})
+\emph{multimodal} (T1c+T2w+T2-FLAIR), incluida como comparación.
+Se usaron nueve casos: ocho con ET (cubriendo el rango de volumen)
+y uno sin ET (robustez).
 
-\subsection{Métodos}
-\begin{description}
-  \item[Otsu multinivel.] Umbralización por Otsu con dos cortes
-        y selección de la clase de mayor intensidad
-        (\emph{foreground} $=$ tumor candidato).
-  \item[Modelos de mezcla Gaussiana (GMM).] Ajuste de una mezcla
-        de tres componentes sobre los vóxeles del cerebro
-        enmascarado; la clase con mayor media se toma como
-        candidata a tumor.
-  \item[Crecimiento de regiones (\texttt{ConnectedThreshold} de
-        ITK).] Sembrado automáticamente en el \emph{centroide del
-        ground truth} del tumor completo y propagado a vecinos
-        dentro de una banda de intensidad calibrada en torno a
-        la intensidad de semilla.
-  \item[Watershed por marcadores.] Watershed morfológico sobre la
-        magnitud del gradiente del volumen FLAIR, con marcadores
-        derivados de mínimos regionales y de la propia máscara
-        Otsu como restricción de \emph{foreground}.
-\end{description}
-
-\subsection{Métricas y configuración experimental}
-La evaluación se realizó sobre los cinco casos demostrativos de
-la Tabla~\ref{tab:demo}. Como verdad terreno se usó
-\texttt{seg > 0} (tumor completo). Se reportan Dice, Jaccard y
-sensibilidad ($TP/(TP+FN)$) por método y caso.
+\subsection{Hallazgo: la semilla del crecimiento de regiones}
+El comportamiento del crecimiento de regiones reveló un problema
+específico del escenario post-tratamiento que merece destacarse.
+La semilla natural ---el centroide del ET--- \textbf{cae dentro de
+la cavidad de resección} (\texttt{label~4}), que es \emph{oscura}
+en T1c, porque el ET forma típicamente un \emph{anillo} alrededor
+de dicha cavidad. Sembrado ahí, el crecimiento por intensidad parte
+de tejido oscuro y se ``fuga'' hacia el resto del cerebro,
+produciendo máscaras degeneradas (Dice $\approx 0$). La solución
+adoptada es sembrar en el \textbf{vóxel de ET más brillante} y
+crecer por una \emph{ventana brillante} $[\alpha\,I_{\text{semilla}},
+\max]$ con $\alpha=0{,}65$ (calibrado por barrido,
+Tabla~\ref{tab:sweep}). La etiqueta experta solo aporta la
+\emph{ubicación} de la semilla (inicialización semi-automática); la
+máscara final surge del crecimiento sobre T1c, no de la copia del
+\textit{ground truth}.
 
 \subsection{Resultados agregados}
-La Tabla~\ref{tab:seg_resumen} resume las métricas promediadas
-sobre los cinco casos. Otsu obtiene el mejor Dice agregado pero
-con un valor bajo ($0{,}325$); el crecimiento de regiones
-\textbf{falla completamente} (Dice $\approx 0{,}18$, sensibilidad
-$0{,}16$). La Figura~\ref{fig:seg_metricas} ilustra el ranking de
-métodos.
+La Tabla~\ref{tab:resumen} promedia las métricas sobre los ocho
+casos con ET. El crecimiento de regiones obtiene el mejor Dice
+medio, pero \textbf{este valor ($0{,}320$) debe leerse como ``el
+menos malo'', no como un éxito}: ningún método alcanza siquiera
+$0{,}50$ de Dice. La GMM multimodal exhibe la mayor sensibilidad
+($0{,}63$) pero el peor Dice ($0{,}094$), porque etiqueta como
+tumor un cúmulo amplio (edema, vasos) y \emph{sobre-segmenta}; su
+especificidad ($0{,}965$) es la más baja de las cuatro. La
+Fig.~\ref{fig:ranking} resume el orden y la Fig.~\ref{fig:seg}
+contrasta visualmente el mejor método con la sobre-segmentación de
+la GMM.
 
-\begin{table}[H]
+\begin{table}[h]
 \centering
-\caption{Métricas promedio sobre los 5 casos demostrativos
-(objetivo: tumor completo, modalidad FLAIR).}
-\label{tab:seg_resumen}
-\small
-\begin{tabular}{lccc}
+\caption{Resumen por método (Dice medio sobre 8 casos con ET).
+Ningún método supera $0{,}50$.}
+\label{tab:resumen}
+\begin{tabular}{lccccc}
 \toprule
-Método        & Dice  & Jaccard & Sensibilidad \\
+Método & Multim. & Dice & Jaccard & Sensib. & Especif. \\
 \midrule
-Otsu          & \cellcolor{cellmid}\textbf{0.325} & \cellcolor{cellmid}\textbf{0.255} & \cellcolor{cellmid}0.583 \\
-Watershed     & 0.239 & 0.196 & \cellcolor{cellmid}\textbf{0.638} \\
-GMM           & 0.208 & 0.184 & 0.400 \\
-Crecimiento   & \cellcolor{cellbad}0.179 & \cellcolor{cellbad}0.162 & \cellcolor{cellbad}0.163 \\
+\textbf{RegionGrowing} & no & \textbf{0,320} & 0,196 & 0,362 & 0,999 \\
+Watershed              & no & 0,213 & 0,132 & 0,133 & 0,999 \\
+Otsu                   & no & 0,164 & 0,097 & 0,516 & 0,995 \\
+GMM multimodal         & sí & 0,094 & 0,052 & 0,630 & 0,965 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{figure}[H]
+\begin{figure}[h]
 \centering
-\includegraphics[width=\columnwidth]{figuras/seg_metricas.png}
-\caption{Comparativa visual de métricas (Dice, Jaccard,
-sensibilidad) por método clásico sobre los 5 casos.}
-\label{fig:seg_metricas}
+\includegraphics[width=\columnwidth]{figuras/seg_ranking.png}
+\caption{Dice medio por método. RegionGrowing es el mejor, pero
+todos quedan muy por debajo de un Dice útil.}
+\label{fig:ranking}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{figuras/seg_regiongrowing_02060.png}\\[2pt]
+\includegraphics[width=\columnwidth]{figuras/seg_gmm_02060.png}
+\caption{Caso 02060-100. Arriba: crecimiento de regiones
+(predicción roja, GT cian). Abajo: GMM multimodal, que
+sobre-segmenta ampliamente.}
+\label{fig:seg}
 \end{figure}
 
 \subsection{Resultados por caso}
-El detalle por caso (Tabla~\ref{tab:seg_detalle}) revela un patrón
-muy informativo: \emph{los cuatro métodos rinden bien únicamente
-en el caso de tumor grande sin cavidad dominante} (02119-101,
-Dice $\geq 0{,}89$ para Otsu, GMM y crecimiento), y todos colapsan
-en presencia de cavidad de resección o ausencia total de ET.
+La Tabla~\ref{tab:porcaso} muestra el Dice por caso (semáforo:
+verde $\ge 0{,}80$, amarillo $0{,}50$--$0{,}80$, rojo $<0{,}50$).
+El predominio del rojo es, en sí mismo, el resultado: la inmensa
+mayoría de las combinaciones caso/método quedan por debajo de
+$0{,}50$. Además, la \textbf{dispersión es alta y no hay un ganador
+estable}: aunque RegionGrowing gana en promedio, Watershed supera
+al resto en 02063-106 y 00463-101 (único valor amarillo,
+$0{,}618$), y Otsu es competitivo en los casos de ET grande. El
+caso sin ET (00005-100) no admite Dice (N/A), pero los cuatro
+métodos producen máscaras no vacías (falsos positivos), lo que
+ilustra que ningún método clásico ``se abstiene'' ante la ausencia
+de realce.
 
-\begin{table}[H]
+\begin{table}[h]
 \centering
-\caption{Dice por caso y método (objetivo tumor completo, FLAIR).
-Codificación: \emph{verde} Dice$\geq 0{,}80$; \emph{amarillo}
-$0{,}50$--$0{,}80$; \emph{rojo} $<0{,}50$.}
-\label{tab:seg_detalle}
-\small
-\setlength{\tabcolsep}{4pt}
+\caption{Dice por caso y método. Semáforo: verde $\ge 0{,}80$,
+amarillo $0{,}50$--$0{,}80$, rojo $<0{,}50$.}
+\label{tab:porcaso}
 \begin{tabular}{lcccc}
 \toprule
-Caso         & Otsu  & GMM   & Crecim. & Watershed \\
+Caso & Otsu & RegionGrow. & Watershed & GMM mult. \\
 \midrule
-02827-100 (típico, RC dom.)
- & \cellcolor{cellbad}0.027 & \cellcolor{cellbad}0.025 & \cellcolor{cellbad}0.000 & \cellcolor{cellbad}0.023 \\
-02119-101 (tumor grande)
- & \cellcolor{cellgood}0.896 & \cellcolor{cellgood}0.924 & \cellcolor{cellgood}0.896 & \cellcolor{cellgood}0.905 \\
-02923-101 (tumor pequeño)
- & \cellcolor{cellbad}0.014 & \cellcolor{cellbad}0.013 & \cellcolor{cellbad}0.000 & \cellcolor{cellbad}0.010 \\
-02514-102 (post-resección)
- & \cellcolor{cellmid}0.508 & \cellcolor{cellbad}0.057 & \cellcolor{cellbad}0.000 & \cellcolor{cellbad}0.141 \\
-02859-100 (solo edema)
- & \cellcolor{cellbad}0.182 & \cellcolor{cellbad}0.023 & \cellcolor{cellbad}0.000 & \cellcolor{cellbad}0.115 \\
+02063-106 & \cb{0,007} & \cb{0,257} & \cb{0,344} & \cb{0,003} \\
+00529-100 & \cb{0,009} & \cb{0,407} & \cb{0,155} & \cb{0,000} \\
+02062-100 & \cb{0,023} & \cb{0,217} & \cb{0,088} & \cb{0,026} \\
+02063-102 & \cb{0,170} & \cb{0,283} & \cb{0,255} & \cb{0,000} \\
+00498-100 & \cb{0,136} & \cb{0,157} & \cb{0,096} & \cb{0,094} \\
+00463-101 & \cb{0,207} & \cb{0,280} & \cm{0,618} & \cb{0,146} \\
+02060-100 & \cb{0,368} & \cb{0,451} & \cb{0,110} & \cb{0,265} \\
+00046-101 & \cb{0,395} & \cb{0,509} & \cb{0,035} & \cb{0,217} \\
+00005-100 (sin ET) & \na & \na & \na & \na \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Las figuras~\ref{fig:seg_02119}--\ref{fig:seg_02923} muestran
-mosaicos 2D del corte axial central con \emph{ground truth}
-superpuesto y las cuatro segmentaciones lado a lado para tres de
-los cinco casos.
+\subsection{Calibración del crecimiento de regiones}
+La Tabla~\ref{tab:sweep} reporta el barrido
+(\textit{itertools.product}) del umbral relativo $\alpha$ y el radio
+del cierre morfológico. El óptimo medio se alcanza en
+$(\alpha=0{,}65,\ \text{cierre}=3)$ con Dice $0{,}341$; la
+configuración por defecto usa cierre~1 ($0{,}320$). La mejora por
+ajuste es marginal, coherente con el límite de fondo del método.
 
-\begin{figure}[H]
+\begin{table}[h]
 \centering
-\includegraphics[width=\columnwidth]{figuras/seg_comparacion_02119-101.png}
-\caption{Caso BraTS-GLI-02119-101 (tumor grande): comparativa
-GT vs.\ Otsu, GMM, crecimiento de regiones y watershed sobre el
-volumen FLAIR preprocesado. Es el único caso donde los cuatro
-métodos producen Dice$>0{,}89$.}
-\label{fig:seg_02119}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{figuras/seg_comparacion_02827-100.png}
-\caption{Caso BraTS-GLI-02827-100 (típico, dominado por cavidad
-de resección): la hipointensidad de la RC en FLAIR rompe la
-hipótesis de un único modo brillante y todos los métodos
-fracasan.}
-\label{fig:seg_02827}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{figuras/seg_comparacion_02923-101.png}
-\caption{Caso BraTS-GLI-02923-101 (tumor pequeño): la fracción
-tumor/encéfalo es tan baja que los métodos globales saturan en
-falsos positivos y el crecimiento sembrado en el centroide del
-GT no logra propagarse.}
-\label{fig:seg_02923}
-\end{figure}
-
-% =====================================================================
-\section{Registro rígido demostrativo}
-\label{sec:reg}
-% =====================================================================
-El bloque de registro implementa un motor clásico de
-alineamiento volumen-volumen basado en
-\textbf{Información Mutua de Mattes} con una transformación
-\textbf{rígida Euler3D} (3 rotaciones + 3 traslaciones,
-6\,d.o.f.) y un esquema piramidal multi-resolución, todo sobre
-SimpleITK. Como el EDA estableció que las modalidades de BraTS
-ya están coregistradas, el experimento es \textbf{demostrativo}:
-se toma el volumen T1n original como \emph{moving},
-se le aplica una transformación rígida conocida y se mide la
-capacidad del motor para recuperarla.
-
-\subsection{Configuración}
-Los hiperparámetros se cargaron desde
-\texttt{parametros\_usados.json} y se resumen en la
-Tabla~\ref{tab:reg_param}.
-
-\begin{table}[H]
-\centering
-\caption{Parámetros del registro Mattes\,MI + Euler3D
-multi-resolución.}
-\label{tab:reg_param}
-\small
-\begin{tabular}{ll}
+\caption{Barrido del crecimiento de regiones (Dice medio sobre los
+casos con ET).}
+\label{tab:sweep}
+\begin{tabular}{ccc|ccc}
 \toprule
-Parámetro & Valor \\
+$\alpha$ & cierre & Dice & $\alpha$ & cierre & Dice \\
 \midrule
-Modalidad fija/móvil       & T1n \\
-Métrica                    & Mattes Mutual Information \\
-Bins del histograma (MI)   & 50 \\
-Fracción de muestreo       & 0.1 (seed=42) \\
-Iteraciones máx.\ por nivel& 150 \\
-Pirámide --- \emph{shrink} & $[4,\,2]$ \\
-Pirámide --- $\sigma$      & $[2,\,1]$ \\
-Optimizador                & Gradient Descent Line Search \\
-Inicialización             & \texttt{CenteredTransformInitializer} (geom.) \\
-Rotación perturbada (°)    & $(6{,}0,\,4{,}0,\,-5{,}0)$ \\
-Traslación perturbada (mm) & $(5{,}0,\,-4{,}0,\,3{,}0)$ \\
+0,55 & 1 & 0,266 & 0,65 & 3 & \textbf{0,341} \\
+0,55 & 2 & 0,269 & 0,75 & 1 & 0,287 \\
+0,55 & 3 & 0,269 & 0,75 & 2 & 0,306 \\
+0,65 & 1 & 0,320 & 0,75 & 3 & 0,322 \\
+0,65 & 2 & 0,331 &      &   &       \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\subsection{Métricas por caso}
-La Tabla~\ref{tab:reg_metricas} reporta las métricas de los tres
-casos registrados. \textbf{TRE} (\emph{Target Registration Error})
-se calcula sobre puntos de control distribuidos en el volumen y
-es la métrica más fiable; \textbf{Dice de cerebro} se calcula
-entre las máscaras del encéfalo de fijo y móvil antes/después
-del registro; \textbf{MSE} es el error cuadrático medio de
-intensidades; \textbf{MI final} es el valor de la métrica de
-Mattes al converger (más negativo = mejor).
+% ════════════════════════════════════════════════════════════════
+\section{Reconstrucción 3D}
+% ════════════════════════════════════════════════════════════════
+Para inspección visual se generaron mallas por \textit{marching
+cubes}~\cite{lorensen1987marching} del ET predicho (crecimiento de
+regiones) y del \textit{ground truth}, con el espaciado físico
+aplicado y suavizado de Taubin, exportadas en OBJ y GLB; un visor
+web autocontenido (Three.js local) permite superponerlas en la
+exposición. La Tabla~\ref{tab:recon3d} reúne las métricas.
 
-\begin{table}[H]
+Dos lecturas. Primero, la \textbf{validación de escala es
+correcta}: el volumen de la malla GT reproduce el volumen de ET del
+EDA en el mismo orden de magnitud (p.~ej.\ caso 02060-100,
+$19\,266$ vs.\ $19\,975$~mm$^3$; caso 00046-101, $25\,685$ vs.\
+$25\,306$~mm$^3$), lo que confirma una geometría física consistente.
+Segundo, la \textbf{distancia media superficie-superficie entre
+predicción y GT ($2{,}6$ a $42{,}7$~mm) no valida la predicción};
+al contrario, cuantifica cuánto se \emph{aleja} la malla predicha
+del GT en los casos difíciles (p.~ej.\ 00498-100, donde la
+predicción multiplica por seis el volumen del GT y la distancia
+asciende a $42{,}7$~mm). La reconstrucción 3D es, por tanto, una
+herramienta de inspección y de validación de escala, no una medida
+de acierto.
+
+\begin{table*}[t]
 \centering
-\caption{Métricas de registro por caso (3 casos). Sub-vóxel en
-todos los TRE.}
-\label{tab:reg_metricas}
-\small
-\setlength{\tabcolsep}{3pt}
-\resizebox{\columnwidth}{!}{%
+\caption{Métricas 3D por caso. La validación de escala (vol.\ malla
+GT vs.\ EDA) es correcta; la distancia superficie-superficie mide
+el \emph{alejamiento} pred$\leftrightarrow$GT, no acierto.}
+\label{tab:recon3d}
 \begin{tabular}{lccccccc}
 \toprule
-Caso & \makecell{TRE\\(mm)} & \makecell{Dice\\antes} & \makecell{Dice\\desp.} & \makecell{MSE\\antes} & \makecell{MSE\\desp.} & \makecell{MI\\final} & \makecell{Tiempo\\(s)} \\
+Caso & Dice & Vért.\ pred & Vért.\ GT & Vol.\ pred (mm$^3$) &
+Vol.\ GT (mm$^3$) & Vol.\ GT EDA (mm$^3$) & Dist.\ media (mm) \\
 \midrule
-02827-100 & \cellcolor{cellgood}0.0021 & 0.907 & \cellcolor{cellgood}0.963 & 15731.86  & 110.81   & -1.196 & 107.0 \\
-02119-101 & \cellcolor{cellgood}0.0029 & 0.913 & \cellcolor{cellgood}0.963 & 1793.01   & 35.69    & -1.141 & 90.5 \\
-02923-101 & \cellcolor{cellgood}0.0058 & 0.915 & \cellcolor{cellgood}0.965 & 215758.45 & 4325.13  & -1.263 & 88.7 \\
-\midrule
-\textbf{Promedio} & \cellcolor{cellgood}\textbf{0.0036} & \textbf{0.912} & \cellcolor{cellgood}\textbf{0.964} & --- & --- & \textbf{-1.200} & \textbf{95.4} \\
+02063-106 & 0,257 & 724    & 450    & 254,6    & 192,1    & 254,0    & 4,79 \\
+00529-100 & 0,407 & 298    & 722    & 112,4    & 424,9    & 501,0    & 2,13 \\
+02062-100 & 0,217 & 633    & 1\,704 & 187,8    & 908,4    & 1\,062,0 & 3,72 \\
+02063-102 & 0,283 & 824    & 3\,898 & 747,9    & 4\,706,2 & 4\,812,0 & 10,09 \\
+00498-100 & 0,157 & 48\,963 & 5\,906 & 29\,113,1 & 4\,535,9 & 4\,816,0 & 42,74 \\
+00463-101 & 0,280 & 49\,983 & 8\,044 & 27\,308,6 & 11\,258,8 & 11\,312,0 & 37,45 \\
+02060-100 & 0,451 & 33\,392 & 18\,583 & 19\,489,3 & 19\,266,1 & 19\,975,0 & 14,13 \\
+00046-101 & 0,509 & 15\,095 & 18\,109 & 11\,269,1 & 25\,685,0 & 25\,306,0 & 2,64 \\
 \bottomrule
-\end{tabular}}
+\end{tabular}
+\end{table*}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.49\columnwidth]{figuras/recon3d_02060-100.png}
+\hfill
+\includegraphics[width=0.49\columnwidth]{figuras/recon3d_00498-100.png}
+\caption{Mallas ET predicho (naranja) vs.\ GT (verde). Izquierda:
+02060-100 (solape razonable). Derecha: 00498-100, donde la
+predicción sobre-segmenta y se aleja del GT.}
+\label{fig:recon3d}
+\end{figure}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{figuras/viz_grid_02060-100.png}
+\caption{Mosaico de 3 vistas (axial/coronal/sagital) del caso
+02060-100: original con GT y las cuatro segmentaciones.}
+\label{fig:viz}
+\end{figure}
+
+% ════════════════════════════════════════════════════════════════
+\section{Discusión y limitaciones}
+% ════════════════════════════════════════════════════════════════
+\textbf{Por qué fallan los métodos clásicos en el ET.} El ET no es
+un objeto ``brillante y compacto'' separable por intensidad: es un
+anillo delgado, heterogéneo y, en el escenario post-tratamiento,
+rodea una cavidad oscura. Esto rompe las hipótesis de cada método.
+\emph{Otsu} supone un histograma con un modo brillante claro, pero
+T1c es \emph{unimodal} (coeficiente de bimodalidad $<5/9$ en los
+casos analizados), de modo que el umbral de la clase alta cae en un
+punto arbitrario y mezcla realce con tejido sano brillante.
+\emph{Crecimiento de regiones} y \emph{watershed} dependen de una
+semilla/marcador fiable; aun corregida la semilla (Sec.~V-A), la
+heterogeneidad del realce limita el crecimiento. \emph{GMM
+multimodal} ilustra que \textbf{añadir modalidades no ayudó}: al
+agrupar T1c+T2w+T2-FLAIR captura un cúmulo amplio dominado por el
+edema, con alta sensibilidad pero Dice ínfimo
+(Fig.~\ref{fig:gmm00529}).
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{figuras/seg_gmm_00529.png}
+\caption{Sobre-segmentación de la GMM multimodal (caso 00529-100):
+predicción roja muy superior al GT cian.}
+\label{fig:gmm00529}
+\end{figure}
+
+\textbf{Limitaciones del registro demostrativo.} El registro es
+rígido y se evaluó frente a una perturbación rígida conocida; por
+construcción no compensa deformaciones no rígidas (efecto de masa,
+cambios post-quirúrgicos) y su excelente TRE no debe extrapolarse a
+un escenario inter-sujeto o longitudinal real.
+
+\textbf{Alcance experimental.} La segmentación se evaluó sobre
+nueve casos y el registro/3D sobre cuatro y ocho respectivamente;
+las cifras son indicativas, no un \textit{benchmark} a gran escala.
+
+% ════════════════════════════════════════════════════════════════
+\section{Reproducibilidad}
+% ════════════════════════════════════════════════════════════════
+La canalización completa (seis módulos en Python~3.11 con
+\textsc{SimpleITK}) es reproducible y lee los datos directamente
+desde los \texttt{.zip}. La Tabla~\ref{tab:repro} resume los
+parámetros clave.
+
+\begin{table}[h]
+\centering
+\caption{Parámetros del pipeline.}
+\label{tab:repro}
+\begin{tabularx}{\columnwidth}{lX}
+\toprule
+Etapa & Configuración \\
+\midrule
+Objetivo & ET (\texttt{seg==3}) sobre T1c \\
+Limpieza & Wiener (3) $\to$ N4 (\textit{shrink} 4) $\to$ percentil $[0{,}5,99{,}5]\to[0,1]$ \\
+Otsu & multinivel n=3, clase alta \\
+Region growing & semilla en ET más brillante, ventana $[\alpha I,\max]$, $\alpha=0{,}65$ \\
+Watershed & marcador en ET brillante, gradiente de Sobel \\
+GMM & 4 componentes, T1c+T2w+T2-FLAIR \\
+Registro & Mattes MI (50 bins), Euler3D, \textit{shrink} $[4,2]$, sigmas $[2,1]$, 150 iter \\
+Semilla aleatoria & 42 \\
+Datos & lectura directa desde \texttt{.zip} (BraTS 2024 GLI) \\
+\bottomrule
+\end{tabularx}
 \end{table}
 
-\subsection{Visualización}
-Las Figuras~\ref{fig:reg_02119}--\ref{fig:reg_02923} muestran,
-para cada caso, los tres volúmenes ---fijo (referencia), móvil
-desalineado y móvil recuperado--- en una vista axial central.
-La Figura~\ref{fig:reg_conv} muestra las curvas de convergencia
-de la métrica Mattes por iteración y por nivel piramidal en los
-tres casos.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{figuras/reg_02119-101.png}
-\caption{Caso BraTS-GLI-02119-101: \emph{fijo} (izq.),
-\emph{desalineado} (centro) y \emph{recuperado} (der.) tras el
-registro rígido. TRE residual $=0{,}0029$\,mm.}
-\label{fig:reg_02119}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{figuras/reg_02827-100.png}
-\caption{Caso BraTS-GLI-02827-100: TRE residual
-$=0{,}0021$\,mm, el mejor de los tres.}
-\label{fig:reg_02827}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{figuras/reg_02923-101.png}
-\caption{Caso BraTS-GLI-02923-101: TRE residual
-$=0{,}0058$\,mm, todavía sub-vóxel.}
-\label{fig:reg_02923}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\columnwidth]{figuras/reg_convergencia.png}
-\caption{Curvas de convergencia de la métrica de Mattes (negativa
-de la información mutua) por iteración y por nivel piramidal,
-para los tres casos.}
-\label{fig:reg_conv}
-\end{figure}
-
-% =====================================================================
-\section{Discusión y limitaciones}
-\label{sec:disc}
-% =====================================================================
-\subsection{Por qué fallan los métodos clásicos en el tumor
-completo}
-La Tabla~\ref{tab:seg_detalle} expone un patrón inequívoco: los
-cuatro métodos basados únicamente en intensidad sólo rinden bien
-en el caso 02119-101, donde la sub-región dominante es la SNFH
-($\sim 174\,$k vóxeles, hiperintensa en FLAIR). En los otros
-cuatro casos hay siempre un componente sustancial de RC ---por
-ejemplo $43{,}8\,$k vóxeles de RC frente a $13{,}2\,$k de SNFH
-en 02827-100, o $88{,}8\,$k frente a $62{,}3\,$k en 02514-102---
-y la RC es \textbf{hipointensa} en FLAIR, indistinguible del
-ventrículo o del líquido cefalorraquídeo.
-
-En consecuencia, el objetivo \texttt{seg > 0} contiene
-simultáneamente vóxeles brillantes (SNFH/ET) y vóxeles oscuros
-(RC) que no pueden separarse con un único umbral global ---ni con
-una mezcla Gaussiana de pocos componentes que asigne la RC a la
-misma clase que SNFH---. El crecimiento de regiones, sembrado en
-el centroide del GT, queda atrapado en una sola sub-región: si
-la semilla cae en RC, no propaga a SNFH y viceversa. La
-sensibilidad media de $0{,}163$ de este método refleja esta
-fragmentación.
-
-El watershed obtiene la mayor sensibilidad media ($0{,}638$) pero
-su precisión es la peor a igualdad de Dice, evidenciando
-sobre-segmentación. La conclusión práctica es robusta:
-\textbf{los métodos clásicos basados en intensidad son
-insuficientes para segmentar el tumor completo post-tratamiento}
-en BraTS 2024 GLI. Resolver este problema requiere o bien
-información de forma (atlas, modelos estadísticos),
-multi-modalidad explícita (combinar FLAIR + T1c) o aprendizaje
-supervisado, ninguna de las cuales pertenece al alcance del
-presente proyecto.
-
-\subsection{Limitaciones del registro demostrativo}
-El registro alcanza un TRE residual sub-vóxel ($\leq 0{,}006$\,mm)
-en los tres casos y eleva el Dice de cerebro de $0{,}91$ a
-$0{,}96$, lo que confirma la corrección del motor. No obstante,
-caben dos matices:
-
-\begin{enumerate}
-  \item La validación es \emph{intra-sujeto} y \emph{sintética}:
-        la transformación recuperada es la misma que se aplicó
-        artificialmente, lo que sobreestima el desempeño frente a
-        un escenario clínico real con diferencias inter-sujeto.
-  \item La transformación es \emph{rígida} y no compensa
-        deformaciones locales (desplazamiento de masa, atrofia,
-        cavidad de resección). Para esos escenarios se requeriría
-        un registro deformable (B-spline, Demons, SyN).
-\end{enumerate}
-
-% =====================================================================
-\section{Reproducibilidad}
-\label{sec:repro}
-% =====================================================================
-\begin{itemize}
-  \item \textbf{Modalidad de segmentación:} T2-FLAIR (\texttt{t2f}).
-  \item \textbf{Objetivo:} tumor completo (\texttt{seg > 0}).
-  \item \textbf{Pipeline de limpieza:} Wiener (size=3) $\to$ N4
-        (shrink=4) $\to$ normalización por percentiles
-        $(p_{0{,}5},\,p_{99{,}5})$.
-  \item \textbf{Métodos clásicos:} Otsu multinivel (2 cortes),
-        GMM (3 componentes), \texttt{ConnectedThreshold} (semilla
-        en el centroide del GT), watershed por marcadores sobre
-        magnitud del gradiente.
-  \item \textbf{Modalidad de registro:} T1n.
-  \item \textbf{Métrica/transformación:} Mattes\,MI (50 bins,
-        muestreo $0{,}1$) + Euler3D, multi-resolución
-        shrink $[4,2]$ / $\sigma\,[2,1]$, máximo 150 iteraciones
-        por nivel, inicialización \texttt{CenteredTransform\-Initializer}
-        (geometría).
-  \item \textbf{Perturbación:} rotación $(6{,}4{,}-5)^{\circ}$ y
-        traslación $(5,-4,3)$\,mm.
-  \item \textbf{Casos demostrativos:} 02119-101, 02827-100,
-        02923-101, 02514-102, 02859-100 (segmentación) y
-        02119-101, 02827-100, 02923-101 (registro).
-  \item \textbf{Código y artefactos:}
-        \url{https://github.com/AbelAlbuez/medical-image-processing}.
-\end{itemize}
-
-% =====================================================================
+% ════════════════════════════════════════════════════════════════
 \section{Conclusiones y trabajo futuro}
-\label{sec:conclu}
-% =====================================================================
-El proyecto cubre las tres tareas requeridas
----EDA, segmentación y registro--- sobre BraTS 2024 GLI sin
-recurrir a aprendizaje profundo. El EDA cuantitativo justifica la
-elección de FLAIR para segmentar el tumor completo (mayor
-separabilidad de SNFH frente a tejido sano) y fija parámetros
-operativos para el registro. La segmentación clásica obtiene
-resultados aceptables \textbf{únicamente cuando la sub-región
-dominante es la SNFH hiperintensa}; en presencia de cavidad de
-resección o tumor pequeño, todos los métodos colapsan, con un
-Dice agregado máximo de $0{,}33$ (Otsu). Este resultado es el
-hallazgo central del proyecto y constituye una motivación
-empírica clara para el uso de métodos basados en aprendizaje en
-contextos clínicos reales. El bloque de registro, en cambio,
-recupera con precisión sub-vóxel una perturbación rígida conocida
-en los tres casos, validando la implementación del motor
-Mattes\,MI\,+\,Euler3D multi-resolución.
+% ════════════════════════════════════════════════════════════════
+El hallazgo central es claro y honesto: \textbf{los métodos
+clásicos basados en intensidad son insuficientes para segmentar el
+tumor realzante en T1c} en BraTS~2024 GLI post-tratamiento. Ningún
+método supera un Dice medio de $0{,}50$; el mejor ---crecimiento de
+regiones, $0{,}320$--- es apenas ``el menos malo'', y la
+multimodalidad mediante GMM no ayudó (sobre-segmentación). El
+escenario post-tratamiento, con su cavidad de resección oscura,
+agrava el problema y obligó a corregir la estrategia de siembra. En
+contraste, el registro rígido por información mutua sí resuelve con
+precisión su tarea (TRE sub-vóxel), y la reconstrucción 3D valida
+la escala física de las máscaras.
 
-\textbf{Trabajo futuro:} (i) extender la segmentación a estrategias
-multi-modalidad (combinaciones FLAIR\,+\,T1c) y a operadores
-morfológicos para imponer compacidad; (ii) reemplazar el
-crecimiento de regiones por un \emph{level-set} con término de
-forma; (iii) probar un registro deformable (Demons o B-spline)
-para los casos con masa significativa; y (iv) ampliar la cohorte
-de evaluación a la totalidad del subset GLI.
+Como trabajo futuro, estos límites motivan: (i) modelos con
+\emph{prior} de forma (\textit{level sets} con regularización,
+contornos activos) que no dependan solo de intensidad; (ii) una
+combinación multimodal más informada que la GMM ingenua;
+(iii) registro deformable para escenarios longitudinales; y
+(iv), naturalmente, el aprendizaje profundo, cuya necesidad este
+estudio cuantifica por contraste.
 
-% =====================================================================
-% Bibliografía
-% =====================================================================
+% ── Bibliografía ─────────────────────────────────────────────────
 \begin{thebibliography}{9}
 
 \bibitem{baid2021brats}
@@ -749,6 +649,18 @@ L.~Vincent and P.~Soille,
 immersion simulations,''
 \emph{IEEE Trans.\ Pattern Anal.\ Mach.\ Intell.}, vol.~13,
 no.~6, pp.~583--598, 1991.
+
+\bibitem{pedregosa2011scikit}
+F.~Pedregosa \emph{et al.},
+``Scikit-learn: Machine learning in Python,''
+\emph{J.\ Mach.\ Learn.\ Res.}, vol.~12, pp.~2825--2830, 2011.
+
+\bibitem{lorensen1987marching}
+W.~E.~Lorensen and H.~E.~Cline,
+``Marching cubes: A high resolution 3D surface construction
+algorithm,''
+\emph{ACM SIGGRAPH Computer Graphics}, vol.~21, no.~4,
+pp.~163--169, 1987.
 
 \end{thebibliography}
 

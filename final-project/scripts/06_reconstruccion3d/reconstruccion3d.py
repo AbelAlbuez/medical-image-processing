@@ -302,7 +302,7 @@ let scene, camera, renderer, controls, grupo, loader;
 let homePos = null, homeTarget = null;
 
 function init(){
-  scene = new THREE.Scene(); scene.background = new THREE.Color(0x0e1116);
+  scene = new THREE.Scene(); scene.background = new THREE.Color(0x1a2230);
   camera = new THREE.PerspectiveCamera(50, window.innerWidth/window.innerHeight, 0.1, 5000);
   camera.position.set(120,90,120);
   renderer = new THREE.WebGLRenderer({antialias:true});
@@ -311,8 +311,13 @@ function init(){
   document.body.appendChild(renderer.domElement);
   controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
-  scene.add(new THREE.HemisphereLight(0xffffff, 0x202830, 1.0));
-  const dir = new THREE.DirectionalLight(0xffffff, 0.8); dir.position.set(1,1,1); scene.add(dir);
+  // Iluminación: ambiental cielo/suelo + ambiente plano + dos direccionales opuestas,
+  // para que ninguna cara quede en sombra total (era lo que hacía ver las mallas negras).
+  scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 1.0));
+  scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+  const d1 = new THREE.DirectionalLight(0xffffff, 0.8); d1.position.set(1,1,1); scene.add(d1);
+  const d2 = new THREE.DirectionalLight(0xffffff, 0.8); d2.position.set(-1,-1,-1); scene.add(d2);
+  scene.add(new THREE.AxesHelper(40));   // referencia espacial XYZ tenue
   loader = new THREE.GLTFLoader();
   grupo = new THREE.Group(); scene.add(grupo);
 
@@ -341,10 +346,17 @@ function addMalla(b64, tipo){
     try{
       loader.parse(b64ToArrayBuffer(b64), '', (gltf) => {
         const mat = tipo==='pred'
-          ? new THREE.MeshStandardMaterial({color:C_PRED, metalness:0.1, roughness:0.6})
-          : new THREE.MeshStandardMaterial({color:C_GT, transparent:true, opacity:0.4,
-              depthWrite:false, metalness:0.1, roughness:0.7});
-        gltf.scene.traverse(o => { if(o.isMesh){ o.material = mat; o.userData.tipo = tipo; } });
+          ? new THREE.MeshStandardMaterial({color:C_PRED, metalness:0.1, roughness:0.6,
+              transparent:true, opacity:0.55, side:THREE.DoubleSide})
+          : new THREE.MeshStandardMaterial({color:C_GT, metalness:0.1, roughness:0.6,
+              transparent:true, opacity:0.35, depthWrite:false, side:THREE.DoubleSide});
+        gltf.scene.traverse(o => {
+          if(o.isMesh){
+            if(o.geometry && o.geometry.computeVertexNormals) o.geometry.computeVertexNormals();
+            o.material = mat; o.userData.tipo = tipo;
+            o.renderOrder = (tipo==='gt') ? 1 : 0;   // GT después de pred -> blending correcto
+          }
+        });
         gltf.scene.userData.tipo = tipo;
         grupo.add(gltf.scene);
         resolve(true);
