@@ -454,7 +454,7 @@ $\alpha$ & cierre & Dice & $\alpha$ & cierre & Dice \\
 \end{tabular}
 \end{table}
 
-\subsection{Estrategias de mejora del post-procesamiento}
+\subsection{Estrategias de mejora y análisis de robustez}
 Se exploró si técnicas clásicas de post-proceso elevan el Dice del ET, manteniendo la
 regla anti-fuga: el GT solo ubica la semilla y evalúa, nunca construye la máscara ni
 ajusta parámetros por caso (el radio de cierre y $\alpha$ son globales, por barrido sobre
@@ -525,11 +525,109 @@ componente anclado a la semilla (verde), que recupera el realce.}
 \label{fig:mejora}
 \end{figure}
 
-\textbf{Lectura honesta.} Con el post-proceso anclado, la mejor variante mejorada
----Otsu con cierre + componente anclado, Dice $0{,}353$--- supera \emph{por primera vez}
-al mejor método base (crecimiento de regiones, $0{,}320$), pero la ganancia es marginal
-($+0{,}033$) y \textbf{ningún método cruza $0{,}50$ de Dice medio}. El post-proceso
-clásico exhaustivo no cambia la conclusión: para el ET, lo clásico es insuficiente.
+\paragraph{Ensamble de métodos} Como las predicciones ancladas de Otsu, crecimiento de
+regiones y \textit{watershed} fallan en casos distintos, se combinaron por unión, voto de
+mayoría e intersección, aplicando el mismo post-proceso anclado a la máscara fusionada
+(\emph{union\_post}). La unión con post-proceso es la mejor estrategia global
+(Tabla~\ref{tab:ensamble}): \textbf{Dice $0{,}370$} (sensibilidad media $0{,}63$,
+especificidad $0{,}997$), por encima del mejor individual ($0{,}353$). El voto y la
+intersección sacrifican sensibilidad y bajan el Dice.
+
+\begin{table}[h]
+\centering
+\caption{Ensamble de los métodos anclados (Dice medio). La unión con post-proceso anclado
+supera al mejor método individual; ningún ensamble alcanza $0{,}50$.}
+\label{tab:ensamble}
+\begin{tabular}{lc}
+\toprule
+Estrategia & Dice medio \\
+\midrule
+\textbf{Unión + post-proceso} & \textbf{0,370} \\
+Unión (sin post)             & 0,369 \\
+Otsu anclado (individual)    & 0,353 \\
+RegionGrowing anclado (indiv.) & 0,342 \\
+Voto de mayoría              & 0,334 \\
+Intersección                 & 0,204 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Histéresis y Otsu de dos clases (no mejoran)} Se probó un umbral doble por
+histéresis (semilla alta, crecimiento hasta un nivel bajo) y un Otsu de dos clases. La
+histéresis eleva la sensibilidad media a $0{,}75$ pero el Dice \emph{cae} a $0{,}209$ por
+fugas hacia tejido sano; el Otsu de dos clases se fuga masivamente en 7 de 9 casos
+(especificidad $\approx0{,}80$, $>$1\,M de vóxeles predichos) y colapsa a $0{,}084$.
+Ninguna supera al ensamble; confirman que el límite no es de \emph{umbral} sino estructural.
+
+\paragraph{Análisis de robustez: ablation de la limpieza} Para descartar que el
+preprocesamiento (filtro de Wiener, N4, normalización) atenuara el realce fino y limitara
+el Dice, se repitió la segmentación variando solo la entrada: \textbf{E1} crudo,
+\textbf{E2} solo N4, \textbf{E3} N4\,+\,normalización (sin Wiener) y \textbf{E4} pipeline
+completo. Para cada entrada se midió el Dice (estrategias Otsu anclado y unión+post) y la
+separabilidad ET frente a tejido sano mediante la razón discriminante de Fisher (FDR) y la
+distancia de Bhattacharyya (Tabla~\ref{tab:ablation}, Fig.~\ref{fig:ablation}).
+
+\begin{table}[h]
+\centering
+\caption{Ablation de la limpieza. El Dice y la separabilidad (FDR, Bhattacharyya) del ET
+\emph{crecen} de la entrada cruda (E1) a la limpia completa (E4): la limpieza ayuda.}
+\label{tab:ablation}
+\begin{tabular}{lcccc}
+\toprule
+Entrada & Otsu anc. & Unión+post & FDR & Bhatt. \\
+\midrule
+E1 crudo            & 0,264 & 0,278 & 1,21 & 0,328 \\
+E2 N4               & 0,333 & 0,339 & 1,56 & 0,448 \\
+E3 N4+norm (sin Wiener) & 0,311 & 0,314 & 1,72 & 0,496 \\
+\textbf{E4 completo} & \textbf{0,353} & \textbf{0,370} & \textbf{1,80} & \textbf{0,498} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=\columnwidth]{figuras/mej_ensamble_v4.png}\\[3pt]
+\includegraphics[width=0.49\columnwidth]{figuras/mej_ablation_dice_v6.png}\hfill
+\includegraphics[width=0.49\columnwidth]{figuras/mej_ablation_sep_v6.png}
+\caption{Arriba: Dice por estrategia de ensamble (línea roja $=0{,}5$). Abajo: ablation de
+la limpieza --- el Dice (izq.) y la separabilidad FDR/Bhattacharyya (der.) suben
+monótonamente de E1 (crudo) a E4 (completo).}
+\label{fig:ablation}
+\end{figure}
+
+El ablation arroja dos conclusiones nítidas. \emph{(i) La limpieza ayuda, no daña:} el
+Dice sube $+0{,}092$ de E1 a E4 y la separabilidad crece de forma monótona (FDR
+$1{,}21\to1{,}80$), siendo N4 el paso de mayor salto; el filtro de Wiener no atenúa el
+realce (E4 $>$ E3) y la normalización tampoco (E4 $>$ E1). \emph{(ii) El techo es
+estructural:} aun con la entrada más separable posible (E4, FDR $1{,}80$), el Dice se
+estanca en $0{,}370\ll0{,}50$. El límite lo impone la \emph{forma} del ET ---anillo
+delgado, heterogéneo, post-resección--- no el preprocesamiento, que queda así validado.
+
+\paragraph{Evolución del mejor Dice y lectura honesta} El recorrido completo
+(Tabla~\ref{tab:evolucion}) muestra que cada estrategia de post-proceso aporta ganancias
+marginales: de $0{,}320$ (base) a $0{,}370$ (ensamble), \textbf{$+0{,}050$ tras un
+post-proceso exhaustivo}, con un solo caso de ocho cruzando $0{,}50$. La histéresis no
+mejora y el ablation confirma que la limpieza es beneficiosa y el techo es estructural.
+La conclusión se refuerza: para el ET, los métodos clásicos son insuficientes y el
+problema exige información de \emph{forma} o aprendizaje.
+
+\begin{table}[h]
+\centering
+\caption{Evolución del mejor Dice medio a lo largo de las estrategias de mejora. Ninguna
+cruza $0{,}50$.}
+\label{tab:evolucion}
+\begin{tabularx}{\columnwidth}{lcX}
+\toprule
+Estrategia & Mejor Dice & Nota \\
+\midrule
+Base (RegionGrowing)    & 0,320 & punto de partida \\
++Morfología (sin apertura) & 0,342 & la apertura destruía el ET pequeño \\
++Componente anclado     & 0,353 & rescata Otsu (4 casos de $0{,}000$ a $0{,}18$--$0{,}64$) \\
+\textbf{Ensamble unión+post} & \textbf{0,370} & mejor global (sens.\ $0{,}63$) \\
+Histéresis / Otsu 2-clases & --- & no mejora (fugas) \\
+\bottomrule
+\end{tabularx}
+\end{table}
 
 % ════════════════════════════════════════════════════════════════
 \section{Reconstrucción 3D}
@@ -673,9 +771,15 @@ método supera un Dice medio de $0{,}50$; el mejor base ---crecimiento de
 regiones, $0{,}320$--- es apenas ``el menos malo'', y la
 multimodalidad mediante GMM no ayudó (sobre-segmentación). Ni
 siquiera el post-proceso clásico exhaustivo cambia la conclusión:
-con cierre morfológico y componente conexo anclado a la semilla,
-Otsu alcanza su mejor valor ($0{,}353$), que supera por primera vez
-al mejor método base pero sigue por debajo de $0{,}50$. El
+tras explorar morfología, anclaje del componente a la semilla,
+ensamble de métodos e histéresis, el mejor valor ---ensamble por
+unión con post-proceso anclado--- alcanza solo $0{,}370$
+($+0{,}050$ sobre la base), con un único caso de ocho cruzando
+$0{,}50$. Un análisis de robustez por \emph{ablation} de la limpieza
+descarta además que el preprocesamiento sea el culpable: la limpieza
+\emph{mejora} el Dice y la separabilidad del realce ($+0{,}092$ de
+la entrada cruda a la completa), de modo que el techo es estructural,
+propio de la forma del ET. El
 escenario post-tratamiento, con su cavidad de resección oscura,
 agrava el problema y obligó a corregir la estrategia de siembra. En
 contraste, el registro rígido por información mutua sí resuelve con

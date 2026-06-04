@@ -1,0 +1,7 @@
+fila,tipo,dice
+union_post,ensamble,0.37
+union,ensamble,0.3688
+Otsu_anclado,individual (v3),0.353
+RegionGrowing_anclado,individual (v3),0.342
+voto_mayoria,ensamble,0.3342
+interseccion,ensamble,0.2041

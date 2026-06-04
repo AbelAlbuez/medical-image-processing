@@ -1,0 +1,6 @@
+fila,tipo,dice
+ensamble_union_post (v4),referencia,0.37
+Otsu_anclado (v3),referencia,0.353
+RG_histeresis,v5,0.2086
+ensamble_hist,v5,0.2024
+Otsu_2clases,v5,0.0844
