@@ -1,0 +1,9 @@
+SimpleITK==2.4.0
+scipy
+scikit-image
+scikit-learn
+numpy
+pandas
+matplotlib
+tqdm
+nibabel
