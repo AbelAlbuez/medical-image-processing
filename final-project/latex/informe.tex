@@ -15,6 +15,7 @@
 \usepackage{url}
 \usepackage{multirow}
 \usepackage{makecell}
+\usepackage{listings}   % bloques de código (módulo de interpolación)
 
 % ── Colores para celdas de tabla (semáforo) ──────────────────────
 \definecolor{cellgood}{RGB}{212,237,218}
@@ -26,10 +27,11 @@
 \newcommand{\na}{\cellcolor{gray!18}N/A}
 
 % ── Metadatos ────────────────────────────────────────────────────
-\title{Segmentación clásica del tumor realzante (ET) en T1c
-sobre BraTS 2024 GLI: alcances y límites de los métodos sin
-aprendizaje profundo}
+\title{Segmentación clásica del tumor realzante (ET) en BraTS 2024 GLI:
+del límite de los métodos por intensidad a los contornos deformables,
+con interpolación de contornos y reconstrucción 3D}
 
+% TODO: añadir el/la autor(a) del módulo de interpolación de contornos.
 \author{\IEEEauthorblockN{Abel Albuez, Victoria Acero y Santiago Gil}
 \IEEEauthorblockA{Maestría en Ingeniería de Sistemas y Computación\\
 Pontificia Universidad Javeriana, Bogotá D.C., Colombia\\
@@ -45,35 +47,46 @@ Repositorio: \url{https://github.com/AbelAlbuez/medical-image-processing}}}
 Se aborda la segmentación automática del \emph{tumor realzante}
 (\textit{enhancing tumor}, ET; etiqueta~3 de BraTS) sobre la
 modalidad T1 con contraste (T1c) empleando exclusivamente métodos
-clásicos de \textsc{SimpleITK}, sin aprendizaje profundo. Un
-análisis exploratorio sobre 100 casos de \textit{BraTS 2024 GLI
-Post-Treatment} (78 con ET presente) muestra que T1c es la
-modalidad más separable para el realce (razón discriminante de
-Fisher mediana de $1{,}32$ frente a $0{,}47$ en T2-FLAIR). Tras
-una limpieza de T1c (Wiener $\rightarrow$ N4 $\rightarrow$
-normalización por percentiles) se evalúan cuatro métodos
----Otsu multinivel, crecimiento de regiones, \textit{watershed}
-por marcadores y mezcla de gaussianas multimodal--- sobre nueve
-casos. El hallazgo central es que \textbf{los métodos clásicos por
-intensidad son insuficientes para el ET}: ningún método supera un
-Dice medio de $0{,}50$, y el mejor ---crecimiento de regiones, con
-Dice medio de $0{,}320$--- es apenas ``el menos malo''. La mezcla
-de gaussianas multimodal \emph{sobre-segmenta} (sensibilidad
-$0{,}63$ pero Dice $0{,}094$), evidenciando que añadir modalidades
-no compensó la falta de un modelo de forma. Complementariamente,
-un registro rígido por información mutua de Mattes recupera una
-perturbación conocida con un error de registro objetivo (TRE)
-medio de $0{,}007$~mm, y una reconstrucción 3D por
-\textit{marching cubes} valida la escala física de las mallas.
+\textbf{clásicos} (sin aprendizaje profundo). Un análisis exploratorio
+sobre 100 casos de \textit{BraTS 2024 GLI Post-Treatment} (78 con ET
+presente) muestra que T1c es la modalidad más separable para el realce
+(razón discriminante de Fisher mediana de $1{,}32$ frente a $0{,}47$ en
+T2-FLAIR). Tras una limpieza de T1c (Wiener $\rightarrow$ N4
+$\rightarrow$ normalización por percentiles) el estudio recorre dos
+familias clásicas. Primero, cuatro métodos \emph{por intensidad}
+---Otsu multinivel, crecimiento de regiones, \textit{watershed} por
+marcadores y mezcla de gaussianas multimodal--- cuyo hallazgo central es
+que \textbf{son insuficientes para el ET}: ningún método base supera un
+Dice medio de $0{,}50$ (el mejor, crecimiento de regiones, $0{,}320$), y
+ni el post-proceso exhaustivo (morfología, anclaje a la semilla, ensamble,
+histéresis) ni un \emph{ablation} de la limpieza cambian la conclusión: el
+techo es \emph{estructural} (la forma del realce), no de umbral. Segundo,
+y como respuesta directa a ese límite, se añade un \emph{prior} de forma
+mediante cuatro modelos clásicos de \textbf{contorno deformable}
+---level set geodésico, level set variacional de Chan--Vese, B-spline y
+\textit{snake} paramétrico--- inicializados con una semilla híbrida
+automática (GMM sobre T1c). Estos modelos elevan el Dice medio del ET
+hasta $0{,}505$ (Chan--Vese; máximo $0{,}86$) y, sobre todo, son
+robustos; pero \emph{se estancan en torno a $0{,}50$}, lo que confirma el
+límite estructural anticipado. Complementariamente, un registro rígido
+por información mutua de Mattes recupera una perturbación conocida con un
+error de registro objetivo (TRE) medio de $0{,}007$~mm; un módulo de
+\textbf{interpolación lineal de contornos} entre cortes alcanza un Dice de
+$0{,}855$ contra el corte real intermedio y densifica la pila de
+contornos; y una reconstrucción 3D por \textit{marching cubes} y Poisson
+valida la escala física y permite la inspección visual interactiva de las
+mallas (ground-truth vs.\ predicción).
 \end{abstract}
 
 \begin{IEEEkeywords}
-BraTS 2024 GLI, tumor realzante, T1c, segmentación clásica,
-SimpleITK, información mutua de Mattes, \textit{marching cubes}.
+BraTS 2024 GLI, tumor realzante, T1c, segmentación clásica, contornos
+deformables, level set, Chan--Vese, SimpleITK, información mutua de Mattes,
+interpolación de contornos, \textit{marching cubes}, reconstrucción de Poisson.
 \end{IEEEkeywords}
 
 % ════════════════════════════════════════════════════════════════
 \section{Problema, justificación y objetivos}
+\label{sec:intro}
 % ════════════════════════════════════════════════════════════════
 Los gliomas son los tumores cerebrales primarios más frecuentes en
 adultos y su seguimiento por resonancia magnética (RM) es central
@@ -100,18 +113,24 @@ métodos clásicos sin el apoyo del aprendizaje profundo.
 Este trabajo se restringe deliberadamente a \textbf{métodos
 clásicos} (sin aprendizaje profundo) implementados sobre
 \textsc{ITK/SimpleITK}~\cite{lloyd2010itk}, con el objetivo de
-caracterizar honestamente sus \emph{alcances y límites} para el ET.
-Los objetivos concretos son: (i) un análisis exploratorio (EDA)
-que justifique la modalidad objetivo; (ii) una limpieza de T1c;
-(iii) un registro rígido demostrativo por información mutua;
-(iv) la segmentación del ET con cuatro métodos clásicos; y
-(v) una reconstrucción 3D de las máscaras para inspección visual.
-La canalización completa se organiza en seis módulos reproducibles
-y se ejecuta leyendo los datos directamente desde los archivos
-comprimidos del reto.
+caracterizar honestamente sus \emph{alcances y límites} para el ET y de
+mostrar, sobre los mismos datos, qué aporta pasar de métodos por
+intensidad a métodos con \emph{prior} de forma. Los objetivos concretos
+son: (i) un análisis exploratorio (EDA) que justifique la modalidad
+objetivo; (ii) una limpieza de T1c; (iii) un registro rígido demostrativo
+por información mutua; (iv) la segmentación del ET con cuatro métodos
+clásicos \emph{por intensidad}; (v) un segundo bloque de segmentación con
+cuatro modelos clásicos de \emph{contorno deformable} (spline / level set)
+que incorporan un \emph{prior} de forma; (vi) la interpolación de
+contornos entre cortes para densificar la representación 3D; y (vii) una
+reconstrucción 3D de las máscaras (\textit{marching cubes} y Poisson) para
+validación de escala e inspección visual. La canalización completa se
+organiza en módulos reproducibles y se ejecuta leyendo los datos
+directamente desde los archivos comprimidos del reto.
 
 % ════════════════════════════════════════════════════════════════
 \section{Estado del arte}
+\label{sec:sota}
 % ════════════════════════════════════════════════════════════════
 La literatura reciente sobre segmentación de gliomas en BraTS está
 dominada por el aprendizaje profundo, en particular por la
@@ -153,18 +172,30 @@ $0{,}87$. El trabajo confirma que la tarea \emph{anatómica} es
 difícil incluso para redes profundas modernas, pero que los mapas
 resultantes ya son útiles para la decisión clínica.
 
+\textbf{Modelos clásicos de contorno deformable.} En la frontera entre
+``intensidad pura'' y ``aprendizaje'' están los modelos deformables, que
+introducen un \emph{prior} de forma sin requerir entrenamiento: los
+\textit{snakes} o contornos activos paramétricos~\cite{kass1988snakes}, los
+\emph{level sets}~\cite{osher1988fronts} y sus variantes geodésica
+(basada en bordes)~\cite{caselles1997geodesic} y de
+Chan--Vese (basada en regiones)~\cite{chan2001active}. Este trabajo los
+incorpora explícitamente (Sec.~\ref{sec:deformables}) como el eslabón
+clásico que el bloque por intensidad echa en falta.
+
 \textbf{Hueco que llena este trabajo.} El estado del arte está
 dominado por aprendizaje profundo y, en el escenario
 post-tratamiento, ningún trabajo conocido por los autores cuantifica
-el \emph{techo} de los métodos puramente clásicos basados en
-intensidad para el ET. Este informe no compite con \textsc{nnU-Net}:
+el \emph{techo} de los métodos puramente clásicos para el ET,
+incluyendo el salto de los métodos por intensidad a los de contorno
+deformable. Este informe no compite con \textsc{nnU-Net}:
 caracteriza su \emph{línea de base} sin aprendizaje profundo,
-incluyendo post-proceso, ensambles y un \emph{ablation} del
-preprocesamiento, y muestra que el límite es estructural
-(forma del realce) y no de umbral.
+incluyendo post-proceso, ensambles, un \emph{ablation} del
+preprocesamiento y un \emph{prior} de forma clásico, y muestra que el
+límite es estructural (forma del realce) y no de umbral.
 
 % ════════════════════════════════════════════════════════════════
 \section{Descripción de la base de datos}
+\label{sec:datos}
 % ════════════════════════════════════════════════════════════════
 Se emplea el subconjunto \textit{BraTS 2024 GLI Post-Treatment}
 ~\cite{deverdier2024brats}. Es la \emph{primera} edición del reto
@@ -289,36 +320,44 @@ corte del centroide. El caso sin ET no presenta realce.}
 
 % ════════════════════════════════════════════════════════════════
 \section{Descripción de la línea de procesamiento}
+\label{sec:pipeline}
 % ════════════════════════════════════════════════════════════════
-La canalización está organizada en \textbf{seis módulos
-numerados}, cada uno con su propio reporte HTML, sus figuras y
-sus archivos de salida (CSV/JSON), y todos reproducibles desde
-\textsc{Python~3.11} con \textsc{SimpleITK}
+La canalización está organizada en \textbf{módulos numerados},
+cada uno con sus figuras y sus archivos de salida (CSV/JSON), y
+reproducibles desde \textsc{Python~3.11} con \textsc{SimpleITK}
 ~\cite{lloyd2010itk}:
 
 \begin{enumerate}
   \item \textbf{EDA.} Caracterización de geometría, intensidades y
         separabilidad por modalidad sobre 100 casos; selecciona
         T1c como modalidad objetivo y los casos demostrativos
-        (Sec.~III).
+        (Sec.~\ref{sec:datos}).
   \item \textbf{Limpieza T1c.} Reducción de ruido con filtro de
         Wiener, corrección del campo de sesgo con
         N4~\cite{tustison2010n4} y normalización por percentiles
-        (Sec.~V).
+        (Sec.~\ref{sec:limpieza}).
   \item \textbf{Registro rígido.} Recuperación demostrativa de
         una perturbación rígida conocida con información mutua de
         Mattes~\cite{mattes2003} sobre transformación Euler3D
-        multi-resolución (Sec.~VI).
-  \item \textbf{Segmentación clásica del ET.} Otsu multinivel,
+        multi-resolución (Sec.~\ref{sec:registro}).
+  \item \textbf{Segmentación por intensidad del ET.} Otsu multinivel,
         crecimiento de regiones, \textit{watershed} por
         marcadores y mezcla de gaussianas multimodal
-        (Sec.~VII), incluyendo el hallazgo sobre la semilla
+        (Sec.~\ref{sec:segint}), incluyendo el hallazgo sobre la semilla
         (cavidad de resección $\to$ ET más brillante,
         $\alpha=0{,}65$) y el ensamble por unión con post-proceso.
+  \item \textbf{Contornos deformables (\emph{prior} de forma).}
+        Level set geodésico, Chan--Vese variacional, B-spline y
+        \textit{snake} paramétrico sobre una semilla híbrida automática
+        (Sec.~\ref{sec:deformables}).
+  \item \textbf{Interpolación de contornos.} Interpolación lineal de
+        contornos entre cortes con resolución de auto-intersecciones, para
+        densificar la pila 3D (Sec.~\ref{sec:interp}).
   \item \textbf{Reconstrucción 3D.} Mallas por \textit{marching
-        cubes}~\cite{lorensen1987marching} de la predicción y el
-        \textit{ground truth} para validación de escala
-        (Sec.~VIII).
+        cubes}~\cite{lorensen1987marching} y reconstrucción de
+        Poisson~\cite{kazhdan2013screened} de la predicción y el
+        \textit{ground truth} para validación de escala e inspección
+        (Sec.~\ref{sec:recon3d}).
   \item \textbf{Visualización.} Mosaicos 2D (axial/coronal/sagital)
         y un visor 3D web autocontenido para inspección visual.
 \end{enumerate}
@@ -333,6 +372,7 @@ copiar el dataset al disco.
 
 % ════════════════════════════════════════════════════════════════
 \section{Preprocesamiento (T1c)}
+\label{sec:limpieza}
 % ════════════════════════════════════════════════════════════════
 Sobre T1c se aplica, en este orden: (1) reducción de ruido con
 filtro de Wiener adaptativo (ventana~3); (2) corrección del campo
@@ -344,8 +384,8 @@ la escala entre casos (Tabla~\ref{tab:geometria} mostró que la
 geometría es homogénea, por lo que no se requiere remuestreo).
 
 La Tabla~\ref{tab:limpieza} resume, para los nueve casos de la
-segmentación, la intensidad antes (escala cruda) y después de la
-limpieza; todos los volúmenes quedan en $[0,1]$, lo que homogeneiza
+segmentación por intensidad, la intensidad antes (escala cruda) y después
+de la limpieza; todos los volúmenes quedan en $[0,1]$, lo que homogeneiza
 la escala dispar de partida (medias crudas de $335$ a $3096$).
 La Fig.~\ref{fig:limpieza} ilustra el efecto.
 
@@ -381,6 +421,7 @@ Caso & ET & media$_\text{orig}$ & p99$_\text{orig}$ & media$_\text{limp}$ & std$
 
 % ════════════════════════════════════════════════════════════════
 \section{Registro rígido demostrativo}
+\label{sec:registro}
 % ════════════════════════════════════════════════════════════════
 Se incluye una demostración cuantitativa de registro rígido por
 información mutua de Mattes~\cite{mattes2003} con transformación
@@ -436,18 +477,21 @@ desciende y se estabiliza.}
 \end{figure}
 
 % ════════════════════════════════════════════════════════════════
-\section{Segmentación clásica del ET}
+\section{Segmentación por intensidad del ET}
+\label{sec:segint}
 % ════════════════════════════════════════════════════════════════
-Sobre T1c limpio se evaluaron cuatro métodos clásicos, con el ET
-(\texttt{seg==3}) como referencia: \textbf{Otsu} multinivel
-(n=3~\cite{otsu1979}, clase más brillante); \textbf{crecimiento de
-regiones}; \textbf{watershed} por marcadores~\cite{vincent1991watersheds};
-y \textbf{mezcla de gaussianas} (GMM~\cite{pedregosa2011scikit})
-\emph{multimodal} (T1c+T2w+T2-FLAIR), incluida como comparación.
+Sobre T1c limpio se evaluaron cuatro métodos clásicos \emph{por
+intensidad}, con el ET (\texttt{seg==3}) como referencia: \textbf{Otsu}
+multinivel (n=3~\cite{otsu1979}, clase más brillante); \textbf{crecimiento
+de regiones}; \textbf{watershed} por
+marcadores~\cite{vincent1991watersheds}; y \textbf{mezcla de gaussianas}
+(GMM~\cite{pedregosa2011scikit}) \emph{multimodal}
+(T1c+T2w+T2-FLAIR), incluida como comparación.
 Se usaron nueve casos: ocho con ET (cubriendo el rango de volumen)
 y uno sin ET (robustez).
 
 \subsection{Hallazgo: la semilla del crecimiento de regiones}
+\label{subsec:semilla}
 El comportamiento del crecimiento de regiones reveló un problema
 específico del escenario post-tratamiento que merece destacarse.
 La semilla natural ---el centroide del ET--- \textbf{cae dentro de
@@ -722,62 +766,283 @@ realce (E4 $>$ E3) y la normalización tampoco (E4 $>$ E1). \emph{(ii) El techo 
 estructural:} aun con la entrada más separable posible (E4, FDR $1{,}80$), el Dice se
 estanca en $0{,}370\ll0{,}50$. El límite lo impone la \emph{forma} del ET ---anillo
 delgado, heterogéneo, post-resección--- no el preprocesamiento, que queda así validado.
+Esta observación motiva directamente el bloque siguiente
+(Sec.~\ref{sec:deformables}): añadir un \emph{prior} de forma.
 
-\paragraph{Evolución del mejor Dice y lectura honesta} El recorrido completo
-(Tabla~\ref{tab:evolucion}) muestra que cada estrategia de post-proceso aporta ganancias
-marginales: de $0{,}320$ (base) a $0{,}370$ (ensamble), \textbf{$+0{,}050$ tras un
-post-proceso exhaustivo}, con un solo caso de ocho cruzando $0{,}50$. La histéresis no
-mejora y el ablation confirma que la limpieza es beneficiosa y el techo es estructural.
-La conclusión se refuerza: para el ET, los métodos clásicos son insuficientes y el
-problema exige información de \emph{forma} o aprendizaje.
+% ════════════════════════════════════════════════════════════════
+\section{Contornos deformables con \emph{prior} de forma}
+\label{sec:deformables}
+% ════════════════════════════════════════════════════════════════
+El bloque anterior dejó una conclusión accionable: el límite del ET es de
+\emph{forma}, no de umbral. La respuesta clásica natural ---sin recurrir al
+aprendizaje profundo--- es introducir un \emph{prior} de forma mediante
+modelos de \textbf{contorno deformable}, en los que la segmentación deja de
+ser una umbralización y pasa a ser la \emph{evolución de un contorno} que se
+ajusta al borde del realce minimizando una energía. Se implementaron cuatro,
+representando los dos grandes ejes del campo ---basado en bordes frente a
+basado en regiones, e implícito frente a explícito---, todos sobre T1c limpio
+y con SimpleITK/scikit-image.
+
+\subsection{Semilla híbrida automática}
+Como ninguna señal aislada localiza el ET de forma fiable, los cuatro métodos
+parten de la misma \textbf{semilla automática}: un GMM de tres componentes
+sobre T1c (la componente de mayor media corresponde al tejido realzante),
+quedándose con el componente conexo dominante. Cuando esa semilla degenera
+(vacía, $>250$\,k vóxeles o caja delimitadora $>2{,}5$\,M de vóxeles, indicio
+de que el GMM capturó tejido sano brillante) se recurre al \emph{blob}
+dominante del mapa de diferencia $D=\mathrm{clip}(T1c-T1n,0)$. Cada modelo
+refina esa semilla; una salvaguarda en el post-proceso \emph{revierte} la
+evolución a la semilla si el contorno colapsa ($<0{,}4\times$ el área),
+se fuga ($>2{,}5\times$) o se desplaza a otra región (solape $<0{,}4$), de
+modo que un modelo degenerado nunca puntúa por debajo de la base.
+
+\subsection{Los cuatro modelos}
+\textbf{Level set geodésico (basado en bordes).} El contorno se representa
+implícitamente como el nivel cero de una función $\phi$; un frente avanza con
+velocidad $g(|\nabla I|)$, rápida en zonas planas y casi nula en los bordes:
+\begin{equation}
+\frac{\partial \phi}{\partial t}=
+g(|\nabla I|)\,(\alpha+\beta\,\kappa)\,|\nabla\phi| + \nabla g\cdot\nabla\phi,
+\quad g=\frac{1}{1+|\nabla (G_\sigma * I)|}.
+\end{equation}
+Maneja cambios de topología de forma natural (el ET puede ser un anillo o
+varios focos), pero se fuga donde el borde es débil; se redujo su propagación
+para que no infle una buena semilla.
+
+\textbf{Level set variacional de Chan--Vese (basado en regiones).} No usa
+bordes: coloca el contorno $C$ de modo que el interior tenga una intensidad
+media $c_1$ y el exterior otra $c_2$, minimizando la energía de Mumford--Shah
+\begin{equation}
+E(c_1,c_2,C)=\mu\,\mathrm{Long}(C)+
+\lambda_1\!\!\int_{\mathrm{in}}\!\!|I-c_1|^2 +
+\lambda_2\!\!\int_{\mathrm{out}}\!\!|I-c_2|^2 .
+\end{equation}
+El criterio de \emph{promedio de región} es robusto justo donde fallan los
+métodos de borde (realce difuso y con ruido), y el término de curvatura $\mu$
+aporta suavidad tipo spline. Es el mejor de los cuatro.
+
+\textbf{B-spline (regularización de la frontera).} Toma el resultado de
+región (Chan--Vese) y reescribe su frontera corte a corte como un B-spline
+cúbico periódico, $C(u)=\sum_i N_{i,3}(u)\,P_i$, con continuidad $C^2$. No
+cambia la energía: impone una superficie lisa que elimina el dentado de la
+máscara de vóxeles, clave para la posterior reconstrucción 3D.
+
+\textbf{Snake paramétrico de Kass (explícito).} El contorno es una curva
+spline cerrada $C(s)$ que se contrae sobre la región brillante minimizando
+\begin{equation}
+E=\int_0^1 \tfrac12\big(\alpha|C'(s)|^2+\beta|C''(s)|^2\big) +
+E_{\text{ext}}\!\big(C(s)\big)\,ds,
+\end{equation}
+donde la energía interna (tensión $\alpha$, rigidez $\beta$) la mantiene
+suave. Es el modelo deformable más intuitivo; se inicializa ligeramente
+dilatado y con salvaguarda anti-colapso para evitar que la curva se contraiga
+a un punto.
+
+\subsection{Resultados}
+La evaluación se hizo sobre un subconjunto de \textbf{20 casos ricos en ET}
+(seleccionados por volumen de realce), con la misma limpieza
+(Wiener$\to$N4$\to$percentil). La Tabla~\ref{tab:deformables} reporta el Dice
+medio, la mediana, el máximo y el número de casos que superan $0{,}75$; se
+incluyen como referencia los dos mejores métodos por intensidad sobre
+\emph{ese mismo subconjunto} (Otsu y GMM, mono-modalidad sobre T1c limpio con
+componente anclado).
 
 \begin{table}[h]
 \centering
-\caption{Evolución del mejor Dice medio a lo largo de las estrategias de mejora. Ninguna
-cruza $0{,}50$.}
-\label{tab:evolucion}
-\begin{tabularx}{\columnwidth}{lcX}
+\caption{Dice del ET con contornos deformables (20 casos ricos en ET,
+totalmente automático). Referencia: los dos mejores métodos por intensidad
+sobre el mismo subconjunto.}
+\label{tab:deformables}
+\begin{tabular}{lcccc}
 \toprule
-Estrategia & Mejor Dice & Nota \\
+Método & Dice medio & Mediana & Máx & casos$>$0,75 \\
 \midrule
-Base (RegionGrowing)    & 0,320 & punto de partida \\
-+Morfología (sin apertura) & 0,342 & la apertura destruía el ET pequeño \\
-+Componente anclado     & 0,353 & rescata Otsu (4 casos de $0{,}000$ a $0{,}18$--$0{,}64$) \\
-\textbf{Ensamble unión+post} & \textbf{0,370} & mejor global (sens.\ $0{,}63$) \\
-Histéresis / Otsu 2-clases & --- & no mejora (fugas) \\
+\textbf{Chan--Vese (variacional)} & \cm{\textbf{0,505}} & 0,506 & \cg{0,860} & 5 \\
+B-spline                          & \cb{0,473} & 0,465 & \cm{0,794} & 2 \\
+Level set (geodésico)             & \cb{0,455} & 0,475 & \cm{0,781} & 2 \\
+Snake (spline)                    & \cb{0,450} & 0,484 & \cm{0,795} & 2 \\
+\midrule
+Otsu T1c (ref., intensidad)       & \cb{0,485} & 0,592 & \cg{0,821} & 6 \\
+GMM T1c (ref., intensidad)        & \cb{0,481} & 0,513 & \cg{0,866} & 6 \\
 \bottomrule
-\end{tabularx}
+\end{tabular}
 \end{table}
 
-% ════════════════════════════════════════════════════════════════
-\section{Reconstrucción 3D}
-% ════════════════════════════════════════════════════════════════
-Para inspección visual se generaron mallas por \textit{marching
-cubes}~\cite{lorensen1987marching} del ET predicho (crecimiento de
-regiones) y del \textit{ground truth}, con el espaciado físico
-aplicado y suavizado de Taubin, exportadas en OBJ y GLB; un visor
-web autocontenido (Three.js local) permite superponerlas en la
-exposición. La Tabla~\ref{tab:recon3d} reúne las métricas.
+\begin{figure}[h]
+\centering
+% figuras/def_ranking.png  (generada por make_report_figs.py)
+\includegraphics[width=\columnwidth]{figuras/def_ranking.png}
+\caption{Dice-ET medio por método sobre los 20 casos ricos en ET. El level
+set variacional (Chan--Vese) encabeza, seguido de cerca por las dos líneas
+base por intensidad sobre el mismo subconjunto.}
+\label{fig:def_ranking}
+\end{figure}
 
-Dos lecturas. Primero, la \textbf{validación de escala es
-correcta}: el volumen de la malla GT reproduce el volumen de ET del
-EDA en el mismo orden de magnitud (p.~ej.\ caso 02060-100,
-$19\,266$ vs.\ $19\,975$~mm$^3$; caso 00046-101, $25\,685$ vs.\
-$25\,306$~mm$^3$), lo que confirma una geometría física consistente.
-Segundo, la \textbf{distancia media superficie-superficie entre
-predicción y GT ($2{,}6$ a $42{,}7$~mm) no valida la predicción};
-al contrario, cuantifica cuánto se \emph{aleja} la malla predicha
-del GT en los casos difíciles (p.~ej.\ 00498-100, donde la
-predicción multiplica por seis el volumen del GT y la distancia
-asciende a $42{,}7$~mm). La reconstrucción 3D es, por tanto, una
-herramienta de inspección y de validación de escala, no una medida
+Tres lecturas, todas honestas. \emph{(i) El \emph{prior} de forma ayuda, pero
+poco:} Chan--Vese es el mejor método ($0{,}505$) y supera a las líneas base
+por intensidad \emph{sobre el mismo subconjunto} ($0{,}485$ Otsu, $0{,}481$
+GMM), con casos individuales hasta $0{,}86$; su mayor virtud es la
+\emph{robustez} (las salvaguardas evitan los colapsos a $0$ del bloque por
+intensidad). \emph{(ii) El subconjunto es favorable:} al seleccionarse por
+volumen de ET, estos 20 casos son más fáciles que el conjunto con dispersión
+de tamaños de la Sec.~\ref{sec:segint}; por eso incluso Otsu/GMM rinden
+$\approx0{,}48$ aquí frente a $\approx0{,}16$/$0{,}09$ allí. La comparación
+válida es \emph{intra-subconjunto}, donde el contorno deformable es el mejor.
+\emph{(iii) El techo persiste:} pese al \emph{prior} de forma, el Dice medio
+se \textbf{estanca en torno a $0{,}50$}. Esto \emph{refuerza} la tesis de la
+Sec.~\ref{sec:segint}: el límite es estructural, y ni siquiera un modelo
+clásico con forma lo despeja; la mejora real exigiría aprendizaje o un modelo
+estadístico de forma. En total, 26 combinaciones (caso, método) superan
+$0{,}75$ y se reconstruyen en 3D (Sec.~\ref{sec:recon3d}).
+
+% ════════════════════════════════════════════════════════════════
+\section{Interpolación de contornos entre cortes}
+\label{sec:interp}
+% ════════════════════════════════════════════════════════════════
+Para densificar la representación 3D del realce ---paso previo a la
+reconstrucción de superficie--- se interpolan linealmente los contornos
+extraídos en cortes consecutivos, generando contornos intermedios con
+resolución de auto-intersecciones. Esta sección cuantifica la fidelidad
+geométrica del interpolado y su robustez.
+
+\subsection{Métricas de calidad contra GT real}
+\label{subsec:metricas-gt}
+Para cuantificar la fidelidad geométrica del interpolado se contrastó, para
+cada par de cortes $(A, B)$, el contorno reconstruido a $t = 0{,}5$ contra el
+corte real intermedio (\emph{ground truth}) del dataset BraTS. Se reportan
+cuatro métricas: \emph{Dice} e \emph{IoU} de solapamiento de región (mejor
+cuanto mayor; calculadas rasterizando ambos polígonos en una grilla
+$512\!\times\!512$), distancia de Hausdorff bidireccional entre vértices
+(mejor cuanto menor) y error relativo de área
+$\mathrm{areaErr}=|A_{\text{interp}}-A_{\text{gt}}|/A_{\text{gt}}$.
+
+\begin{table}[h]
+  \centering
+  \small
+  \setlength{\tabcolsep}{4pt}
+  \caption{Métricas del interpolado lineal a $t=0{,}5$ contra el corte GT real
+  intermedio. El sombreado verde indica que la celda cumple el umbral de
+  calidad (Dice $\geq 0{,}80$, IoU $\geq 0{,}65$, Hausdorff $\leq 2{,}0$,
+  AreaErr $\leq 0{,}20$).}
+  \label{tab:metricas-gt}
+  \begin{tabular}{lcccccc}
+    \toprule
+    Caso & Par $(A \!\to\! B)$ & Dice & IoU & Hausdorff & AreaErr & Auto-int. \\
+    \midrule
+    00008-100 & $70 \!\to\! 72$ &
+      \cg{0,855} & \cg{0,746} & \cg{1,265} & \cg{0,142} & No \\
+    00008-101 & $70 \!\to\! 72$ &
+      \cg{0,854} & \cg{0,746} & \cg{0,896} & \cg{0,056} & No \\
+    \midrule
+    \textbf{Promedio} & --- &
+      \textbf{0,855} & \textbf{0,746} & \textbf{1,081} & \textbf{0,099} & --- \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+Conviene remarcar una diferencia metodológica con la evaluación de la
+segmentación. Una validación contra el GT \emph{sintético} reconstruido del
+propio dataset (es decir, contra la misma malla que el \emph{pipeline}
+produce) tiende, por construcción, a saturar en $1$ ($\mathrm{Dice}\approx
+0{,}997$). El protocolo aquí adoptado, en cambio, \emph{descarta} el corte
+intermedio del par y mide el interpolado contra el GT \emph{real} de ese
+corte, lo que castiga cualquier desviación topológica o de forma. Ambos
+enfoques son válidos y complementarios, pero no directamente comparables: los
+valores $\sim\!0{,}85$ reportados reflejan la dificultad intrínseca de
+\emph{predecir un corte ausente} a partir de sus vecinos, no un fallo del
+método.
+
+\subsection{Experimento de \emph{stress} sobre el resolutor}
+\label{subsec:stress}
+Para validar el módulo \texttt{SelfIntersectionResolver} se diseñó un
+experimento que fuerza una correspondencia patológica entre $A$ y $B$:
+\begin{enumerate}
+  \item Se toma el par del caso 00008-100 (\texttt{slice\_0070.obj},
+        \texttt{slice\_0072.obj}).
+  \item Rotación cíclica de los vértices de $B$ por $k = n/2$ posiciones,
+        donde $n$ es la cantidad de vértices de $B$. Esto desalinea por
+        completo la correspondencia angular inicial y, sin compensación,
+        forzaría que los segmentos del interpolado a $t=0{,}5$ se crucen
+        entre sí.
+  \item Se interpola a $t = 0{,}5$ y, si aparecen auto-intersecciones, se
+        resuelven con \texttt{SelfIntersectionResolver}.
+\end{enumerate}
+
+\begin{figure}[h]
+  \centering
+  % Copiar la figura a figuras/ (origen: src/interpolation-lineal/output/stress_test/.../stress_comparison.png)
+  \includegraphics[width=\columnwidth]{figuras/stress_comparison.png}
+  \caption{Experimento de \emph{stress} sobre \texttt{BraTS-GLI-00008-100}.
+  Izquierda: corrida normal con $B$ original. Derecha: $B$ rotado en
+  $k = n/2 = 12$ vértices. En ambos casos el contorno verde es el interpolado
+  a $t=0{,}5$. La búsqueda de rotación óptima, seguida del resolutor, recupera
+  una topología válida incluso bajo la rotación adversarial.}
+  \label{fig:stress}
+\end{figure}
+
+El experimento demuestra que el \emph{pipeline} completo (rotación óptima
+$+$ \textit{resampling} $+$ interpolación $+$ resolutor) es robusto frente a
+perturbaciones del orden cíclico de los vértices de entrada, que es
+exactamente el tipo de inconsistencia esperable cuando los contornos provienen
+de cortes independientes sin un punto de inicio canónico.
+
+\subsection{Salida para reconstrucción 3D}
+\label{subsec:multi-t}
+Escribir los vértices con $z = 0$ basta para inspeccionar el resultado en 2D
+pero impide apilar varios contornos interpolados en un volumen tridimensional
+para reconstrucción posterior (p.\,ej.\ Poisson o \textit{marching cubes} en
+VTK/ParaView). Para cerrar ese hueco, el módulo \texttt{generate\_multi\_t.py}
+genera 11 capas intermedias ($t = 0{,}0, 0{,}1, \ldots, 1{,}0$) con la
+coordenada $z$ real interpolada linealmente entre los dos cortes originales,
+$z(t) = z_A + t\,(z_B - z_A)$:
+
+\begin{lstlisting}[language=bash,basicstyle=\footnotesize\ttfamily,
+                   breaklines=true,breakatwhitespace=true,columns=fullflexible]
+# 11 contornos interpolados con z real entre los cortes 70 y 72
+python scripts/generate_multi_t.py \
+  data/contours/BraTS-GLI-00008-100/slice_0070.obj \
+  data/contours/BraTS-GLI-00008-100/slice_0072.obj \
+  70 72
+\end{lstlisting}
+
+Cada corrida deposita los 11 \texttt{.obj} más un \texttt{preview\_3d.png} y un
+\texttt{index.csv} (columnas \texttt{t, z, filename, n\_vertices, self\_int}).
+Ese \texttt{index.csv} es el punto de integración con el módulo de
+reconstrucción (Sec.~\ref{sec:recon3d}): se consume directamente para apilar
+los contornos densificados y alimentar la superficie de \textit{marching
+cubes}.
+
+% ════════════════════════════════════════════════════════════════
+\section{Reconstrucción y visualización 3D}
+\label{sec:recon3d}
+% ════════════════════════════════════════════════════════════════
+La representación volumétrica del ET ---ya sea la máscara segmentada o la pila
+de contornos densificada (Sec.~\ref{sec:interp})--- se lleva a superficie por
+dos vías complementarias: \textit{marching cubes}~\cite{lorensen1987marching}
+(validación de escala) y reconstrucción de Poisson \emph{screened}
+~\cite{kazhdan2013screened} (comparación visual suave GT vs.\ predicción).
+
+\subsection{Mallas por \textit{marching cubes} y validación de escala}
+Se generaron mallas del ET predicho (crecimiento de regiones) y del
+\textit{ground truth}, con el espaciado físico aplicado y suavizado de Taubin,
+exportadas en OBJ y GLB. La Tabla~\ref{tab:recon3d} reúne las métricas. Dos
+lecturas. Primero, la \textbf{validación de escala es correcta}: el volumen de
+la malla GT reproduce el volumen de ET del EDA en el mismo orden de magnitud
+(p.\,ej.\ 02060-100, $19\,266$ vs.\ $19\,975$~mm$^3$; 00046-101, $25\,685$
+vs.\ $25\,306$~mm$^3$). Segundo, la \textbf{distancia media
+superficie-superficie ($2{,}6$ a $42{,}7$~mm) no valida la predicción}; al
+contrario, cuantifica cuánto se \emph{aleja} la malla predicha del GT en los
+casos difíciles (p.\,ej.\ 00498-100, donde la predicción multiplica por seis
+el volumen del GT). La reconstrucción por \textit{marching cubes} es, por
+tanto, una herramienta de inspección y de validación de escala, no una medida
 de acierto.
 
 \begin{table*}[t]
 \centering
-\caption{Métricas 3D por caso. La validación de escala (vol.\ malla
-GT vs.\ EDA) es correcta; la distancia superficie-superficie mide
-el \emph{alejamiento} pred$\leftrightarrow$GT, no acierto.}
+\caption{Métricas 3D por caso (\textit{marching cubes}). La validación de
+escala (vol.\ malla GT vs.\ EDA) es correcta; la distancia
+superficie-superficie mide el \emph{alejamiento} pred$\leftrightarrow$GT, no
+acierto.}
 \label{tab:recon3d}
 \begin{tabular}{lccccccc}
 \toprule
@@ -796,29 +1061,39 @@ Vol.\ GT (mm$^3$) & Vol.\ GT EDA (mm$^3$) & Dist.\ media (mm) \\
 \end{tabular}
 \end{table*}
 
+\subsection{Reconstrucción de Poisson de los contornos deformables}
+Para los 26 pares (caso, método) que superan $0{,}75$
+(Sec.~\ref{sec:deformables}) se reconstruyó la superficie del tumor con
+Poisson \emph{screened}~\cite{kazhdan2013screened} a partir de la nube de
+puntos orientada de la predicción y del GT, y se renderizaron lado a lado
+(verde = GT, rojo = predicción), exportando además las mallas \texttt{.ply}.
+La Fig.~\ref{fig:poisson} muestra el mejor caso (Chan--Vese, $\mathrm{Dice}=
+0{,}86$): las superficies del GT y la predicción son casi idénticas. Un visor
+3D web autocontenido (Three.js) permite rotar, acercar y superponer ambas
+mallas en la exposición.
+
 \begin{figure}[h]
 \centering
-\includegraphics[width=0.49\columnwidth]{figuras/recon3d_02060-100.png}
-\hfill
-\includegraphics[width=0.49\columnwidth]{figuras/recon3d_00498-100.png}
-\caption{Mallas ET predicho (naranja) vs.\ GT (verde). Izquierda:
-02060-100 (solape razonable). Derecha: 00498-100, donde la
-predicción sobre-segmenta y se aleja del GT.}
-\label{fig:recon3d}
+% figuras/poisson_02108_chanvese.png  (generada por make_report_figs.py)
+\includegraphics[width=\columnwidth]{figuras/poisson_02108_chanvese.png}
+\caption{Reconstrucción de superficie de Poisson (caso 02108, Chan--Vese,
+$\mathrm{Dice}=0{,}86$): \emph{ground-truth} (verde) vs.\ predicción (rojo).}
+\label{fig:poisson}
 \end{figure}
 
 \begin{figure}[h]
 \centering
 \includegraphics[width=\columnwidth]{figuras/viz_grid_02060-100.png}
 \caption{Mosaico de 3 vistas (axial/coronal/sagital) del caso
-02060-100: original con GT y las cuatro segmentaciones.}
+02060-100: original con GT y las segmentaciones.}
 \label{fig:viz}
 \end{figure}
 
 % ════════════════════════════════════════════════════════════════
 \section{Discusión y limitaciones}
+\label{sec:discusion}
 % ════════════════════════════════════════════════════════════════
-\textbf{Por qué fallan los métodos clásicos en el ET.} El ET no es
+\textbf{Por qué fallan los métodos por intensidad en el ET.} El ET no es
 un objeto ``brillante y compacto'' separable por intensidad: es un
 anillo delgado, heterogéneo y, en el escenario post-tratamiento,
 rodea una cavidad oscura. Esto rompe las hipótesis de cada método.
@@ -827,11 +1102,11 @@ T1c es \emph{unimodal} (coeficiente de bimodalidad $<5/9$ en los
 casos analizados), de modo que el umbral de la clase alta cae en un
 punto arbitrario y mezcla realce con tejido sano brillante.
 \emph{Crecimiento de regiones} y \emph{watershed} dependen de una
-semilla/marcador fiable; aun corregida la semilla (Sec.~V-A), la
-heterogeneidad del realce limita el crecimiento. \emph{GMM
-multimodal} ilustra que \textbf{añadir modalidades no ayudó}: al
-agrupar T1c+T2w+T2-FLAIR captura un cúmulo amplio dominado por el
-edema, con alta sensibilidad pero Dice ínfimo
+semilla/marcador fiable; aun corregida la semilla
+(Sec.~\ref{subsec:semilla}), la heterogeneidad del realce limita el
+crecimiento. \emph{GMM multimodal} ilustra que \textbf{añadir
+modalidades no ayudó}: al agrupar T1c+T2w+T2-FLAIR captura un cúmulo
+amplio dominado por el edema, con alta sensibilidad pero Dice ínfimo
 (Fig.~\ref{fig:gmm00529}).
 
 \begin{figure}[h]
@@ -842,23 +1117,36 @@ predicción roja muy superior al GT cian.}
 \label{fig:gmm00529}
 \end{figure}
 
+\textbf{Qué aporta ---y qué no--- el \emph{prior} de forma.} Los contornos
+deformables (Sec.~\ref{sec:deformables}) confirman que el problema es de
+forma: el level set variacional de Chan--Vese es el mejor método global y, por
+sus salvaguardas, elimina los colapsos catastróficos a $0$ del bloque por
+intensidad. Pero el Dice medio \emph{se estanca en $\approx0{,}50$} aun en un
+subconjunto favorable, lo que delimita con honestidad el alcance de lo
+clásico: el \emph{prior} de forma geométrico (suavidad, curvatura) no equivale
+a un \emph{prior} de forma \emph{estadístico} (la apariencia anular y
+heterogénea aprendida de muchos casos), que es lo que aportaría un modelo de
+forma o una red.
+
 \textbf{Limitaciones del registro demostrativo.} El registro es
 rígido y se evaluó frente a una perturbación rígida conocida; por
 construcción no compensa deformaciones no rígidas (efecto de masa,
 cambios post-quirúrgicos) y su excelente TRE no debe extrapolarse a
 un escenario inter-sujeto o longitudinal real.
 
-\textbf{Alcance experimental.} La segmentación se evaluó sobre
-nueve casos y el registro/3D sobre cuatro y ocho respectivamente;
-las cifras son indicativas, no un \textit{benchmark} a gran escala.
+\textbf{Alcance experimental.} La segmentación por intensidad se evaluó sobre
+nueve casos, la de contornos deformables sobre veinte (subconjunto rico en ET,
+y por tanto favorable), el registro sobre cuatro y la reconstrucción 3D sobre
+ocho; las cifras son indicativas, no un \textit{benchmark} a gran escala. La
+interpolación se validó sobre dos pares de cortes.
 
 % ════════════════════════════════════════════════════════════════
 \section{Reproducibilidad}
+\label{sec:repro}
 % ════════════════════════════════════════════════════════════════
-La canalización completa (seis módulos en Python~3.11 con
-\textsc{SimpleITK}) es reproducible y lee los datos directamente
-desde los \texttt{.zip}. La Tabla~\ref{tab:repro} resume los
-parámetros clave.
+La canalización completa (en Python~3.11 con \textsc{SimpleITK} y
+scikit-image) es reproducible y lee los datos directamente desde los
+\texttt{.zip}. La Tabla~\ref{tab:repro} resume los parámetros clave.
 
 \begin{table}[h]
 \centering
@@ -873,7 +1161,13 @@ Limpieza & Wiener (3) $\to$ N4 (\textit{shrink} 4) $\to$ percentil $[0{,}5,99{,}
 Otsu & multinivel n=3, clase alta \\
 Region growing & semilla en ET más brillante, ventana $[\alpha I,\max]$, $\alpha=0{,}65$ \\
 Watershed & marcador en ET brillante, gradiente de Sobel \\
-GMM & 4 componentes, T1c+T2w+T2-FLAIR \\
+GMM (intensidad) & 4 componentes, T1c+T2w+T2-FLAIR \\
+Semilla deformables & GMM 3 comp.\ sobre T1c; \emph{fallback} a \emph{blob} de $T1c-T1n$ \\
+Level set & geodésico (propagación 0,8; curvatura 3; advección 1,5; 120 iter) \\
+Chan--Vese & morfológico, 35 iter, suavizado 3 \\
+B-spline & cúbico periódico sobre la frontera de Chan--Vese \\
+Snake & Kass, init dilatada, salvaguarda anti-colapso \\
+Reconstrucción 3D & \textit{marching cubes} + Poisson \emph{screened} (open3d) \\
 Registro & Mattes MI (50 bins), Euler3D, \textit{shrink} $[4,2]$, sigmas $[2,1]$, 150 iter \\
 Semilla aleatoria & 42 \\
 Datos & lectura directa desde \texttt{.zip} (BraTS 2024 GLI) \\
@@ -883,39 +1177,40 @@ Datos & lectura directa desde \texttt{.zip} (BraTS 2024 GLI) \\
 
 % ════════════════════════════════════════════════════════════════
 \section{Conclusiones y trabajo futuro}
+\label{sec:conclusiones}
 % ════════════════════════════════════════════════════════════════
 El hallazgo central es claro y honesto: \textbf{los métodos
-clásicos basados en intensidad son insuficientes para segmentar el
-tumor realzante en T1c} en BraTS~2024 GLI post-tratamiento. Ningún
-método supera un Dice medio de $0{,}50$; el mejor base ---crecimiento de
-regiones, $0{,}320$--- es apenas ``el menos malo'', y la
-multimodalidad mediante GMM no ayudó (sobre-segmentación). Ni
-siquiera el post-proceso clásico exhaustivo cambia la conclusión:
-tras explorar morfología, anclaje del componente a la semilla,
-ensamble de métodos e histéresis, el mejor valor ---ensamble por
-unión con post-proceso anclado--- alcanza solo $0{,}370$
-($+0{,}050$ sobre la base), con un único caso de ocho cruzando
-$0{,}50$. Un análisis de robustez por \emph{ablation} de la limpieza
-descarta además que el preprocesamiento sea el culpable: la limpieza
-\emph{mejora} el Dice y la separabilidad del realce ($+0{,}092$ de
-la entrada cruda a la completa), de modo que el techo es estructural,
-propio de la forma del ET. El
-escenario post-tratamiento, con su cavidad de resección oscura,
-agrava el problema y obligó a corregir la estrategia de siembra. En
-contraste, el registro rígido por información mutua sí resuelve con
-precisión su tarea (TRE sub-vóxel), y la reconstrucción 3D valida
-la escala física de las máscaras.
+clásicos son insuficientes para segmentar el tumor realzante en T1c}
+en BraTS~2024 GLI post-tratamiento, y el límite es \emph{estructural}
+(la forma del realce), no de umbral. En el bloque \emph{por intensidad},
+ningún método base supera un Dice medio de $0{,}50$; el mejor
+---crecimiento de regiones, $0{,}320$--- es apenas ``el menos malo'', la
+multimodalidad mediante GMM no ayudó (sobre-segmentación), y ni el
+post-proceso exhaustivo (morfología, anclaje, ensamble por unión
+$0{,}370$, histéresis) ni un \emph{ablation} de la limpieza ---que
+\emph{mejora} el Dice y la separabilidad, $+0{,}092$--- cambian la
+conclusión. Al añadir un \emph{prior} de forma con modelos clásicos de
+\textbf{contorno deformable}, el mejor método (Chan--Vese variacional)
+alcanza $0{,}505$ de Dice medio y hasta $0{,}86$ en casos con realce
+claro, superando a las líneas base por intensidad sobre el mismo
+subconjunto y ganando en robustez; pero \emph{se estanca en torno a
+$0{,}50$}, lo que \textbf{confirma}, en lugar de refutar, el techo
+estructural. En contraste, el registro rígido por información mutua sí
+resuelve con precisión su tarea (TRE sub-vóxel), la interpolación de
+contornos reproduce un corte ausente con Dice $0{,}855$, y la
+reconstrucción 3D (\textit{marching cubes} y Poisson) valida la escala
+física de las máscaras y permite la inspección visual.
 
-Como trabajo futuro, estos límites motivan: (i) modelos con
-\emph{prior} de forma (\textit{level sets} con regularización,
-contornos activos) que no dependan solo de intensidad; (ii) una
-combinación multimodal más informada que la GMM ingenua;
-(iii) registro deformable para escenarios longitudinales; y
-(iv), naturalmente, el aprendizaje profundo, cuya necesidad este
-estudio cuantifica por contraste.
+Como trabajo futuro, estos límites motivan: (i) \emph{priors} de forma
+\emph{estadísticos} (modelos de forma activos, \textit{atlas}) que
+capturen la apariencia anular del ET, más allá de la suavidad geométrica
+de los contornos deformables; (ii) una combinación multimodal más
+informada que la GMM ingenua; (iii) registro deformable para escenarios
+longitudinales; y (iv), naturalmente, el aprendizaje profundo, cuya
+necesidad este estudio cuantifica por contraste.
 
 % ── Bibliografía ─────────────────────────────────────────────────
-\begin{thebibliography}{9}
+\begin{thebibliography}{99}
 
 \bibitem{baid2021brats}
 U.~Baid \emph{et al.},
@@ -966,6 +1261,36 @@ W.~E.~Lorensen and H.~E.~Cline,
 algorithm,''
 \emph{ACM SIGGRAPH Computer Graphics}, vol.~21, no.~4,
 pp.~163--169, 1987.
+
+\bibitem{kass1988snakes}
+M.~Kass, A.~Witkin and D.~Terzopoulos,
+``Snakes: Active contour models,''
+\emph{International Journal of Computer Vision}, vol.~1, no.~4,
+pp.~321--331, 1988.
+
+\bibitem{osher1988fronts}
+S.~Osher and J.~A.~Sethian,
+``Fronts propagating with curvature-dependent speed: algorithms
+based on Hamilton--Jacobi formulations,''
+\emph{Journal of Computational Physics}, vol.~79, no.~1,
+pp.~12--49, 1988.
+
+\bibitem{caselles1997geodesic}
+V.~Caselles, R.~Kimmel and G.~Sapiro,
+``Geodesic active contours,''
+\emph{International Journal of Computer Vision}, vol.~22, no.~1,
+pp.~61--79, 1997.
+
+\bibitem{chan2001active}
+T.~F.~Chan and L.~A.~Vese,
+``Active contours without edges,''
+\emph{IEEE Trans.\ Image Process.}, vol.~10, no.~2,
+pp.~266--277, 2001.
+
+\bibitem{kazhdan2013screened}
+M.~Kazhdan and H.~Hoppe,
+``Screened Poisson surface reconstruction,''
+\emph{ACM Trans.\ Graphics}, vol.~32, no.~3, art.~29, 2013.
 
 \bibitem{deverdier2024brats}
 M.~Correia~de~Verdier \emph{et al.},
