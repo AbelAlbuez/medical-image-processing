@@ -1,0 +1,10 @@
+SimpleITK==2.4.0
+nibabel==5.2.1
+scipy
+scikit-image
+scikit-learn
+numpy
+pandas
+matplotlib
+tqdm
+open3d

@@ -1,0 +1,11 @@
+method,oracle_without_method,delta_full_minus_without,sole_best_cases,sole_above_075_cases
+otsu_T1c,0.620435,0.010275000000000034,3,2
+sustraccion,0.62126,0.009449999999999958,4,0
+gmm_2d,0.621875,0.008835000000000037,3,0
+gmm_T1c,0.623515,0.0071949999999999514,4,0
+variational_spline,0.6240249999999999,0.006685000000000052,4,1
+bspline,0.63071,0.0,0,0
+fast_marching,0.63071,0.0,0,0
+level_set,0.63071,0.0,0,0
+spline,0.63071,0.0,0,0
+rango_doble,0.63071,0.0,0,0

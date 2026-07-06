@@ -1,0 +1,36 @@
+FIGURAS QUE ESPERA informe_unificado.tex
+==========================================
+
+Ya provistas (generadas por el pipeline de contornos deformables / Poisson):
+  [OK] def_ranking.png            <- output/figuras/resumen_dice.png
+  [OK] poisson_02108_chanvese.png <- output/figuras/poisson/BraTS-GLI-02108-100_variational_spline_poisson.png
+
+Faltan (cópialas desde tus módulos de EDA, limpieza, registro, segmentación
+e interpolación con EXACTAMENTE estos nombres):
+
+  EDA:
+    eda_separabilidad.png
+    eda_otsu_t1c.png
+    eda_casos_demostrativos.png
+  Limpieza:
+    limp_02060-100.png
+  Registro:
+    reg_02060-100.png
+    reg_convergencia.png
+  Segmentación por intensidad:
+    seg_ranking.png
+    seg_regiongrowing_02060.png
+    seg_gmm_02060.png
+    seg_gmm_00529.png
+    mej_ranking_v3.png
+    mej_otsu_02062.png
+    mej_ensamble_v4.png
+    mej_ablation_dice_v6.png
+    mej_ablation_sep_v6.png
+  Interpolación de contornos:
+    stress_comparison.png   (origen: src/interpolation-lineal/output/stress_test/.../stress_comparison.png)
+  Reconstrucción / visualización 3D:
+    viz_grid_02060-100.png
+
+Mientras falten, el .tex compila igual (probado: 12 páginas) pero esas figuras
+saldrán en blanco. El PDF de muestra incluido se generó con marcadores grises.

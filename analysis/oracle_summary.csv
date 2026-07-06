@@ -1,0 +1,2 @@
+cases,methods,best_single_method,best_single_mean_dice,oracle_mean_dice,headroom_oracle_minus_best_single
+20,10,variational_spline,0.50475,0.63071,0.12595999999999996

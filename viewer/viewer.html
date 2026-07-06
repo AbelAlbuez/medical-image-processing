@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>BraTS Viewer — Colocar semilla ET</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif}
+body{background:#111;color:#eee;padding:12px}
+h1{font-size:16px;font-weight:500;margin-bottom:10px;color:#fff}
+.grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
+.view{background:#1a1a1a;border:1px solid #333;border-radius:8px;overflow:hidden}
+.view-hdr{display:flex;justify-content:space-between;align-items:center;padding:5px 8px;background:#222;font-size:12px}
+.view-hdr span{color:#aaa}
+.view-hdr b{color:#4ade80;font-family:monospace;font-size:11px}
+canvas{display:block;width:100%;cursor:crosshair;background:#000}
+.slice-row{display:flex;align-items:center;gap:6px;padding:5px 8px;background:#1a1a1a}
+.slice-row label{font-size:11px;color:#888;min-width:10px}
+.slice-row input[type=range]{flex:1;accent-color:#4ade80}
+.slice-row span{font-size:11px;font-family:monospace;min-width:28px;text-align:right;color:#ccc}
+.controls{background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:10px;margin-bottom:10px}
+.row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.row:last-child{margin-bottom:0}
+.lbl{font-size:12px;color:#aaa;min-width:70px}
+.val{font-size:12px;font-family:monospace;min-width:36px;color:#fff}
+input[type=range]{accent-color:#4ade80;width:120px}
+.btn{padding:5px 14px;border-radius:6px;border:1px solid #444;background:#222;color:#eee;cursor:pointer;font-size:12px}
+.btn:hover{background:#333}
+.btn.primary{background:#166534;border-color:#4ade80;color:#4ade80}
+.btn.primary:hover{background:#14532d}
+.btn.danger{background:#7f1d1d;border-color:#f87171;color:#f87171}
+.seed-box{background:#0d2818;border:1px solid #4ade80;border-radius:8px;padding:10px;margin-bottom:10px}
+.seed-box h3{font-size:13px;color:#4ade80;margin-bottom:6px}
+.seed-coords{font-family:monospace;font-size:14px;color:#fff;margin-bottom:8px}
+.seed-hint{font-size:11px;color:#6ee7b7}
+.copy-cmd{background:#0a1a10;border:1px solid #2d6a4f;border-radius:4px;padding:6px 10px;font-family:monospace;font-size:12px;color:#86efac;margin:6px 0;word-break:break-all}
+.legend{display:flex;gap:10px;flex-wrap:wrap;font-size:11px}
+.leg-item{display:flex;align-items:center;gap:4px}
+.leg-dot{width:10px;height:10px;border-radius:2px}
+.info{font-size:11px;color:#666;margin-top:6px}
+.load-area{text-align:center;padding:30px;border:2px dashed #333;border-radius:8px;margin-bottom:10px;cursor:pointer}
+.load-area:hover{border-color:#4ade80;background:#0d1a0d}
+.load-area p{color:#666;font-size:13px;margin-top:6px}
+.modality-btns{display:flex;gap:6px;flex-wrap:wrap}
+.mod-btn{padding:3px 10px;border-radius:4px;border:1px solid #444;background:#222;color:#aaa;cursor:pointer;font-size:11px}
+.mod-btn.active{background:#1a3a2a;border-color:#4ade80;color:#4ade80}
+.overlay-btns{display:flex;gap:6px}
+.ov-btn{padding:3px 10px;border-radius:4px;border:1px solid #444;background:#222;color:#aaa;cursor:pointer;font-size:11px}
+.ov-btn.on{border-color:#22d3ee;color:#22d3ee;background:#0a2030}
+.ov-btn.pred-on{border-color:#f87171;color:#f87171;background:#2a0a0a}
+</style>
+</head>
+<body>
+<h1>🧠 BraTS Viewer — Colocar semilla para segmentación ET</h1>
+
+<div class="load-area" id="dropArea" onclick="document.getElementById('fileIn').click()">
+  <div style="font-size:28px">📂</div>
+  <p>Clic o arrastra archivos .nii / .nii.gz aquí</p>
+  <p style="font-size:11px;margin-top:4px">Carga T1c primero, luego T1n y seg (opcional)</p>
+  <input type="file" id="fileIn" accept=".nii,.gz" multiple style="display:none">
+</div>
+
+<div class="grid">
+  <div class="view">
+    <div class="view-hdr"><span>Axial</span><b id="hAxial">z=—</b></div>
+    <canvas id="cAxial" height="218" width="182"></canvas>
+    <div class="slice-row">
+      <label>z</label>
+      <input type="range" id="sZ" min="0" max="181" value="91">
+      <span id="lZ">91</span>
+    </div>
+  </div>
+  <div class="view">
+    <div class="view-hdr"><span>Coronal</span><b id="hCoronal">y=—</b></div>
+    <canvas id="cCoronal" height="182" width="182"></canvas>
+    <div class="slice-row">
+      <label>y</label>
+      <input type="range" id="sY" min="0" max="217" value="109">
+      <span id="lY">109</span>
+    </div>
+  </div>
+  <div class="view">
+    <div class="view-hdr"><span>Sagital</span><b id="hSagital">x=—</b></div>
+    <canvas id="cSagital" height="182" width="218"></canvas>
+    <div class="slice-row">
+      <label>x</label>
+      <input type="range" id="sX" min="0" max="181" value="91">
+      <span id="lX">91</span>
+    </div>
+  </div>
+</div>
+
+<div class="controls">
+  <div class="row">
+    <span class="lbl">Modalidad:</span>
+    <div class="modality-btns" id="modBtns"></div>
+  </div>
+  <div class="row">
+    <span class="lbl">Brillo:</span>
+    <input type="range" id="bright" min="0.3" max="4" step="0.1" value="1.2">
+    <span class="val" id="lBright">1.2</span>
+    <span class="lbl" style="margin-left:8px">Contraste:</span>
+    <input type="range" id="cont" min="0" max="150" step="1" value="20">
+    <span class="val" id="lCont">20</span>
+  </div>
+  <div class="row">
+    <span class="lbl">Overlays:</span>
+    <div class="overlay-btns">
+      <button class="ov-btn on" id="btnGT" onclick="toggleGT()">GT-ET (cian)</button>
+      <button class="ov-btn" id="btnPred" onclick="togglePred()" style="display:none">Pred (rojo)</button>
+    </div>
+    <div class="legend" style="margin-left:12px">
+      <div class="leg-item"><div class="leg-dot" style="background:#ff8c00"></div>NETC</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#00bfff"></div>SNFH</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#00ff78"></div>ET</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ff5050"></div>RC</div>
+    </div>
+  </div>
+  <div class="row">
+    <button class="btn" onclick="clearSeed()">🗑 Borrar semilla</button>
+    <button class="btn" onclick="autoSeed()">🎯 Auto-semilla (pico mapa)</button>
+    <span class="info" id="infoBar"></span>
+  </div>
+</div>
+
+<div class="seed-box" id="seedBox">
+  <h3>📍 Semilla para region growing</h3>
+  <div class="seed-coords" id="seedCoords">Sin semilla — haz clic en el tumor más brillante en el mapa T1c−T1n</div>
+  <div class="seed-hint">Tip: activa "mapa_dif" en Modalidad para ver dónde el realce es más intenso, luego haz clic ahí</div>
+  <div id="cmdBox" style="display:none">
+    <div class="copy-cmd" id="cmdText"></div>
+    <button class="btn primary" onclick="copyCmd()">📋 Copiar comando</button>
+    <span style="font-size:11px;color:#6ee7b7;margin-left:8px" id="copied"></span>
+  </div>
+</div>
+
+<script>
+const S = {
+  vols:{}, dims:[182,218,182], sx:91, sy:109, sz:91,
+  bright:1.2, cont:20, showGT:true, showPred:false,
+  seed:null, activeVol:'t1c', caseId:''
+};
+
+function parseNIfTI(buf){
+  const dv=new DataView(buf);
+  const isGz=dv.getUint8(0)===0x1f&&dv.getUint8(1)===0x8b;
+  const raw=isGz?pako.inflate(new Uint8Array(buf)).buffer:buf;
+  const dv2=new DataView(raw);
+  const vo=dv2.getFloat32(108,true);
+  const off=vo>=352?vo:352;
+  const dims=[dv2.getInt16(40,true),dv2.getInt16(42,true),dv2.getInt16(44,true),dv2.getInt16(46,true)];
+  const dt=dv2.getInt16(70,true);
+  const n=dims[1]*dims[2]*dims[3];
+  let src;
+  if(dt===8)src=new Int32Array(raw,off,n);
+  else if(dt===16)src=new Float32Array(raw,off,n);
+  else if(dt===4)src=new Int16Array(raw,off,n);
+  else if(dt===512)src=new Uint16Array(raw,off,n);
+  else src=new Uint8Array(raw,off,n);
+  const arr=new Float32Array(n);
+  for(let i=0;i<n;i++)arr[i]=src[i];
+  return{dims:[dims[1],dims[2],dims[3]],data:arr};
+}
+
+function guessName(n){
+  const l=n.toLowerCase();
+  if(l.includes('seg'))return'seg';
+  if(l.includes('t1c')||l.includes('t1ce')||l.includes('t1gd'))return't1c';
+  if(l.includes('t1n')||(l.includes('t1')&&!l.includes('c')))return't1n';
+  if(l.includes('flair')||l.includes('t2f'))return't2f';
+  if(l.includes('t2'))return't2w';
+  if(l.includes('mapa')||l.includes('dif'))return'mapa_dif';
+  return't1c';
+}
+
+function vox(vol,z,y,x){
+  if(!vol)return 0;
+  const[nz,ny,nx]=vol.dims;
+  if(z<0||z>=nz||y<0||y>=ny||x<0||x>=nx)return 0;
+  return vol.data[z*ny*nx+y*nx+x];
+}
+
+function pct(arr,p){
+  const s=Float32Array.from(arr).sort();
+  return s[Math.floor(p/100*(s.length-1))];
+}
+
+function computeMapaDif(){
+  const t1c=S.vols.t1c, t1n=S.vols.t1n;
+  if(!t1c||!t1n)return;
+  const[nz,ny,nx]=t1c.dims;
+  const n=nz*ny*nx;
+  const mask=t1c.data.map(v=>v>0);
+  const vals_t1c=t1c.data.filter((_,i)=>mask[i]);
+  const vals_t1n=t1n.data.filter((_,i)=>mask[i]);
+  const vmax=Math.max(pct(vals_t1c,99.5),pct(vals_t1n,99.5));
+  const mapa=new Float32Array(n);
+  for(let i=0;i<n;i++){
+    if(mask[i]) mapa[i]=Math.max(0,Math.min(1,t1c.data[i]/vmax))-Math.max(0,Math.min(1,t1n.data[i]/vmax));
+  }
+  S.vols.mapa_dif={dims:t1c.dims,data:mapa,_p1:-0.3,_p99:0.7};
+  addModBtn('mapa_dif');
+}
+
+function loadVol(name,buf){
+  const vol=parseNIfTI(buf);
+  const mod=guessName(name);
+  const brain=vol.data.filter(v=>v>0);
+  if(brain.length>0&&mod!=='seg'){
+    vol._p1=pct(brain,1); vol._p99=pct(brain,99);
+  } else {vol._p1=0;vol._p99=4;}
+  S.vols[mod]=vol;
+  if(mod!=='seg'&&!S.dims_set){
+    S.dims=vol.dims;
+    const[nz,ny,nx]=vol.dims;
+    S.sz=Math.floor(nz/2);S.sy=Math.floor(ny/2);S.sx=Math.floor(nx/2);
+    document.getElementById('sZ').max=nz-1;document.getElementById('sZ').value=S.sz;
+    document.getElementById('sY').max=ny-1;document.getElementById('sY').value=S.sy;
+    document.getElementById('sX').max=nx-1;document.getElementById('sX').value=S.sx;
+    document.getElementById('lZ').textContent=S.sz;
+    document.getElementById('lY').textContent=S.sy;
+    document.getElementById('lX').textContent=S.sx;
+    S.dims_set=true;
+  }
+  addModBtn(mod);
+  if(mod==='t1c'||mod==='t1n') computeMapaDif();
+  // Extraer case_id del nombre
+  const m=name.match(/(BraTS-GLI-\d+-\d+)/i);
+  if(m) S.caseId=m[1];
+  renderAll();
+  document.getElementById('infoBar').textContent=
+    `Cargado: ${Object.keys(S.vols).join(', ')} | ${S.dims[2]}×${S.dims[1]}×${S.dims[0]}`;
+}
+
+const modBtnsAdded=new Set();
+function addModBtn(mod){
+  if(modBtnsAdded.has(mod))return;
+  modBtnsAdded.add(mod);
+  const names={t1c:'T1c',t1n:'T1n',t2f:'FLAIR',t2w:'T2',seg:'Seg',mapa_dif:'Mapa dif',pred:'Pred'};
+  const btn=document.createElement('button');
+  btn.className='mod-btn'+(mod==='t1c'?' active':'');
+  btn.textContent=names[mod]||mod;
+  btn.onclick=()=>{
+    S.activeVol=mod;
+    document.querySelectorAll('.mod-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    renderAll();
+  };
+  document.getElementById('modBtns').appendChild(btn);
+}
+
+function renderView(canvas,view){
+  const vol=S.vols[S.activeVol];
+  const seg=S.vols.seg;
+  const pred=S.vols.pred;
+  if(!vol)return;
+  const[nz,ny,nx]=S.dims;
+  let W,H,getV,getS,getP;
+  if(view==='axial'){
+    W=nx;H=ny;
+    getV=(px,py)=>vox(vol,S.sz,py,px);
+    getS=(px,py)=>vox(seg,S.sz,py,px);
+    getP=(px,py)=>vox(pred,S.sz,py,px);
+  }else if(view==='coronal'){
+    W=nx;H=nz;
+    getV=(px,py)=>vox(vol,nz-1-py,S.sy,px);
+    getS=(px,py)=>vox(seg,nz-1-py,S.sy,px);
+    getP=(px,py)=>vox(pred,nz-1-py,S.sy,px);
+  }else{
+    W=ny;H=nz;
+    getV=(px,py)=>vox(vol,nz-1-py,px,S.sx);
+    getS=(px,py)=>vox(seg,nz-1-py,px,S.sx);
+    getP=(px,py)=>vox(pred,nz-1-py,px,S.sx);
+  }
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  const img=ctx.createImageData(W,H);
+  const p1=vol._p1||0,p99=vol._p99||1;
+  const b=S.bright,c=S.cont;
+  const COLORS={1:[255,140,0],2:[0,191,255],3:[0,255,120],4:[255,80,80]};
+  for(let py=0;py<H;py++){
+    for(let px=0;px<W;px++){
+      let v=(getV(px,py)-p1)/(p99-p1+1e-8);
+      v=Math.max(0,Math.min(1,v))*b;
+      v=v+(v-0.5)*c/100;
+      v=Math.max(0,Math.min(1,v));
+      let r=v*255,g=v*255,bl=v*255;
+      const gt=S.showGT?getS(px,py):0;
+      if(gt>0){
+        const col=COLORS[gt]||[255,255,0];
+        r=Math.min(255,r*0.5+col[0]*0.6);
+        g=Math.min(255,g*0.5+col[1]*0.6);
+        bl=Math.min(255,bl*0.5+col[2]*0.6);
+      }
+      if(S.showPred&&getP(px,py)>0){r=255;g=Math.min(255,g*0.3+80);bl=Math.min(255,bl*0.3);}
+      const i=(py*W+px)*4;
+      img.data[i]=r;img.data[i+1]=g;img.data[i+2]=bl;img.data[i+3]=255;
+    }
+  }
+  ctx.putImageData(img,0,0);
+  // Dibujar semilla
+  if(S.seed){
+    const{x,y,z}=S.seed;
+    let cx,cy;
+    if(view==='axial'){cx=x;cy=y;}
+    else if(view==='coronal'){cx=x;cy=nz-1-z;}
+    else{cx=y;cy=nz-1-z;}
+    ctx.strokeStyle='#4ade80';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(cx-10,cy);ctx.lineTo(cx+10,cy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,cy-10);ctx.lineTo(cx,cy+10);ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.stroke();
+    ctx.fillStyle='rgba(74,222,128,0.15)';ctx.fill();
+  }
+  // Crosshair de posición
+  ctx.strokeStyle='rgba(255,255,255,0.15)';ctx.lineWidth=0.5;
+  let lx,ly;
+  if(view==='axial'){lx=S.sx;ly=S.sy;}
+  else if(view==='coronal'){lx=S.sx;ly=nz-1-S.sz;}
+  else{lx=S.sy;ly=nz-1-S.sz;}
+  ctx.beginPath();ctx.moveTo(lx,0);ctx.lineTo(lx,H);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(0,ly);ctx.lineTo(W,ly);ctx.stroke();
+}
+
+function renderAll(){
+  renderView(document.getElementById('cAxial'),'axial');
+  renderView(document.getElementById('cCoronal'),'coronal');
+  renderView(document.getElementById('cSagital'),'sagital');
+  document.getElementById('hAxial').textContent=`z=${S.sz}`;
+  document.getElementById('hCoronal').textContent=`y=${S.sy}`;
+  document.getElementById('hSagital').textContent=`x=${S.sx}`;
+}
+
+function onCanvasClick(e,view){
+  const canvas=e.currentTarget;
+  const rect=canvas.getBoundingClientRect();
+  const[nz,ny,nx]=S.dims;
+  const scX=canvas.width/rect.width, scY=canvas.height/rect.height;
+  const px=Math.round((e.clientX-rect.left)*scX);
+  const py=Math.round((e.clientY-rect.top)*scY);
+  let x,y,z;
+  if(view==='axial'){x=px;y=py;z=S.sz;}
+  else if(view==='coronal'){x=px;y=S.sy;z=nz-1-py;}
+  else{x=S.sx;y=px;z=nz-1-py;}
+  S.seed={x,y,z};
+  S.sx=x;S.sy=y;S.sz=z;
+  document.getElementById('sX').value=x;document.getElementById('lX').textContent=x;
+  document.getElementById('sY').value=y;document.getElementById('lY').textContent=y;
+  document.getElementById('sZ').value=z;document.getElementById('lZ').textContent=z;
+  updateSeedUI();
+  renderAll();
+}
+
+function updateSeedUI(){
+  if(!S.seed){
+    document.getElementById('seedCoords').textContent='Sin semilla — haz clic en el tumor más brillante';
+    document.getElementById('cmdBox').style.display='none';
+    return;
+  }
+  const{x,y,z}=S.seed;
+  document.getElementById('seedCoords').textContent=
+    `Semilla colocada: z=${z}, y=${y}, x=${x}`;
+  const cid=S.caseId||'BraTS-GLI-XXXXX-XXX';
+  const cmd=`python run_all.py --skip-clean --seed-case ${cid} --seed-z ${z} --seed-y ${y} --seed-x ${x}`;
+  document.getElementById('cmdText').textContent=cmd;
+  document.getElementById('cmdBox').style.display='block';
+}
+
+function copyCmd(){
+  const txt=document.getElementById('cmdText').textContent;
+  navigator.clipboard.writeText(txt).then(()=>{
+    document.getElementById('copied').textContent='✓ Copiado';
+    setTimeout(()=>document.getElementById('copied').textContent='',2000);
+  });
+}
+
+function clearSeed(){S.seed=null;updateSeedUI();renderAll();}
+
+function autoSeed(){
+  const mapa=S.vols.mapa_dif;
+  if(!mapa){alert('Carga T1c y T1n primero para generar el mapa de diferencia');return;}
+  let maxVal=-Infinity,maxIdx=0;
+  for(let i=0;i<mapa.data.length;i++){
+    if(mapa.data[i]>maxVal&&S.vols.t1c&&S.vols.t1c.data[i]>0){
+      maxVal=mapa.data[i];maxIdx=i;
+    }
+  }
+  const[nz,ny,nx]=S.dims;
+  const z=Math.floor(maxIdx/(ny*nx));
+  const y=Math.floor((maxIdx%(ny*nx))/nx);
+  const x=maxIdx%nx;
+  S.seed={x,y,z};S.sx=x;S.sy=y;S.sz=z;
+  document.getElementById('sX').value=x;document.getElementById('lX').textContent=x;
+  document.getElementById('sY').value=y;document.getElementById('lY').textContent=y;
+  document.getElementById('sZ').value=z;document.getElementById('lZ').textContent=z;
+  updateSeedUI();renderAll();
+  alert(`Auto-semilla en pico del mapa: z=${z}, y=${y}, x=${x}\n\nNota: esto puede ser un vaso. Verifica visualmente y ajusta si es necesario.`);
+}
+
+function toggleGT(){
+  S.showGT=!S.showGT;
+  document.getElementById('btnGT').className='ov-btn'+(S.showGT?' on':'');
+  renderAll();
+}
+function togglePred(){
+  S.showPred=!S.showPred;
+  document.getElementById('btnPred').className='ov-btn'+(S.showPred?' pred-on':'');
+  renderAll();
+}
+
+// Event listeners
+document.getElementById('cAxial').addEventListener('click',e=>onCanvasClick(e,'axial'));
+document.getElementById('cCoronal').addEventListener('click',e=>onCanvasClick(e,'coronal'));
+document.getElementById('cSagital').addEventListener('click',e=>onCanvasClick(e,'sagital'));
+['sZ','sY','sX'].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener('input',()=>{
+    if(id==='sZ')S.sz=+el.value,document.getElementById('lZ').textContent=S.sz;
+    if(id==='sY')S.sy=+el.value,document.getElementById('lY').textContent=S.sy;
+    if(id==='sX')S.sx=+el.value,document.getElementById('lX').textContent=S.sx;
+    renderAll();
+  });
+});
+document.getElementById('bright').addEventListener('input',e=>{
+  S.bright=+e.target.value;document.getElementById('lBright').textContent=(+e.target.value).toFixed(1);renderAll();
+});
+document.getElementById('cont').addEventListener('input',e=>{
+  S.cont=+e.target.value;document.getElementById('lCont').textContent=Math.round(+e.target.value);renderAll();
+});
+document.getElementById('fileIn').addEventListener('change',async e=>{
+  for(const f of e.target.files){
+    const buf=await f.arrayBuffer();
+    loadVol(f.name,buf);
+  }
+});
+const drop=document.getElementById('dropArea');
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.style.borderColor='#4ade80';});
+drop.addEventListener('dragleave',()=>{drop.style.borderColor='#333';});
+drop.addEventListener('drop',async e=>{
+  e.preventDefault();drop.style.borderColor='#333';
+  for(const f of e.dataTransfer.files){
+    const buf=await f.arrayBuffer();
+    loadVol(f.name,buf);
+  }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+{
+  "seed": 0,
+  "root": "C:\\Users\\LENOVO LOQ\\Downloads\\brats-final (3)\\brats-final",
+  "cases": [
+    "BraTS-GLI-00020-100",
+    "BraTS-GLI-00469-100",
+    "BraTS-GLI-00506-100",
+    "BraTS-GLI-00528-100",
+    "BraTS-GLI-00533-100",
+    "BraTS-GLI-02066-100",
+    "BraTS-GLI-02071-100",
+    "BraTS-GLI-02078-100",
+    "BraTS-GLI-02086-100",
+    "BraTS-GLI-02102-100",
+    "BraTS-GLI-02108-100",
+    "BraTS-GLI-02116-100",
+    "BraTS-GLI-02118-100",
+    "BraTS-GLI-02139-100",
+    "BraTS-GLI-02143-100",
+    "BraTS-GLI-02151-100",
+    "BraTS-GLI-02156-100",
+    "BraTS-GLI-02157-100",
+    "BraTS-GLI-02158-100",
+    "BraTS-GLI-02169-100"
+  ],
+  "methods": [
+    "bspline",
+    "fast_marching",
+    "gmm_2d",
+    "gmm_T1c",
+    "level_set",
+    "otsu_T1c",
+    "rango_doble",
+    "spline",
+    "sustraccion",
+    "variational_spline"
+  ],
+  "inputs": {
+    "metrics_csv": "output\\tablas\\metricas_ET.csv",
+    "segmentation_root": "output\\segmentacion",
+    "gt_root": "images"
+  }
+}

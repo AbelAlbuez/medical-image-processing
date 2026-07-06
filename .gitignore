@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+BraTS2024-BraTS-GLI-TrainingData/
+images/
+output/
+report_final.zip
+
+.vscode/
+.agents/
+.claude/
+
