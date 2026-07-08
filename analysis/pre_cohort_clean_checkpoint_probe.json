@@ -1,0 +1,20 @@
+{
+  "case_id": "BraTS-GLI-02061-100",
+  "clean_only_wall_s": 15.008,
+  "clean_only_cleanup_s": 12.5984,
+  "clean_done_after_clean_only": true,
+  "mask_done_after_clean_only": false,
+  "resume_wall_s": 25.139,
+  "resume_cleanup_s": 0.0003,
+  "resume_segmentation_s": 22.8213,
+  "resume_clean_run_cases": [],
+  "resume_clean_skipped_cases": [
+    "BraTS-GLI-02061-100"
+  ],
+  "resume_run_cases": [
+    "BraTS-GLI-02061-100"
+  ],
+  "resume_skipped_cases": [],
+  "preproc_hash": "54773ff7fe035cef26ad68ae743fcda61dae514a5ac21b3df2dc59ba2fa7daee",
+  "config_hash": "f1a0460238666855ac690311f29adeae18e59e11ec655e14b367d96e371b3650"
+}

@@ -1,0 +1,16 @@
+case_id,metodo,dice_ET,vol_GT,vol_pred,vol_bin,focality,et_mm3
+BraTS-GLI-02143-100,gmm_2d,0.5296,50441,70217,large,multifocal,50441.0
+BraTS-GLI-02143-100,gmm_T1c,0.3955,50441,22358,large,multifocal,50441.0
+BraTS-GLI-02143-100,otsu_T1c,0.4101,50441,23313,large,multifocal,50441.0
+BraTS-GLI-02143-100,sustraccion,0.6097,50441,47660,large,multifocal,50441.0
+BraTS-GLI-02143-100,variational_spline,0.3703,50441,12548,large,multifocal,50441.0
+BraTS-GLI-02143-101,gmm_2d,0.6093,96040,99070,large,multifocal,96040.0
+BraTS-GLI-02143-101,gmm_T1c,0.6171,96040,59598,large,multifocal,96040.0
+BraTS-GLI-02143-101,otsu_T1c,0.5392,96040,42725,large,multifocal,96040.0
+BraTS-GLI-02143-101,sustraccion,0.812,96040,110175,large,multifocal,96040.0
+BraTS-GLI-02143-101,variational_spline,0.7485,96040,67053,large,multifocal,96040.0
+BraTS-GLI-02196-100,gmm_2d,0.3313,46257,212699,large,multifocal,46257.0
+BraTS-GLI-02196-100,gmm_T1c,0.0573,46257,17410,large,multifocal,46257.0
+BraTS-GLI-02196-100,otsu_T1c,0.0581,46257,17676,large,multifocal,46257.0
+BraTS-GLI-02196-100,sustraccion,0.4251,46257,92545,large,multifocal,46257.0
+BraTS-GLI-02196-100,variational_spline,0.0573,46257,17410,large,multifocal,46257.0

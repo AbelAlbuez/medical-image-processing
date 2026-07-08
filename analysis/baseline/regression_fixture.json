@@ -4,7 +4,7 @@
     "BraTS-GLI-02108-100": {
       "type": "high_dice",
       "dice_ET": {
-        "bspline": 0.5378,
+        "bspline": 0.8195,
         "fast_marching": 0.0787,
         "gmm_2d": 0.6909,
         "gmm_T1c": 0.5374,
@@ -13,7 +13,7 @@
         "rango_doble": 0.5888,
         "spline": 0.3709,
         "sustraccion": 0.7918,
-        "variational_spline": 0.8595
+        "variational_spline": 0.8794
       }
     },
     "BraTS-GLI-00020-100": {
@@ -29,6 +29,27 @@
         "spline": 0.1535,
         "sustraccion": 0.185,
         "variational_spline": 0.1535
+      }
+    },
+    "BraTS-GLI-02116-100": {
+      "type": "guard_boundary",
+      "dice_ET": {
+        "bspline": 0.4481,
+        "fast_marching": 0.1446,
+        "gmm_2d": 0.8282,
+        "gmm_T1c": 0.448,
+        "level_set": 0.4481,
+        "otsu_T1c": 0.3628,
+        "rango_doble": 0.325,
+        "spline": 0.3694,
+        "sustraccion": 0.7553,
+        "variational_spline": 0.7473
+      },
+      "guard": {
+        "variational_spline": {
+          "guard_branch": "evolved",
+          "guard_reason": "accepted_evidence_seed_divergence"
+        }
       }
     }
   }

@@ -1,0 +1,4 @@
+case_id,pred_vox,raw_gt_et_vox,resampled_to_clean_gt_et_vox,resampled_to_pred_gt_et_vox,dice_pred_vs_raw_array_no_resample,dice_pred_vs_raw_gt_resampled_to_clean,dice_pred_vs_raw_gt_resampled_to_pred
+BraTS-GLI-03059-100,12238,776,776,776,0.003380974335331182,0.003380974335331182,0.003380974335331182
+BraTS-GLI-00046-100,11199,6187,6187,6187,0.0,0.0,0.0
+BraTS-GLI-02306-100,26502,31760,31760,31760,0.8533177714462257,0.8533177714462257,0.8533177714462257

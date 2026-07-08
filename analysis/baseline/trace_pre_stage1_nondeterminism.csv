@@ -1,0 +1,14 @@
+component,run,dice_vs_gt,voxels,equals_previous_same_component,mapa_max_abs_diff,equals_roi
+roi_et_auto,roi1_vs_roi2,0.537798323855982,44395,True,0.0,True
+level_set,1,0.537798323855982,44395,,0.0,True
+level_set,2,0.537798323855982,44395,True,0.0,True
+level_set,3,0.537798323855982,44395,True,0.0,True
+variational_spline,1,0.8793689886567683,87696,,0.0,False
+variational_spline,2,0.859488320355951,83157,False,0.0,False
+variational_spline,3,0.8793689886567683,87696,False,0.0,False
+bspline,1,0.8194754576399612,77566,,0.0,False
+bspline,2,0.8194754576399612,77566,True,0.0,False
+bspline,3,0.8194754576399612,77566,True,0.0,False
+spline,1,0.3708674660485821,22866,,0.0,False
+spline,2,0.3708674660485821,22866,True,0.0,False
+spline,3,0.3708674660485821,22866,True,0.0,False

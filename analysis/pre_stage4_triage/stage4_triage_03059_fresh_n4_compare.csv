@@ -1,0 +1,6 @@
+case_id,metodo,dice_ET_broken,dice_ET_fresh,vol_pred_broken,vol_pred_fresh,vol_GT_broken,vol_GT_fresh,guard_branch_broken,guard_branch_fresh,guard_reason_broken,guard_reason_fresh
+BraTS-GLI-03059-100,otsu_T1c,0.0029,0.0029,511672,511672,776,776,,,,
+BraTS-GLI-03059-100,gmm_T1c,0.0034,0.0034,12235,12235,776,776,,,,
+BraTS-GLI-03059-100,sustraccion,0.01,0.01,91823,91823,776,776,,,,
+BraTS-GLI-03059-100,gmm_2d,0.0112,0.0112,124496,124496,776,776,,,,
+BraTS-GLI-03059-100,variational_spline,0.0034,0.0034,12238,12238,776,776,collapse-detected,collapse-detected,empty_prediction,empty_prediction

@@ -1,0 +1,4 @@
+case_id,vol_bin,focality,et_mm3,dice_ET,vol_GT,vol_pred,guard_branch,guard_reason
+BraTS-GLI-02143-101,large,multifocal,96040.0,0.7485,96040,67053,evolved,accepted
+BraTS-GLI-02143-100,large,multifocal,50441.0,0.3703,50441,12548,evolved,accepted
+BraTS-GLI-02196-100,large,multifocal,46257.0,0.0573,46257,17410,collapse-detected,empty_prediction

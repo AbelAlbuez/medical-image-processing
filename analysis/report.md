@@ -6,7 +6,7 @@
 - Prediction label convention: binary masks; see `prediction_label_inventory.csv` (`unique_values` is `0 1` for persisted masks).
 - GT location: `images/<case>/<case>-seg.nii.gz`; ET is extracted as label `3` in code.
 - GT labels observed on disk: ['0', '1', '2', '3', '4']; see `gt_label_inventory.csv`.
-- Recomputed-vs-CSV max Dice abs diff: 0.000049; max Jaccard abs diff: 0.000050; see `metrics_recomputed_check.csv`.
+- Recomputed-vs-CSV max Dice abs diff: 0.000050; max Jaccard abs diff: 0.000050; see `metrics_recomputed_check.csv`.
 - Methods in CSV: bspline, fast_marching, gmm_2d, gmm_T1c, level_set, otsu_T1c, rango_doble, spline, sustraccion, variational_spline.
 - Method in code but not present in this run: semilla.
 
@@ -36,40 +36,40 @@ A-priori redundancy hypotheses before looking at mask agreement:
 ### Performance Summary
 | metodo | mean_dice | median_dice | std_dice | min_dice | max_dice | mean_jaccard | mean_runtime_s | cases | cases_gt_0_75 | cases_lt_0_25 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| variational_spline | 0.5048 | 0.5063 | 0.2630 | 0.0000 | 0.8595 | 0.3761 | 68.8450 | 20 | 5 | 3 |
-| otsu_T1c | 0.4854 | 0.5920 | 0.2938 | 0.0000 | 0.8212 | 0.3660 | 68.8450 | 20 | 6 | 5 |
-| gmm_T1c | 0.4810 | 0.5130 | 0.3013 | 0.0000 | 0.8655 | 0.3645 | 68.8450 | 20 | 6 | 5 |
-| bspline | 0.4726 | 0.4651 | 0.2350 | 0.0000 | 0.7937 | 0.3380 | 68.8450 | 20 | 2 | 3 |
-| level_set | 0.4555 | 0.4748 | 0.2358 | 0.0000 | 0.7808 | 0.3229 | 68.8450 | 20 | 2 | 4 |
-| spline | 0.4500 | 0.4840 | 0.2450 | 0.0000 | 0.7952 | 0.3206 | 68.8450 | 20 | 2 | 4 |
-| sustraccion | 0.4467 | 0.4518 | 0.2027 | 0.0476 | 0.7918 | 0.3084 | 68.8450 | 20 | 2 | 4 |
-| gmm_2d | 0.3738 | 0.3674 | 0.1849 | 0.0745 | 0.8282 | 0.2468 | 68.8450 | 20 | 1 | 5 |
-| rango_doble | 0.2382 | 0.2264 | 0.1246 | 0.0961 | 0.5888 | 0.1412 | 68.8450 | 20 | 0 | 13 |
-| fast_marching | 0.1846 | 0.1748 | 0.1283 | 0.0000 | 0.4855 | 0.1072 | 68.8450 | 20 | 0 | 15 |
+| variational_spline | 0.5067 | 0.5063 | 0.2648 | 0.0000 | 0.8794 | 0.3788 | 55.0000 | 20 | 5 | 3 |
+| otsu_T1c | 0.4854 | 0.5920 | 0.2938 | 0.0000 | 0.8212 | 0.3660 | 55.0000 | 20 | 6 | 5 |
+| bspline | 0.4810 | 0.4651 | 0.2441 | 0.0000 | 0.8195 | 0.3482 | 55.0000 | 20 | 3 | 3 |
+| gmm_T1c | 0.4810 | 0.5130 | 0.3013 | 0.0000 | 0.8655 | 0.3645 | 55.0000 | 20 | 6 | 5 |
+| level_set | 0.4555 | 0.4748 | 0.2358 | 0.0000 | 0.7808 | 0.3229 | 55.0000 | 20 | 2 | 4 |
+| spline | 0.4500 | 0.4840 | 0.2450 | 0.0000 | 0.7952 | 0.3206 | 55.0000 | 20 | 2 | 4 |
+| sustraccion | 0.4467 | 0.4518 | 0.2027 | 0.0476 | 0.7918 | 0.3084 | 55.0000 | 20 | 2 | 4 |
+| gmm_2d | 0.3738 | 0.3674 | 0.1849 | 0.0745 | 0.8282 | 0.2468 | 55.0000 | 20 | 1 | 5 |
+| rango_doble | 0.2382 | 0.2264 | 0.1246 | 0.0961 | 0.5888 | 0.1412 | 55.0000 | 20 | 0 | 13 |
+| fast_marching | 0.1846 | 0.1748 | 0.1283 | 0.0000 | 0.4855 | 0.1072 | 55.0000 | 20 | 0 | 15 |
 
 ### Top Prediction-Agreement Pairs
-- bspline vs variational_spline: 0.9033
+- bspline vs variational_spline: 0.9238
 - gmm_T1c vs otsu_T1c: 0.8500
-- bspline vs level_set: 0.8306
-- level_set vs variational_spline: 0.8203
+- level_set vs variational_spline: 0.8201
+- bspline vs level_set: 0.8048
 - gmm_T1c vs level_set: 0.7575
 - level_set vs otsu_T1c: 0.7404
-- bspline vs gmm_T1c: 0.7285
-- gmm_T1c vs variational_spline: 0.7204
-- otsu_T1c vs variational_spline: 0.6912
-- spline vs variational_spline: 0.6881
+- gmm_T1c vs variational_spline: 0.7207
+- bspline vs gmm_T1c: 0.7005
+- otsu_T1c vs variational_spline: 0.6913
+- spline vs variational_spline: 0.6887
 
 ### Top Performance-Correlation Pairs
+- bspline vs variational_spline: 0.9564
 - gmm_T1c vs spline: 0.9518
-- bspline vs level_set: 0.9353
 - gmm_T1c vs otsu_T1c: 0.9067
-- bspline vs variational_spline: 0.8962
-- bspline vs spline: 0.8796
-- bspline vs gmm_T1c: 0.8766
+- bspline vs level_set: 0.8886
 - level_set vs variational_spline: 0.8766
 - otsu_T1c vs spline: 0.8616
+- bspline vs gmm_T1c: 0.8315
 - level_set vs spline: 0.8194
 - gmm_T1c vs level_set: 0.8179
+- level_set vs otsu_T1c: 0.8119
 
 ### Top Double-Fault Pairs
 - fast_marching vs rango_doble: 0.9500
@@ -86,39 +86,40 @@ A-priori redundancy hypotheses before looking at mask agreement:
 ### Oracle
 | cases | methods | best_single_method | best_single_mean_dice | oracle_mean_dice | headroom_oracle_minus_best_single |
 | --- | --- | --- | --- | --- | --- |
-| 20 | 10 | variational_spline | 0.5048 | 0.6307 | 0.1260 |
+| 20 | 10 | variational_spline | 0.5067 | 0.6320 | 0.1253 |
 
 ### Leave-One-Out Unique Value
 | method | oracle_without_method | delta_full_minus_without | sole_best_cases | sole_above_075_cases |
 | --- | --- | --- | --- | --- |
-| otsu_T1c | 0.6204 | 0.0103 | 3 | 2 |
-| sustraccion | 0.6213 | 0.0094 | 4 | 0 |
-| gmm_2d | 0.6219 | 0.0088 | 3 | 0 |
-| gmm_T1c | 0.6235 | 0.0072 | 4 | 0 |
-| variational_spline | 0.6240 | 0.0067 | 4 | 1 |
-| bspline | 0.6307 | 0.0000 | 0 | 0 |
-| fast_marching | 0.6307 | 0.0000 | 0 | 0 |
-| level_set | 0.6307 | 0.0000 | 0 | 0 |
-| spline | 0.6307 | 0.0000 | 0 | 0 |
-| rango_doble | 0.6307 | 0.0000 | 0 | 0 |
+| otsu_T1c | 0.6218 | 0.0103 | 3 | 2 |
+| sustraccion | 0.6226 | 0.0094 | 4 | 0 |
+| gmm_2d | 0.6232 | 0.0088 | 3 | 0 |
+| variational_spline | 0.6247 | 0.0074 | 4 | 1 |
+| gmm_T1c | 0.6249 | 0.0072 | 4 | 0 |
+| bspline | 0.6320 | 0.0000 | 0 | 0 |
+| fast_marching | 0.6320 | 0.0000 | 0 | 0 |
+| level_set | 0.6320 | 0.0000 | 0 | 0 |
+| spline | 0.6320 | 0.0000 | 0 | 0 |
+| rango_doble | 0.6320 | 0.0000 | 0 | 0 |
 
 ### Cluster Tree
-- step 1: bspline + variational_spline at distance 0.0967 (n=2)
+- step 1: bspline + variational_spline at distance 0.0762 (n=2)
 - step 2: gmm_T1c + otsu_T1c at distance 0.1500 (n=2)
-- step 3: level_set + (bspline + variational_spline) at distance 0.1745 (n=3)
-- step 4: (gmm_T1c + otsu_T1c) + (level_set + (bspline + variational_spline)) at distance 0.2806 (n=5)
-- step 5: spline + ((gmm_T1c + otsu_T1c) + (level_set + (bspline + variational_spline))) at distance 0.3224 (n=6)
+- step 3: level_set + (bspline + variational_spline) at distance 0.1876 (n=3)
+- step 4: (gmm_T1c + otsu_T1c) + (level_set + (bspline + variational_spline)) at distance 0.2880 (n=5)
+- step 5: spline + ((gmm_T1c + otsu_T1c) + (level_set + (bspline + variational_spline))) at distance 0.3244 (n=6)
 - step 6: gmm_2d + sustraccion at distance 0.4308 (n=2)
 - step 7: rango_doble + (gmm_2d + sustraccion) at distance 0.5351 (n=3)
-- step 8: (spline + ((gmm_T1c + otsu_T1c) + (level_set + (bspline + variational_spline)))) + (rango_doble + (gmm_2d + sustraccion)) at distance 0.7146 (n=9)
-- step 9: fast_marching + ((spline + ((gmm_T1c + otsu_T1c) + (level_set + (bspline + variational_spline)))) + (rango_doble + (gmm_2d + sustraccion))) at distance 0.8539 (n=10)
+- step 8: (spline + ((gmm_T1c + otsu_T1c) + (level_set + (bspline + variational_spline)))) + (rango_doble + (gmm_2d + sustraccion)) at distance 0.7134 (n=9)
+- step 9: fast_marching + ((spline + ((gmm_T1c + otsu_T1c) + (level_set + (bspline + variational_spline)))) + (rango_doble + (gmm_2d + sustraccion))) at distance 0.8542 (n=10)
 
 ### Surprises / Integrity Flags
-- Found 50 exactly identical per-case mask pairs; see `identical_masks_by_case.csv`.
-- Very high mean prediction agreement (>0.90): bspline/variational_spline=0.903.
+- Found 49 exactly identical per-case mask pairs; see `identical_masks_by_case.csv`.
+- Very high mean prediction agreement (>0.90): bspline/variational_spline=0.924.
 - Runtime is identical for every method in the CSV. Code assigns one case-level elapsed time to all method rows, so `tiempo_s` is not per-method runtime (`run_all.py:168`).
 
 ## Artifacts
+- `baseline`
 - `double_fault.csv`
 - `double_fault_heatmap.png`
 - `gt_label_inventory.csv`

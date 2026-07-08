@@ -1,0 +1,221 @@
+COMMAND: C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\.venv\Scripts\python.exe run_all.py --config configs/pipeline.yaml --data-root C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\BraTS2024-BraTS-GLI-TrainingData\training_data1_v2 --cohort cohort/COHORT_MANIFEST_selected.csv --process-only --output-root C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core --clean-root C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\limpieza
+
+Casos seleccionados (100):
+  • BraTS-GLI-00009-101
+  • BraTS-GLI-00046-100
+  • BraTS-GLI-00543-101
+  • BraTS-GLI-00548-100
+  • BraTS-GLI-00549-100
+  • BraTS-GLI-02061-100
+  • BraTS-GLI-02086-100
+  • BraTS-GLI-02093-106
+  • BraTS-GLI-02101-101
+  • BraTS-GLI-02123-101
+  • BraTS-GLI-02137-100
+  • BraTS-GLI-02139-103
+  • BraTS-GLI-02143-100
+  • BraTS-GLI-02143-101
+  • BraTS-GLI-02151-100
+  • BraTS-GLI-02153-101
+  • BraTS-GLI-02171-101
+  • BraTS-GLI-02181-102
+  • BraTS-GLI-02184-101
+  • BraTS-GLI-02185-100
+  • BraTS-GLI-02192-101
+  • BraTS-GLI-02194-101
+  • BraTS-GLI-02196-100
+  • BraTS-GLI-02198-101
+  • BraTS-GLI-02205-100
+  • BraTS-GLI-02206-104
+  • BraTS-GLI-02208-100
+  • BraTS-GLI-02216-100
+  • BraTS-GLI-02217-100
+  • BraTS-GLI-02220-102
+  • BraTS-GLI-02221-100
+  • BraTS-GLI-02227-100
+  • BraTS-GLI-02229-100
+  • BraTS-GLI-02230-100
+  • BraTS-GLI-02238-102
+  • BraTS-GLI-02243-101
+  • BraTS-GLI-02245-100
+  • BraTS-GLI-02245-103
+  • BraTS-GLI-02247-100
+  • BraTS-GLI-02247-103
+  • BraTS-GLI-02248-102
+  • BraTS-GLI-02285-100
+  • BraTS-GLI-02300-101
+  • BraTS-GLI-02306-100
+  • BraTS-GLI-02307-101
+  • BraTS-GLI-02344-100
+  • BraTS-GLI-02382-100
+  • BraTS-GLI-02498-101
+  • BraTS-GLI-02549-102
+  • BraTS-GLI-02553-101
+  • BraTS-GLI-02558-101
+  • BraTS-GLI-02561-101
+  • BraTS-GLI-02635-100
+  • BraTS-GLI-02664-100
+  • BraTS-GLI-02699-100
+  • BraTS-GLI-02701-100
+  • BraTS-GLI-02744-100
+  • BraTS-GLI-02744-101
+  • BraTS-GLI-02746-100
+  • BraTS-GLI-02753-100
+  • BraTS-GLI-02755-101
+  • BraTS-GLI-02761-101
+  • BraTS-GLI-02789-101
+  • BraTS-GLI-02793-100
+  • BraTS-GLI-02793-101
+  • BraTS-GLI-02799-100
+  • BraTS-GLI-02801-100
+  • BraTS-GLI-02801-101
+  • BraTS-GLI-02808-100
+  • BraTS-GLI-02817-101
+  • BraTS-GLI-02828-100
+  • BraTS-GLI-02833-101
+  • BraTS-GLI-02835-100
+  • BraTS-GLI-02836-101
+  • BraTS-GLI-02851-100
+  • BraTS-GLI-02866-100
+  • BraTS-GLI-02866-101
+  • BraTS-GLI-02895-101
+  • BraTS-GLI-02897-101
+  • BraTS-GLI-02901-100
+  • BraTS-GLI-02905-100
+  • BraTS-GLI-02917-101
+  • BraTS-GLI-02934-101
+  • BraTS-GLI-02947-100
+  • BraTS-GLI-02983-101
+  • BraTS-GLI-02984-101
+  • BraTS-GLI-02985-101
+  • BraTS-GLI-02992-101
+  • BraTS-GLI-02996-101
+  • BraTS-GLI-03009-100
+  • BraTS-GLI-03010-100
+  • BraTS-GLI-03019-101
+  • BraTS-GLI-03020-100
+  • BraTS-GLI-03025-101
+  • BraTS-GLI-03026-101
+  • BraTS-GLI-03027-100
+  • BraTS-GLI-03027-101
+  • BraTS-GLI-03059-100
+  • BraTS-GLI-03060-102
+  • BraTS-GLI-03063-100
+
+Checkpoint config_hash=f1a0460238666855
+  preproc_hash=54773ff7fe035cef
+  run=3  skipped=97
+
+============================================================
+PASO 1  LIMPIEZA  (Wiener + N4 + normalización percentil)
+============================================================
+
+  [BraTS-GLI-03059-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03060-102]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03063-100]
+  [skip] limpieza vigente (.clean.done)
+
+  ✓ 3 caso(s) limpios en C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\limpieza
+
+============================================================
+PASO 2  SEGMENTACIÓN ET
+============================================================
+  Metodos: otsu_T1c, gmm_T1c, sustraccion, gmm_2d, variational_spline
+
+  [BraTS-GLI-03059-100] GT-ET: 776 vóxeles
+  otsu         : pred= 511672 vox
+  gmm_T1c      : pred=  12235 vox
+  sustraccion  : pred=  91823 vox  umbral=0.203
+  gmm_2d       : pred= 124496 vox
+  semilla auto : 12238 vox
+  variational_spline: pred=  12238 vox
+    → Dice=0.003  Jaccard=0.001  [otsu_T1c]
+    → Dice=0.003  Jaccard=0.002  [gmm_T1c]
+    → Dice=0.010  Jaccard=0.005  [sustraccion]
+    → Dice=0.011  Jaccard=0.006  [gmm_2d]
+    → Dice=0.003  Jaccard=0.002  [variational_spline]
+
+  [BraTS-GLI-03060-102] GT-ET: 1007 vóxeles
+  otsu         : pred= 489113 vox
+  gmm_T1c      : pred=   5407 vox
+  sustraccion  : pred=  62958 vox  umbral=0.164
+  gmm_2d       : pred=  45856 vox
+  semilla auto : 5407 vox
+  variational_spline: pred=   5407 vox
+    → Dice=0.003  Jaccard=0.001  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.018  Jaccard=0.009  [sustraccion]
+    → Dice=0.024  Jaccard=0.012  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-03063-100] GT-ET: 6973 vóxeles
+  otsu         : pred=   8094 vox
+  gmm_T1c      : pred=   9629 vox
+  sustraccion  : pred=  76178 vox  umbral=0.153
+  gmm_2d       : pred=  81463 vox
+  semilla auto : 9629 vox
+  variational_spline: pred=   9629 vox
+    → Dice=0.008  Jaccard=0.004  [otsu_T1c]
+    → Dice=0.008  Jaccard=0.004  [gmm_T1c]
+    → Dice=0.100  Jaccard=0.053  [sustraccion]
+    → Dice=0.090  Jaccard=0.047  [gmm_2d]
+    → Dice=0.008  Jaccard=0.004  [variational_spline]
+
+------------------------------------------------------------
+RESUMEN  Dice-ET
+------------------------------------------------------------
+metodo               gmm_2d  gmm_T1c  otsu_T1c  sustraccion  variational_spline
+case_id                                                                        
+BraTS-GLI-03059-100   0.011    0.003     0.003        0.010               0.003
+BraTS-GLI-03060-102   0.024    0.000     0.003        0.018               0.000
+BraTS-GLI-03063-100   0.090    0.008     0.008        0.100               0.008
+
+Promedios:
+metodo
+gmm_2d                0.042
+gmm_T1c               0.004
+otsu_T1c              0.005
+sustraccion           0.043
+variational_spline    0.004
+
+CSV: C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\tablas\metricas_ET.csv
+
+============================================================
+PASO 3  VISUALIZACIÓN
+============================================================
+
+  [BraTS-GLI-03059-100]
+    ✓ mapa diferencia
+    ✓ comparativa métodos
+    ✓ 3 vistas (gmm_2d)
+
+  [BraTS-GLI-03060-102]
+    ✓ mapa diferencia
+    ✓ comparativa métodos
+    ✓ 3 vistas (gmm_2d)
+
+  [BraTS-GLI-03063-100]
+    ✓ mapa diferencia
+    ✓ comparativa métodos
+    ✓ 3 vistas (gmm_2d)
+
+  ✓ resumen Dice
+
+  ✓ Figuras en C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\figuras
+
+============================================================
+PASO 4  RECONSTRUCCIÓN DE SUPERFICIE DE POISSON  (Dice > 0.75)
+============================================================
+  (ningún método superó Dice 0.75; no se generaron superficies de Poisson)
+
+============================================================
+LISTO
+  Provenance -> C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\provenance\provenance_20260707_090634.json
+  Figuras  → C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\figuras
+  Métricas → C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\tablas/metricas_ET.csv
+  Máscaras → C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\segmentacion
+============================================================

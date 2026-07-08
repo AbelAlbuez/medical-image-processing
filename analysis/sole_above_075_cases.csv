@@ -1,4 +1,4 @@
 case_id,method,dice
-BraTS-GLI-02066-100,variational_spline,0.7586
+BraTS-GLI-02066-100,variational_spline,0.7633
 BraTS-GLI-02151-100,otsu_T1c,0.8212
 BraTS-GLI-02169-100,otsu_T1c,0.7725

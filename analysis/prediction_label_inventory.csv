@@ -49,7 +49,7 @@ BraTS-GLI-00533-100,rango_doble,uint8,0 1,303308,1
 BraTS-GLI-00533-100,spline,uint8,0 1,16882,1
 BraTS-GLI-00533-100,sustraccion,uint8,0 1,84563,1
 BraTS-GLI-00533-100,variational_spline,uint8,0 1,15501,1
-BraTS-GLI-02066-100,bspline,uint8,0 1,17562,1
+BraTS-GLI-02066-100,bspline,uint8,0 1,16563,1
 BraTS-GLI-02066-100,fast_marching,uint8,0 1,9246,1
 BraTS-GLI-02066-100,gmm_2d,uint8,0 1,86672,1
 BraTS-GLI-02066-100,gmm_T1c,uint8,0 1,42132,1
@@ -58,7 +58,7 @@ BraTS-GLI-02066-100,otsu_T1c,uint8,0 1,29714,1
 BraTS-GLI-02066-100,rango_doble,uint8,0 1,272031,1
 BraTS-GLI-02066-100,spline,uint8,0 1,44531,1
 BraTS-GLI-02066-100,sustraccion,uint8,0 1,85976,1
-BraTS-GLI-02066-100,variational_spline,uint8,0 1,17735,1
+BraTS-GLI-02066-100,variational_spline,uint8,0 1,17906,1
 BraTS-GLI-02071-100,bspline,uint8,0 1,13871,1
 BraTS-GLI-02071-100,fast_marching,uint8,0 1,5584,1
 BraTS-GLI-02071-100,gmm_2d,uint8,0 1,126613,1
@@ -99,7 +99,7 @@ BraTS-GLI-02102-100,rango_doble,uint8,0 1,152155,1
 BraTS-GLI-02102-100,spline,uint8,0 1,35731,1
 BraTS-GLI-02102-100,sustraccion,uint8,0 1,52415,1
 BraTS-GLI-02102-100,variational_spline,uint8,0 1,35731,1
-BraTS-GLI-02108-100,bspline,uint8,0 1,44395,1
+BraTS-GLI-02108-100,bspline,uint8,0 1,77566,1
 BraTS-GLI-02108-100,fast_marching,uint8,0 1,4227,1
 BraTS-GLI-02108-100,gmm_2d,uint8,0 1,180796,1
 BraTS-GLI-02108-100,gmm_T1c,uint8,0 1,44358,1
@@ -108,7 +108,7 @@ BraTS-GLI-02108-100,otsu_T1c,uint8,0 1,57030,1
 BraTS-GLI-02108-100,rango_doble,uint8,0 1,201116,1
 BraTS-GLI-02108-100,spline,uint8,0 1,22866,1
 BraTS-GLI-02108-100,sustraccion,uint8,0 1,91845,1
-BraTS-GLI-02108-100,variational_spline,uint8,0 1,83157,1
+BraTS-GLI-02108-100,variational_spline,uint8,0 1,87696,1
 BraTS-GLI-02116-100,bspline,uint8,0 1,37588,1
 BraTS-GLI-02116-100,fast_marching,uint8,0 1,6327,1
 BraTS-GLI-02116-100,gmm_2d,uint8,0 1,83186,1
@@ -119,7 +119,7 @@ BraTS-GLI-02116-100,rango_doble,uint8,0 1,311879,1
 BraTS-GLI-02116-100,spline,uint8,0 1,27078,1
 BraTS-GLI-02116-100,sustraccion,uint8,0 1,111705,1
 BraTS-GLI-02116-100,variational_spline,uint8,0 1,37588,1
-BraTS-GLI-02118-100,bspline,uint8,0 1,32033,1
+BraTS-GLI-02118-100,bspline,uint8,0 1,30889,1
 BraTS-GLI-02118-100,fast_marching,uint8,0 1,5027,1
 BraTS-GLI-02118-100,gmm_2d,uint8,0 1,81043,1
 BraTS-GLI-02118-100,gmm_T1c,uint8,0 1,50069,1
@@ -128,7 +128,7 @@ BraTS-GLI-02118-100,otsu_T1c,uint8,0 1,40052,1
 BraTS-GLI-02118-100,rango_doble,uint8,0 1,285805,1
 BraTS-GLI-02118-100,spline,uint8,0 1,55103,1
 BraTS-GLI-02118-100,sustraccion,uint8,0 1,94392,1
-BraTS-GLI-02118-100,variational_spline,uint8,0 1,33605,1
+BraTS-GLI-02118-100,variational_spline,uint8,0 1,33768,1
 BraTS-GLI-02139-100,bspline,uint8,0 1,22054,1
 BraTS-GLI-02139-100,fast_marching,uint8,0 1,2495,1
 BraTS-GLI-02139-100,gmm_2d,uint8,0 1,139338,1
@@ -139,7 +139,7 @@ BraTS-GLI-02139-100,rango_doble,uint8,0 1,186781,1
 BraTS-GLI-02139-100,spline,uint8,0 1,15938,1
 BraTS-GLI-02139-100,sustraccion,uint8,0 1,70611,1
 BraTS-GLI-02139-100,variational_spline,uint8,0 1,22054,1
-BraTS-GLI-02143-100,bspline,uint8,0 1,16256,1
+BraTS-GLI-02143-100,bspline,uint8,0 1,14503,1
 BraTS-GLI-02143-100,fast_marching,uint8,0 1,8292,1
 BraTS-GLI-02143-100,gmm_2d,uint8,0 1,70217,1
 BraTS-GLI-02143-100,gmm_T1c,uint8,0 1,22358,1
@@ -148,7 +148,7 @@ BraTS-GLI-02143-100,otsu_T1c,uint8,0 1,23313,1
 BraTS-GLI-02143-100,rango_doble,uint8,0 1,129528,1
 BraTS-GLI-02143-100,spline,uint8,0 1,20181,1
 BraTS-GLI-02143-100,sustraccion,uint8,0 1,47660,1
-BraTS-GLI-02143-100,variational_spline,uint8,0 1,12165,1
+BraTS-GLI-02143-100,variational_spline,uint8,0 1,12548,1
 BraTS-GLI-02151-100,bspline,uint8,0 1,12200,1
 BraTS-GLI-02151-100,fast_marching,uint8,0 1,5890,1
 BraTS-GLI-02151-100,gmm_2d,uint8,0 1,55095,1
@@ -169,7 +169,7 @@ BraTS-GLI-02156-100,rango_doble,uint8,0 1,273383,1
 BraTS-GLI-02156-100,spline,uint8,0 1,195929,1
 BraTS-GLI-02156-100,sustraccion,uint8,0 1,90815,1
 BraTS-GLI-02156-100,variational_spline,uint8,0 1,195929,1
-BraTS-GLI-02157-100,bspline,uint8,0 1,20540,1
+BraTS-GLI-02157-100,bspline,uint8,0 1,19050,1
 BraTS-GLI-02157-100,fast_marching,uint8,0 1,4413,1
 BraTS-GLI-02157-100,gmm_2d,uint8,0 1,206629,1
 BraTS-GLI-02157-100,gmm_T1c,uint8,0 1,20435,1
@@ -178,7 +178,7 @@ BraTS-GLI-02157-100,otsu_T1c,uint8,0 1,18346,1
 BraTS-GLI-02157-100,rango_doble,uint8,0 1,307871,1
 BraTS-GLI-02157-100,spline,uint8,0 1,20710,1
 BraTS-GLI-02157-100,sustraccion,uint8,0 1,98275,1
-BraTS-GLI-02157-100,variational_spline,uint8,0 1,20990,1
+BraTS-GLI-02157-100,variational_spline,uint8,0 1,21213,1
 BraTS-GLI-02158-100,bspline,uint8,0 1,39996,1
 BraTS-GLI-02158-100,fast_marching,uint8,0 1,5650,1
 BraTS-GLI-02158-100,gmm_2d,uint8,0 1,95118,1

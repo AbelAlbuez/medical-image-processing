@@ -3,14 +3,14 @@ BraTS-GLI-00020-100,sustraccion,0.185
 BraTS-GLI-00469-100,gmm_T1c,0.8655
 BraTS-GLI-00528-100,gmm_2d,0.484
 BraTS-GLI-00533-100,gmm_2d,0.2412
-BraTS-GLI-02066-100,variational_spline,0.7586
+BraTS-GLI-02066-100,variational_spline,0.7633
 BraTS-GLI-02071-100,gmm_T1c,0.806
 BraTS-GLI-02078-100,sustraccion,0.3147
 BraTS-GLI-02086-100,gmm_T1c,0.4862
 BraTS-GLI-02102-100,otsu_T1c,0.5503
-BraTS-GLI-02108-100,variational_spline,0.8595
+BraTS-GLI-02108-100,variational_spline,0.8794
 BraTS-GLI-02116-100,gmm_2d,0.8282
-BraTS-GLI-02118-100,variational_spline,0.8286
+BraTS-GLI-02118-100,variational_spline,0.8308
 BraTS-GLI-02143-100,sustraccion,0.6097
 BraTS-GLI-02151-100,otsu_T1c,0.8212
 BraTS-GLI-02156-100,sustraccion,0.4546

@@ -1,0 +1,1273 @@
+COMMAND: C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\.venv\Scripts\python.exe run_all.py --config configs/pipeline.yaml --data-root C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\BraTS2024-BraTS-GLI-TrainingData\training_data1_v2 --cohort cohort/COHORT_MANIFEST_selected.csv --process-only --output-root C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core --clean-root C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\limpieza
+
+Casos seleccionados (100):
+  • BraTS-GLI-00009-101
+  • BraTS-GLI-00046-100
+  • BraTS-GLI-00543-101
+  • BraTS-GLI-00548-100
+  • BraTS-GLI-00549-100
+  • BraTS-GLI-02061-100
+  • BraTS-GLI-02086-100
+  • BraTS-GLI-02093-106
+  • BraTS-GLI-02101-101
+  • BraTS-GLI-02123-101
+  • BraTS-GLI-02137-100
+  • BraTS-GLI-02139-103
+  • BraTS-GLI-02143-100
+  • BraTS-GLI-02143-101
+  • BraTS-GLI-02151-100
+  • BraTS-GLI-02153-101
+  • BraTS-GLI-02171-101
+  • BraTS-GLI-02181-102
+  • BraTS-GLI-02184-101
+  • BraTS-GLI-02185-100
+  • BraTS-GLI-02192-101
+  • BraTS-GLI-02194-101
+  • BraTS-GLI-02196-100
+  • BraTS-GLI-02198-101
+  • BraTS-GLI-02205-100
+  • BraTS-GLI-02206-104
+  • BraTS-GLI-02208-100
+  • BraTS-GLI-02216-100
+  • BraTS-GLI-02217-100
+  • BraTS-GLI-02220-102
+  • BraTS-GLI-02221-100
+  • BraTS-GLI-02227-100
+  • BraTS-GLI-02229-100
+  • BraTS-GLI-02230-100
+  • BraTS-GLI-02238-102
+  • BraTS-GLI-02243-101
+  • BraTS-GLI-02245-100
+  • BraTS-GLI-02245-103
+  • BraTS-GLI-02247-100
+  • BraTS-GLI-02247-103
+  • BraTS-GLI-02248-102
+  • BraTS-GLI-02285-100
+  • BraTS-GLI-02300-101
+  • BraTS-GLI-02306-100
+  • BraTS-GLI-02307-101
+  • BraTS-GLI-02344-100
+  • BraTS-GLI-02382-100
+  • BraTS-GLI-02498-101
+  • BraTS-GLI-02549-102
+  • BraTS-GLI-02553-101
+  • BraTS-GLI-02558-101
+  • BraTS-GLI-02561-101
+  • BraTS-GLI-02635-100
+  • BraTS-GLI-02664-100
+  • BraTS-GLI-02699-100
+  • BraTS-GLI-02701-100
+  • BraTS-GLI-02744-100
+  • BraTS-GLI-02744-101
+  • BraTS-GLI-02746-100
+  • BraTS-GLI-02753-100
+  • BraTS-GLI-02755-101
+  • BraTS-GLI-02761-101
+  • BraTS-GLI-02789-101
+  • BraTS-GLI-02793-100
+  • BraTS-GLI-02793-101
+  • BraTS-GLI-02799-100
+  • BraTS-GLI-02801-100
+  • BraTS-GLI-02801-101
+  • BraTS-GLI-02808-100
+  • BraTS-GLI-02817-101
+  • BraTS-GLI-02828-100
+  • BraTS-GLI-02833-101
+  • BraTS-GLI-02835-100
+  • BraTS-GLI-02836-101
+  • BraTS-GLI-02851-100
+  • BraTS-GLI-02866-100
+  • BraTS-GLI-02866-101
+  • BraTS-GLI-02895-101
+  • BraTS-GLI-02897-101
+  • BraTS-GLI-02901-100
+  • BraTS-GLI-02905-100
+  • BraTS-GLI-02917-101
+  • BraTS-GLI-02934-101
+  • BraTS-GLI-02947-100
+  • BraTS-GLI-02983-101
+  • BraTS-GLI-02984-101
+  • BraTS-GLI-02985-101
+  • BraTS-GLI-02992-101
+  • BraTS-GLI-02996-101
+  • BraTS-GLI-03009-100
+  • BraTS-GLI-03010-100
+  • BraTS-GLI-03019-101
+  • BraTS-GLI-03020-100
+  • BraTS-GLI-03025-101
+  • BraTS-GLI-03026-101
+  • BraTS-GLI-03027-100
+  • BraTS-GLI-03027-101
+  • BraTS-GLI-03059-100
+  • BraTS-GLI-03060-102
+  • BraTS-GLI-03063-100
+
+Checkpoint config_hash=f1a0460238666855
+  preproc_hash=54773ff7fe035cef
+  run=72  skipped=28
+
+============================================================
+PASO 1  LIMPIEZA  (Wiener + N4 + normalización percentil)
+============================================================
+
+  [BraTS-GLI-02217-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02220-102]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02221-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02227-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02229-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02230-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02238-102]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02243-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02245-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02245-103]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02247-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02247-103]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02248-102]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02285-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02300-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02306-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02307-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02344-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02382-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02498-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02549-102]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02553-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02558-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02561-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02635-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02664-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02699-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02701-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02744-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02744-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02746-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02753-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02755-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02761-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02789-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02793-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02793-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02799-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02801-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02801-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02808-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02817-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02828-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02833-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02835-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02836-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02851-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02866-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02866-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02895-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02897-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02901-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02905-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02917-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02934-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02947-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02983-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02984-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02985-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02992-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-02996-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03009-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03010-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03019-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03020-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03025-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03026-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03027-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03027-101]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03059-100]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03060-102]
+  [skip] limpieza vigente (.clean.done)
+
+  [BraTS-GLI-03063-100]
+  [skip] limpieza vigente (.clean.done)
+
+  ✓ 72 caso(s) limpios en C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\limpieza
+
+============================================================
+PASO 2  SEGMENTACIÓN ET
+============================================================
+  Metodos: otsu_T1c, gmm_T1c, sustraccion, gmm_2d, variational_spline
+
+  [BraTS-GLI-02217-100] GT-ET: 2 vóxeles
+  otsu         : pred=   7517 vox
+  gmm_T1c      : pred=   6441 vox
+  sustraccion  : pred=  67586 vox  umbral=0.129
+  gmm_2d       : pred=  70200 vox
+  semilla auto : 6441 vox
+  variational_spline: pred=   6441 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02220-102] GT-ET: 0 vóxeles
+  otsu         : pred= 454265 vox
+  gmm_T1c      : pred=1046839 vox
+  sustraccion  : pred=  53831 vox  umbral=0.137
+  gmm_2d       : pred=  74455 vox
+  semilla auto : 213323 vox  [degenerada→semilla]
+  variational_spline: pred= 151459 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02221-100] GT-ET: 6451 vóxeles
+  otsu         : pred=  14781 vox
+  gmm_T1c      : pred=  16525 vox
+  sustraccion  : pred=  71448 vox  umbral=0.145
+  gmm_2d       : pred=  77458 vox
+  semilla auto : 16533 vox
+  variational_spline: pred=  16533 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.088  Jaccard=0.046  [sustraccion]
+    → Dice=0.126  Jaccard=0.067  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02227-100] GT-ET: 0 vóxeles
+  otsu         : pred=   7462 vox
+  gmm_T1c      : pred=   7234 vox
+  sustraccion  : pred=  68235 vox  umbral=0.100
+  gmm_2d       : pred=  87608 vox
+  semilla auto : 7234 vox
+  variational_spline: pred=   7234 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02229-100] GT-ET: 0 vóxeles
+  otsu         : pred=  13528 vox
+  gmm_T1c      : pred=  14117 vox
+  sustraccion  : pred=  77112 vox  umbral=0.165
+  gmm_2d       : pred= 148186 vox
+  semilla auto : 14118 vox
+  variational_spline: pred=  14118 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02230-100] GT-ET: 0 vóxeles
+  otsu         : pred=   7981 vox
+  gmm_T1c      : pred=1152995 vox
+  sustraccion  : pred=  73128 vox  umbral=0.093
+  gmm_2d       : pred=  93089 vox
+  semilla auto : 259205 vox  [degenerada→semilla]
+  variational_spline: pred= 184551 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02238-102] GT-ET: 26 vóxeles
+  otsu         : pred=  10849 vox
+  gmm_T1c      : pred=  10634 vox
+  sustraccion  : pred=  81434 vox  umbral=0.149
+  gmm_2d       : pred= 168267 vox
+  semilla auto : 10636 vox
+  variational_spline: pred=  10636 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02243-101] GT-ET: 2 vóxeles
+  otsu         : pred=   9214 vox
+  gmm_T1c      : pred=  10263 vox
+  sustraccion  : pred=  85396 vox  umbral=0.091
+  gmm_2d       : pred= 121420 vox
+  semilla auto : 10263 vox
+  variational_spline: pred=  10263 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02245-100] GT-ET: 0 vóxeles
+  otsu         : pred=  18535 vox
+  gmm_T1c      : pred=  19865 vox
+  sustraccion  : pred=  52092 vox  umbral=0.183
+  gmm_2d       : pred= 177358 vox
+  semilla auto : 19868 vox  [degenerada→semilla]
+  variational_spline: pred=  19868 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02245-103] GT-ET: 1089 vóxeles
+  otsu         : pred=  12908 vox
+  gmm_T1c      : pred=  14309 vox
+  sustraccion  : pred=  74106 vox  umbral=0.089
+  gmm_2d       : pred= 114493 vox
+  semilla auto : 14312 vox
+  variational_spline: pred=  14312 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.045  Jaccard=0.023  [gmm_T1c]
+    → Dice=0.021  Jaccard=0.011  [sustraccion]
+    → Dice=0.018  Jaccard=0.009  [gmm_2d]
+    → Dice=0.045  Jaccard=0.023  [variational_spline]
+
+  [BraTS-GLI-02247-100] GT-ET: 8 vóxeles
+  otsu         : pred=  18791 vox
+  gmm_T1c      : pred=  21386 vox
+  sustraccion  : pred= 119972 vox  umbral=0.489
+  gmm_2d       : pred=1036679 vox
+  semilla auto : 21386 vox  [degenerada→semilla]
+  variational_spline: pred=  21345 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02247-103] GT-ET: 18 vóxeles
+  otsu         : pred=  10611 vox
+  gmm_T1c      : pred=1249231 vox
+  sustraccion  : pred=  73118 vox  umbral=0.111
+  gmm_2d       : pred=  79417 vox
+  semilla auto : 257630 vox  [degenerada→semilla]
+  variational_spline: pred= 173580 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02248-102] GT-ET: 0 vóxeles
+  otsu         : pred=  11100 vox
+  gmm_T1c      : pred=  12388 vox
+  sustraccion  : pred=  65089 vox  umbral=0.129
+  gmm_2d       : pred= 123514 vox
+  semilla auto : 12388 vox
+  variational_spline: pred=  12388 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02285-100] GT-ET: 8920 vóxeles
+  otsu         : pred=  14772 vox
+  gmm_T1c      : pred=  21811 vox
+  sustraccion  : pred=  79173 vox  umbral=0.142
+  gmm_2d       : pred= 137655 vox
+  semilla auto : 21816 vox
+  variational_spline: pred=  21816 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.012  Jaccard=0.006  [gmm_T1c]
+    → Dice=0.160  Jaccard=0.087  [sustraccion]
+    → Dice=0.035  Jaccard=0.018  [gmm_2d]
+    → Dice=0.012  Jaccard=0.006  [variational_spline]
+
+  [BraTS-GLI-02300-101] GT-ET: 12673 vóxeles
+  otsu         : pred=  15208 vox
+  gmm_T1c      : pred=  22582 vox
+  sustraccion  : pred=  80214 vox  umbral=0.148
+  gmm_2d       : pred= 197943 vox
+  semilla auto : 22584 vox
+  variational_spline: pred=  22584 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.248  Jaccard=0.141  [sustraccion]
+    → Dice=0.022  Jaccard=0.011  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02306-100] GT-ET: 31760 vóxeles
+  otsu         : pred=  22101 vox
+  gmm_T1c      : pred=  35197 vox
+  sustraccion  : pred= 102451 vox  umbral=0.160
+  gmm_2d       : pred= 245111 vox
+  semilla auto : 36418 vox
+  variational_spline: pred=  26502 vox
+    → Dice=0.817  Jaccard=0.690  [otsu_T1c]
+    → Dice=0.861  Jaccard=0.757  [gmm_T1c]
+    → Dice=0.453  Jaccard=0.293  [sustraccion]
+    → Dice=0.027  Jaccard=0.014  [gmm_2d]
+    → Dice=0.853  Jaccard=0.744  [variational_spline]
+
+  [BraTS-GLI-02307-101] GT-ET: 10974 vóxeles
+  otsu         : pred=  20090 vox
+  gmm_T1c      : pred=  29882 vox
+  sustraccion  : pred= 100070 vox  umbral=0.143
+  gmm_2d       : pred= 290166 vox
+  semilla auto : 29882 vox
+  variational_spline: pred=  29882 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.001  Jaccard=0.001  [gmm_T1c]
+    → Dice=0.123  Jaccard=0.065  [sustraccion]
+    → Dice=0.072  Jaccard=0.037  [gmm_2d]
+    → Dice=0.001  Jaccard=0.001  [variational_spline]
+
+  [BraTS-GLI-02344-100] GT-ET: 5435 vóxeles
+  otsu         : pred=  16642 vox
+  gmm_T1c      : pred=  23601 vox
+  sustraccion  : pred=  72366 vox  umbral=0.142
+  gmm_2d       : pred=  41975 vox
+  semilla auto : 23604 vox
+  variational_spline: pred=  23604 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.135  Jaccard=0.072  [sustraccion]
+    → Dice=0.144  Jaccard=0.077  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02382-100] GT-ET: 23526 vóxeles
+  otsu         : pred=  15158 vox
+  gmm_T1c      : pred=  45390 vox
+  sustraccion  : pred=  97529 vox  umbral=0.146
+  gmm_2d       : pred= 258555 vox
+  semilla auto : 45555 vox
+  variational_spline: pred=  45555 vox
+    → Dice=0.697  Jaccard=0.535  [otsu_T1c]
+    → Dice=0.548  Jaccard=0.377  [gmm_T1c]
+    → Dice=0.366  Jaccard=0.224  [sustraccion]
+    → Dice=0.025  Jaccard=0.013  [gmm_2d]
+    → Dice=0.549  Jaccard=0.379  [variational_spline]
+
+  [BraTS-GLI-02498-101] GT-ET: 404 vóxeles
+  otsu         : pred= 838142 vox
+  gmm_T1c      : pred=1308551 vox
+  sustraccion  : pred= 129960 vox  umbral=0.118
+  gmm_2d       : pred= 154166 vox
+  semilla auto : 301064 vox  [degenerada→semilla]
+  variational_spline: pred= 246259 vox
+    → Dice=0.001  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.003  Jaccard=0.001  [sustraccion]
+    → Dice=0.004  Jaccard=0.002  [gmm_2d]
+    → Dice=0.002  Jaccard=0.001  [variational_spline]
+
+  [BraTS-GLI-02549-102] GT-ET: 4065 vóxeles
+  otsu         : pred= 536503 vox
+  gmm_T1c      : pred= 602545 vox
+  sustraccion  : pred=  63732 vox  umbral=0.111
+  gmm_2d       : pred=  68443 vox
+  semilla auto : 187125 vox  [degenerada→semilla]
+  variational_spline: pred= 140277 vox
+    → Dice=0.013  Jaccard=0.006  [otsu_T1c]
+    → Dice=0.012  Jaccard=0.006  [gmm_T1c]
+    → Dice=0.114  Jaccard=0.060  [sustraccion]
+    → Dice=0.108  Jaccard=0.057  [gmm_2d]
+    → Dice=0.056  Jaccard=0.029  [variational_spline]
+
+  [BraTS-GLI-02553-101] GT-ET: 21553 vóxeles
+  otsu         : pred=  16783 vox
+  gmm_T1c      : pred=  20003 vox
+  sustraccion  : pred=  78974 vox  umbral=0.110
+  gmm_2d       : pred= 152727 vox
+  semilla auto : 20009 vox
+  variational_spline: pred=  20009 vox
+    → Dice=0.076  Jaccard=0.040  [otsu_T1c]
+    → Dice=0.135  Jaccard=0.072  [gmm_T1c]
+    → Dice=0.358  Jaccard=0.218  [sustraccion]
+    → Dice=0.245  Jaccard=0.140  [gmm_2d]
+    → Dice=0.135  Jaccard=0.072  [variational_spline]
+
+  [BraTS-GLI-02558-101] GT-ET: 4525 vóxeles
+  otsu         : pred= 476803 vox
+  gmm_T1c      : pred=   4530 vox
+  sustraccion  : pred=  49921 vox  umbral=0.177
+  gmm_2d       : pred=  95743 vox
+  semilla auto : 4530 vox
+  variational_spline: pred=   4530 vox
+    → Dice=0.017  Jaccard=0.008  [otsu_T1c]
+    → Dice=0.091  Jaccard=0.048  [gmm_T1c]
+    → Dice=0.092  Jaccard=0.048  [sustraccion]
+    → Dice=0.079  Jaccard=0.041  [gmm_2d]
+    → Dice=0.091  Jaccard=0.048  [variational_spline]
+
+  [BraTS-GLI-02561-101] GT-ET: 299 vóxeles
+  otsu         : pred=  10684 vox
+  gmm_T1c      : pred=  11968 vox
+  sustraccion  : pred=  60182 vox  umbral=0.083
+  gmm_2d       : pred=  79805 vox
+  semilla auto : 11969 vox
+  variational_spline: pred=  11969 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.010  Jaccard=0.005  [sustraccion]
+    → Dice=0.007  Jaccard=0.004  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02635-100] GT-ET: 0 vóxeles
+  otsu         : pred= 464359 vox
+  gmm_T1c      : pred= 498518 vox
+  sustraccion  : pred=  57627 vox  umbral=0.106
+  gmm_2d       : pred=  56855 vox
+  semilla auto : 142094 vox
+  variational_spline: pred= 142154 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02664-100] GT-ET: 0 vóxeles
+  otsu         : pred= 578786 vox
+  gmm_T1c      : pred=  10389 vox
+  sustraccion  : pred= 121818 vox  umbral=0.182
+  gmm_2d       : pred= 118988 vox
+  semilla auto : 10389 vox
+  variational_spline: pred=  10389 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02699-100] GT-ET: 14387 vóxeles
+  otsu         : pred=  21372 vox
+  gmm_T1c      : pred=  29113 vox
+  sustraccion  : pred= 108675 vox  umbral=0.133
+  gmm_2d       : pred= 119359 vox
+  semilla auto : 29115 vox
+  variational_spline: pred=  29115 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.253  Jaccard=0.145  [gmm_T1c]
+    → Dice=0.197  Jaccard=0.109  [sustraccion]
+    → Dice=0.210  Jaccard=0.117  [gmm_2d]
+    → Dice=0.253  Jaccard=0.145  [variational_spline]
+
+  [BraTS-GLI-02701-100] GT-ET: 0 vóxeles
+  otsu         : pred=  24591 vox
+  gmm_T1c      : pred=  27803 vox
+  sustraccion  : pred= 118798 vox  umbral=0.192
+  gmm_2d       : pred= 123218 vox
+  semilla auto : 27803 vox  [degenerada→semilla]
+  variational_spline: pred=  27798 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02744-100] GT-ET: 68 vóxeles
+  otsu         : pred=  13696 vox
+  gmm_T1c      : pred=  18359 vox
+  sustraccion  : pred=  90645 vox  umbral=0.098
+  gmm_2d       : pred=  91370 vox
+  semilla auto : 18359 vox
+  variational_spline: pred=  18359 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.001  Jaccard=0.001  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02744-101] GT-ET: 51 vóxeles
+  otsu         : pred=   9747 vox
+  gmm_T1c      : pred=  10437 vox
+  sustraccion  : pred=  70571 vox  umbral=0.210
+  gmm_2d       : pred= 406545 vox
+  semilla auto : 10438 vox
+  variational_spline: pred=  10438 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02746-100] GT-ET: 120 vóxeles
+  otsu         : pred= 564641 vox
+  gmm_T1c      : pred=  15865 vox
+  sustraccion  : pred= 115864 vox  umbral=0.143
+  gmm_2d       : pred= 182549 vox
+  semilla auto : 15866 vox
+  variational_spline: pred=  15866 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.002  Jaccard=0.001  [sustraccion]
+    → Dice=0.001  Jaccard=0.001  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02753-100] GT-ET: 6097 vóxeles
+  otsu         : pred=  20399 vox
+  gmm_T1c      : pred=  19737 vox
+  sustraccion  : pred= 102495 vox  umbral=0.236
+  gmm_2d       : pred= 574096 vox
+  semilla auto : 19738 vox  [degenerada→semilla]
+  variational_spline: pred=  19658 vox
+    → Dice=0.002  Jaccard=0.001  [otsu_T1c]
+    → Dice=0.002  Jaccard=0.001  [gmm_T1c]
+    → Dice=0.029  Jaccard=0.015  [sustraccion]
+    → Dice=0.015  Jaccard=0.008  [gmm_2d]
+    → Dice=0.002  Jaccard=0.001  [variational_spline]
+
+  [BraTS-GLI-02755-101] GT-ET: 705 vóxeles
+  otsu         : pred=  12591 vox
+  gmm_T1c      : pred=  21959 vox
+  sustraccion  : pred=  93129 vox  umbral=0.139
+  gmm_2d       : pred=  54758 vox
+  semilla auto : 21959 vox
+  variational_spline: pred=  21959 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.008  Jaccard=0.004  [sustraccion]
+    → Dice=0.008  Jaccard=0.004  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02761-101] GT-ET: 3264 vóxeles
+  otsu         : pred=  11109 vox
+  gmm_T1c      : pred=  16539 vox
+  sustraccion  : pred=  79376 vox  umbral=0.127
+  gmm_2d       : pred=  49662 vox
+  semilla auto : 16539 vox
+  variational_spline: pred=  16539 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.295  Jaccard=0.173  [gmm_T1c]
+    → Dice=0.078  Jaccard=0.041  [sustraccion]
+    → Dice=0.017  Jaccard=0.009  [gmm_2d]
+    → Dice=0.295  Jaccard=0.173  [variational_spline]
+
+  [BraTS-GLI-02789-101] GT-ET: 0 vóxeles
+  otsu         : pred=  13813 vox
+  gmm_T1c      : pred=  15792 vox
+  sustraccion  : pred=   8985 vox  umbral=0.345
+  gmm_2d       : pred=  94636 vox
+  semilla auto : 15792 vox
+  variational_spline: pred=  15792 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02793-100] GT-ET: 0 vóxeles
+  otsu         : pred=  19983 vox
+  gmm_T1c      : pred=  21010 vox
+  sustraccion  : pred= 115867 vox  umbral=0.138
+  gmm_2d       : pred= 140733 vox
+  semilla auto : 21010 vox
+  variational_spline: pred=  21010 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02793-101] GT-ET: 0 vóxeles
+  otsu         : pred=  16382 vox
+  gmm_T1c      : pred=  18837 vox
+  sustraccion  : pred=  54294 vox  umbral=0.127
+  gmm_2d       : pred=  88785 vox
+  semilla auto : 18837 vox
+  variational_spline: pred=  18837 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02799-100] GT-ET: 225 vóxeles
+  otsu         : pred=  14188 vox
+  gmm_T1c      : pred=  14753 vox
+  sustraccion  : pred=  70172 vox  umbral=0.129
+  gmm_2d       : pred=  83599 vox
+  semilla auto : 14753 vox
+  variational_spline: pred=  14753 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.002  Jaccard=0.001  [sustraccion]
+    → Dice=0.002  Jaccard=0.001  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02801-100] GT-ET: 13195 vóxeles
+  otsu         : pred=  20565 vox
+  gmm_T1c      : pred=  23557 vox
+  sustraccion  : pred= 107302 vox  umbral=0.136
+  gmm_2d       : pred= 115032 vox
+  semilla auto : 23589 vox
+  variational_spline: pred=  23589 vox
+    → Dice=0.420  Jaccard=0.266  [otsu_T1c]
+    → Dice=0.424  Jaccard=0.269  [gmm_T1c]
+    → Dice=0.188  Jaccard=0.103  [sustraccion]
+    → Dice=0.200  Jaccard=0.111  [gmm_2d]
+    → Dice=0.425  Jaccard=0.270  [variational_spline]
+
+  [BraTS-GLI-02801-101] GT-ET: 11347 vóxeles
+  otsu         : pred=  15066 vox
+  gmm_T1c      : pred=  18159 vox
+  sustraccion  : pred=  88843 vox  umbral=0.134
+  gmm_2d       : pred=  60763 vox
+  semilla auto : 18164 vox
+  variational_spline: pred=  18164 vox
+    → Dice=0.360  Jaccard=0.219  [otsu_T1c]
+    → Dice=0.404  Jaccard=0.253  [gmm_T1c]
+    → Dice=0.195  Jaccard=0.108  [sustraccion]
+    → Dice=0.166  Jaccard=0.090  [gmm_2d]
+    → Dice=0.404  Jaccard=0.253  [variational_spline]
+
+  [BraTS-GLI-02808-100] GT-ET: 1211 vóxeles
+  otsu         : pred=  16020 vox
+  gmm_T1c      : pred=  21100 vox
+  sustraccion  : pred=  92054 vox  umbral=0.132
+  gmm_2d       : pred= 114599 vox
+  semilla auto : 21100 vox
+  variational_spline: pred=  21100 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.005  Jaccard=0.002  [sustraccion]
+    → Dice=0.011  Jaccard=0.005  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02817-101] GT-ET: 2809 vóxeles
+  otsu         : pred= 862861 vox
+  gmm_T1c      : pred= 946153 vox
+  sustraccion  : pred=      0 vox  umbral=0.117
+  gmm_2d       : pred=  63264 vox
+  semilla auto : 948692 vox  [degenerada→semilla]
+  variational_spline: pred= 948692 vox
+    → Dice=0.005  Jaccard=0.003  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.068  Jaccard=0.035  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02828-100] GT-ET: 0 vóxeles
+  otsu         : pred= 740909 vox
+  gmm_T1c      : pred=1420869 vox
+  sustraccion  : pred= 135522 vox  umbral=0.162
+  gmm_2d       : pred= 160521 vox
+  semilla auto : 345952 vox  [degenerada→semilla]
+  variational_spline: pred= 278959 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02833-101] GT-ET: 199 vóxeles
+  otsu         : pred=  18673 vox
+  gmm_T1c      : pred=  20741 vox
+  sustraccion  : pred=  92112 vox  umbral=0.149
+  gmm_2d       : pred= 119471 vox
+  semilla auto : 20742 vox
+  variational_spline: pred=  20742 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.002  Jaccard=0.001  [sustraccion]
+    → Dice=0.003  Jaccard=0.001  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02835-100] GT-ET: 0 vóxeles
+  otsu         : pred=  19628 vox
+  gmm_T1c      : pred=  27959 vox
+  sustraccion  : pred=  72714 vox  umbral=0.119
+  gmm_2d       : pred=  91858 vox
+  semilla auto : 27959 vox  [degenerada→semilla]
+  variational_spline: pred=  27953 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02836-101] GT-ET: 0 vóxeles
+  otsu         : pred=  13813 vox
+  gmm_T1c      : pred=  15997 vox
+  sustraccion  : pred=  29913 vox  umbral=0.187
+  gmm_2d       : pred= 104381 vox
+  semilla auto : 15997 vox
+  variational_spline: pred=  15997 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02851-100] GT-ET: 0 vóxeles
+  otsu         : pred=  17160 vox
+  gmm_T1c      : pred=  20360 vox
+  sustraccion  : pred=  82051 vox  umbral=0.116
+  gmm_2d       : pred=  77540 vox
+  semilla auto : 20360 vox
+  variational_spline: pred=  20360 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02866-100] GT-ET: 0 vóxeles
+  otsu         : pred=  14396 vox
+  gmm_T1c      : pred=  18512 vox
+  sustraccion  : pred=  98824 vox  umbral=0.138
+  gmm_2d       : pred= 120007 vox
+  semilla auto : 18518 vox
+  variational_spline: pred=  18518 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02866-101] GT-ET: 0 vóxeles
+  otsu         : pred=  12156 vox
+  gmm_T1c      : pred=  13851 vox
+  sustraccion  : pred=  64657 vox  umbral=0.181
+  gmm_2d       : pred=  40635 vox
+  semilla auto : 13853 vox
+  variational_spline: pred=  13853 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02895-101] GT-ET: 0 vóxeles
+  otsu         : pred=  10694 vox
+  gmm_T1c      : pred=  13041 vox
+  sustraccion  : pred=  19488 vox  umbral=0.260
+  gmm_2d       : pred=  63991 vox
+  semilla auto : 13041 vox
+  variational_spline: pred=  13041 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02897-101] GT-ET: 0 vóxeles
+  otsu         : pred=  11827 vox
+  gmm_T1c      : pred=  15370 vox
+  sustraccion  : pred=  85811 vox  umbral=0.115
+  gmm_2d       : pred= 116897 vox
+  semilla auto : 15371 vox
+  variational_spline: pred=  15371 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02901-100] GT-ET: 0 vóxeles
+  otsu         : pred=  16726 vox
+  gmm_T1c      : pred=  18667 vox
+  sustraccion  : pred= 107373 vox  umbral=0.138
+  gmm_2d       : pred= 269262 vox
+  semilla auto : 18667 vox
+  variational_spline: pred=  18667 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02905-100] GT-ET: 867 vóxeles
+  otsu         : pred= 849890 vox
+  gmm_T1c      : pred=1104436 vox
+  sustraccion  : pred=  41694 vox  umbral=0.196
+  gmm_2d       : pred= 112700 vox
+  semilla auto : 110694 vox  [degenerada→semilla]
+  variational_spline: pred=  82854 vox
+    → Dice=0.002  Jaccard=0.001  [otsu_T1c]
+    → Dice=0.002  Jaccard=0.001  [gmm_T1c]
+    → Dice=0.024  Jaccard=0.012  [sustraccion]
+    → Dice=0.015  Jaccard=0.008  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02917-101] GT-ET: 6110 vóxeles
+  otsu         : pred=  14315 vox
+  gmm_T1c      : pred=  21882 vox
+  sustraccion  : pred=  81306 vox  umbral=0.118
+  gmm_2d       : pred= 119438 vox
+  semilla auto : 21882 vox
+  variational_spline: pred=  21882 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.098  Jaccard=0.052  [sustraccion]
+    → Dice=0.088  Jaccard=0.046  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02934-101] GT-ET: 0 vóxeles
+  otsu         : pred=  11031 vox
+  gmm_T1c      : pred=  10852 vox
+  sustraccion  : pred=  87033 vox  umbral=0.138
+  gmm_2d       : pred= 120332 vox
+  semilla auto : 10852 vox
+  variational_spline: pred=  10852 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02947-100] GT-ET: 482 vóxeles
+  otsu         : pred= 768624 vox
+  gmm_T1c      : pred=1236057 vox
+  sustraccion  : pred=  83973 vox  umbral=0.133
+  gmm_2d       : pred=  89675 vox
+  semilla auto : 231090 vox  [degenerada→semilla]
+  variational_spline: pred= 182201 vox
+    → Dice=0.001  Jaccard=0.001  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.005  Jaccard=0.003  [sustraccion]
+    → Dice=0.008  Jaccard=0.004  [gmm_2d]
+    → Dice=0.003  Jaccard=0.001  [variational_spline]
+
+  [BraTS-GLI-02983-101] GT-ET: 1845 vóxeles
+  otsu         : pred=  12508 vox
+  gmm_T1c      : pred=  19121 vox
+  sustraccion  : pred=  45003 vox  umbral=0.136
+  gmm_2d       : pred=  40823 vox
+  semilla auto : 19125 vox
+  variational_spline: pred=  19125 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.044  Jaccard=0.022  [sustraccion]
+    → Dice=0.075  Jaccard=0.039  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02984-101] GT-ET: 0 vóxeles
+  otsu         : pred=  13855 vox
+  gmm_T1c      : pred=  16573 vox
+  sustraccion  : pred=  87029 vox  umbral=0.145
+  gmm_2d       : pred=  47090 vox
+  semilla auto : 16574 vox
+  variational_spline: pred=  16574 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02985-101] GT-ET: 0 vóxeles
+  otsu         : pred= 553928 vox
+  gmm_T1c      : pred=1033716 vox
+  sustraccion  : pred=  11504 vox  umbral=0.228
+  gmm_2d       : pred=  72903 vox
+  semilla auto : 29465 vox
+  variational_spline: pred=  29469 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02992-101] GT-ET: 0 vóxeles
+  otsu         : pred=  10295 vox
+  gmm_T1c      : pred=  11004 vox
+  sustraccion  : pred=   4333 vox  umbral=0.380
+  gmm_2d       : pred=  23993 vox
+  semilla auto : 11005 vox
+  variational_spline: pred=  11005 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-02996-101] GT-ET: 18701 vóxeles
+  otsu         : pred=  11907 vox
+  gmm_T1c      : pred=  12893 vox
+  sustraccion  : pred= 109102 vox  umbral=0.166
+  gmm_2d       : pred= 148271 vox
+  semilla auto : 12893 vox
+  variational_spline: pred=  12893 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.247  Jaccard=0.141  [sustraccion]
+    → Dice=0.203  Jaccard=0.113  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-03009-100] GT-ET: 11130 vóxeles
+  otsu         : pred=  21831 vox
+  gmm_T1c      : pred=  34501 vox
+  sustraccion  : pred=  93171 vox  umbral=0.140
+  gmm_2d       : pred= 195721 vox
+  semilla auto : 34552 vox
+  variational_spline: pred=  34552 vox
+    → Dice=0.239  Jaccard=0.136  [otsu_T1c]
+    → Dice=0.292  Jaccard=0.171  [gmm_T1c]
+    → Dice=0.184  Jaccard=0.101  [sustraccion]
+    → Dice=0.087  Jaccard=0.045  [gmm_2d]
+    → Dice=0.292  Jaccard=0.171  [variational_spline]
+
+  [BraTS-GLI-03010-100] GT-ET: 0 vóxeles
+  otsu         : pred=  17138 vox
+  gmm_T1c      : pred=  21903 vox
+  sustraccion  : pred=  85505 vox  umbral=0.121
+  gmm_2d       : pred= 191346 vox
+  semilla auto : 21903 vox
+  variational_spline: pred=  21903 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.000  Jaccard=0.000  [sustraccion]
+    → Dice=0.000  Jaccard=0.000  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-03019-101] GT-ET: 36755 vóxeles
+  otsu         : pred=  15827 vox
+  gmm_T1c      : pred=  17405 vox
+  sustraccion  : pred=  75372 vox  umbral=0.189
+  gmm_2d       : pred= 228427 vox
+  semilla auto : 17405 vox
+  variational_spline: pred=  17405 vox
+    → Dice=0.001  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.004  Jaccard=0.002  [gmm_T1c]
+    → Dice=0.370  Jaccard=0.227  [sustraccion]
+    → Dice=0.250  Jaccard=0.143  [gmm_2d]
+    → Dice=0.004  Jaccard=0.002  [variational_spline]
+
+  [BraTS-GLI-03020-100] GT-ET: 13632 vóxeles
+  otsu         : pred=  18977 vox
+  gmm_T1c      : pred=  17578 vox
+  sustraccion  : pred= 126679 vox  umbral=0.204
+  gmm_2d       : pred= 137154 vox
+  semilla auto : 17578 vox
+  variational_spline: pred=  17578 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.189  Jaccard=0.104  [sustraccion]
+    → Dice=0.123  Jaccard=0.066  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-03025-101] GT-ET: 766 vóxeles
+  otsu         : pred=  11444 vox
+  gmm_T1c      : pred=  11656 vox
+  sustraccion  : pred= 106807 vox  umbral=0.142
+  gmm_2d       : pred= 153237 vox
+  semilla auto : 11656 vox
+  variational_spline: pred=  11656 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.014  Jaccard=0.007  [sustraccion]
+    → Dice=0.010  Jaccard=0.005  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-03026-101] GT-ET: 4326 vóxeles
+  otsu         : pred=  16597 vox
+  gmm_T1c      : pred=  17735 vox
+  sustraccion  : pred=  92256 vox  umbral=0.257
+  gmm_2d       : pred= 424809 vox
+  semilla auto : 17736 vox
+  variational_spline: pred=  17736 vox
+    → Dice=0.001  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.001  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.079  Jaccard=0.041  [sustraccion]
+    → Dice=0.004  Jaccard=0.002  [gmm_2d]
+    → Dice=0.001  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-03027-100] GT-ET: 1878 vóxeles
+  otsu         : pred=  17711 vox
+  gmm_T1c      : pred=  24521 vox
+  sustraccion  : pred= 108125 vox  umbral=0.174
+  gmm_2d       : pred= 115538 vox
+  semilla auto : 24521 vox
+  variational_spline: pred=  24521 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.028  Jaccard=0.014  [sustraccion]
+    → Dice=0.028  Jaccard=0.014  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-03027-101] GT-ET: 775 vóxeles
+  otsu         : pred=  12409 vox
+  gmm_T1c      : pred=  13076 vox
+  sustraccion  : pred=  88027 vox  umbral=0.152
+  gmm_2d       : pred= 111179 vox
+  semilla auto : 13076 vox
+  variational_spline: pred=  13076 vox
+    → Dice=0.000  Jaccard=0.000  [otsu_T1c]
+    → Dice=0.000  Jaccard=0.000  [gmm_T1c]
+    → Dice=0.012  Jaccard=0.006  [sustraccion]
+    → Dice=0.011  Jaccard=0.005  [gmm_2d]
+    → Dice=0.000  Jaccard=0.000  [variational_spline]
+
+  [BraTS-GLI-03059-100] GT-ET: 776 vóxeles
+  otsu         : pred= 511672 vox
+  gmm_T1c      : pred=  12235 vox
+  sustraccion  : pred=  91823 vox  umbral=0.203
+Traceback (most recent call last):
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\run_all.py", line 781, in <module>
+    main()
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\run_all.py", line 743, in main
+    mascaras = paso_segmentacion(run_cases, args, resolved_config, cfg_hash)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\run_all.py", line 520, in paso_segmentacion
+    mascaras, gt_et, df = correr_pipeline_et(
+                          ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\src\brats_pipeline\seg_et_pipeline.py", line 473, in correr_pipeline_et
+    pred_gmm2d = timed(
+                 ^^^^^^
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\src\brats_pipeline\seg_et_pipeline.py", line 425, in timed
+    return fn()
+           ^^^^
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\src\brats_pipeline\seg_et_pipeline.py", line 475, in <lambda>
+    lambda: metodo_gmm_2d(arr_t1c, arr_t1c_raw, arr_t1n_raw),
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\src\brats_pipeline\seg_et_pipeline.py", line 154, in metodo_gmm_2d
+    labels = gmm.fit_predict(X)
+             ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\.venv\Lib\site-packages\sklearn\base.py", line 1403, in wrapper
+    return fit_method(estimator, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\.venv\Lib\site-packages\sklearn\mixture\_base.py", line 268, in fit_predict
+    log_prob_norm, log_resp = self._e_step(X, xp=xp)
+                              ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\.venv\Lib\site-packages\sklearn\mixture\_base.py", line 331, in _e_step
+    log_prob_norm, log_resp = self._estimate_log_prob_resp(X, xp=xp)
+                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\.venv\Lib\site-packages\sklearn\mixture\_base.py", line 573, in _estimate_log_prob_resp
+    log_prob_norm = _logsumexp(weighted_log_prob, axis=1, xp=xp)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\.venv\Lib\site-packages\sklearn\utils\_array_api.py", line 1359, in _logsumexp
+    exp = xp.exp(array - shift)
+          ^^^^^^^^^^^^^^^^^^^^^
+numpy._core._exceptions._ArrayMemoryError: Unable to allocate 24.5 MiB for an array with shape (1607433, 4) and data type float32

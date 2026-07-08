@@ -1,0 +1,159 @@
+# Phase 2 — Geometric-Evidence Priors: Design, Comparative Protocol, Checkpoints
+
+Bridge document from the classical baseline to the thesis. Establishes what Phase 2
+tests, why, how it's measured, and the staged checkpoints to execute it.
+
+---
+
+## 0. Where the baseline actually landed (the thing Phase 2 must improve)
+
+The classical intensity pipeline was never really at "0.5 Dice." That number came from
+unreproducible masks, an easy 20-case sample, and global Dice (which rewards mass overlap
+and hides everything else). Measured honestly — reproducible masks, a stratified 100-case
+cohort, and a false-positive-aware lesion-wise metric — the baseline is:
+
+- **Detection**: dominant lesion found in <50% of present cases; **3/17 unifocal cases**.
+- **Lesion-wise Dice**: ~0.05 overall, ~0.18 on large tumors, ~0.43 on the (n=2) large-
+  unifocal subset. Low across ALL five methods.
+- **False positives**: ALL methods hallucinate tumor on **94–100% of ET-absent (treated-
+  clean) patients**, up to ~1.4M voxels.
+- **The mechanism**: intensity alone cannot separate tumor enhancement from vessel /
+  choroid-plexus / resection-margin enhancement — they have the same brightness. The two
+  failure modes (under-segment → miss the lesion; over-segment → flood the brain) bracket
+  the problem with no viable intensity threshold between them.
+
+**Conclusion the baseline proves:** the discriminating information is not in intensity.
+Phase 2 tests whether supplying *non-intensity evidence* — where tumor plausibly lives
+(spatial) and what shape/topology it plausibly has (topological) — recovers it.
+
+**Metric discipline (non-negotiable):** Phase 2 is evaluated on the SAME corrected metric
+as Stage 4 (FP-aware lesion-wise Dice + false-positive burden, stratified by vol_bin),
+on the SAME 100-case cohort, with priors built on TRAINING folds and evaluated on the
+HELD-OUT fold. Evaluating on global Dice, or building a prior on a case then scoring it,
+repeats the exact self-deception the baseline suffered.
+
+---
+
+## 1. The two priors (each attacks a specific characterized failure)
+
+| Prior | Attacks | Mechanism | Precedent | Feasibility |
+|---|---|---|---|---|
+| **Spatial (ET-occurrence atlas)** | Hallucination / false positives | Down-weight enhancement in low-ET-probability locations (ventricles, brainstem, cavity margins). A bright vessel in an implausible place gets suppressed. | ET-occurrence map built in SRI24 space from 1,251 BraTS21 cases (Frontiers/PMC 2023); Prastawa atlas + subject tumor prior. | HIGH — BraTS is pre-registered to SRI24, so no per-case registration. Build the map by averaging training-fold ET masks. |
+| **Topological (cubical PH)** | Discrimination (tumor vs non-tumor enhancement) | A solid tumor blob and a thin vessel/margin can share intensity but differ in topology. PH detects the characteristic persistent, roughly-spherical ET component and suppresses low-persistence thin structures. | Train-free cubical-PH glioblastoma segmentation exploiting ET's "characteristic spherical shape" (JMIV, May 2026). | MODERATE — existing cubical-PH tooling from the thesis TDA work; needs a PH library (GUDHI) on the score/enhancement map. |
+
+(A third option — a statistical shape model via PCA on SDFs — is deferred; the two above
+map most directly onto the two failures the baseline exposed.)
+
+### Integration modes (test more than one — they're different experiments)
+
+Each prior can enter the pipeline at three points. Ablate them:
+
+1. **Pre-filter ("layer before"):** the prior restricts WHERE / WHICH-SHAPE the intensity
+   methods may look, before they run (spatial: mask to plausible-location; topological:
+   seed only from persistent blob-like components). This is the user's "persistence layer
+   before." Clean, modular, easy to ablate.
+2. **Post-filter:** run the existing methods, then suppress predicted components that are
+   in low-probability locations (spatial) or topologically implausible (topological).
+   Directly targets the FP-component explosion.
+3. **MAP / Bayesian combination:** posterior ∝ prior(location or topology) × intensity
+   likelihood; threshold the posterior. The principled version.
+
+---
+
+## 2. The comparative (and the honest hypotheses)
+
+**Design:** for each prior × integration-mode, produce ET predictions on the 100-case
+cohort using the held-out-fold discipline, score with the Stage-4 corrected metric,
+compare against the best classical baseline method PER STRATUM and on the FP axis.
+
+**The comparison table (the deliverable):**
+rows = {baseline best, spatial-pre, spatial-post, spatial-MAP, topo-pre, topo-post,
+topo-MAP, [optional] spatial+topo combined}; columns = {lesion-wise Dice by vol_bin,
+dominant-found rate, FP median vox on absent, FP flood rate on absent}.
+
+**Hypotheses (commit to reporting all outcomes):**
+- H1 (spatial cuts FP): the spatial prior reduces absent-case flood rate and FP burden,
+  because implausibly-located enhancement is suppressed. MOST LIKELY to show an effect.
+- H2 (topological improves detection): the topological prior improves dominant-lesion-
+  found rate by seeding from blob-like (not thin) enhancement. Higher-risk, higher-value.
+- H3 (combined): spatial + topological together beat either alone.
+
+**Every outcome is publishable:**
+- Priors break the floor → non-intensity evidence supplies what intensity lacks (validates
+  the thesis premise on classical machinery).
+- Priors help one axis only → precise finding of WHAT each evidence type fixes and what it
+  doesn't (tells the thesis what DL must add).
+- Priors barely help → even geometric priors on classical machinery are insufficient; the
+  full learned approach is NECESSARY (arguably the strongest thesis motivation).
+
+**Caveats to state in the writeup:**
+- Spatial prior is softened in post-treatment (resection/edema deform anatomy; population
+  ET-occurrence is a soft prior, not a hard mask).
+- Cavity-margin confounds are CASE-SPECIFIC (the cavity is wherever this patient's surgery
+  was), so a population location atlas helps less on them than on stereotyped confounds
+  (ventricular, brainstem). The resection cavity (label 4) as case-specific context may be
+  needed to fully address them — note as a possible extension.
+
+---
+
+## 3. Checkpoints (staged, gated — same discipline as the whole project)
+
+Each stage: STOP, report against acceptance criteria, wait for review. Build priors on
+training folds only; evaluate on held-out fold. Never build a prior on a case you score.
+
+### Stage P0 — Infrastructure & baseline lock (no priors yet)
+- Confirm the corrected Stage-4 metric is a reusable, callable function (lesion-wise FP-
+  aware Dice + FP burden), so every Phase-2 config is scored identically to the baseline.
+- Freeze the baseline comparison numbers per stratum + FP axis (the targets to beat).
+- Confirm the 5 cohort folds are usable: report ET-present count per fold (priors need
+  real tumors to train on).
+ACCEPTANCE: metric function reproduces the Stage-4 baseline table exactly; fold ET-present
+counts reported.
+
+### Stage P1 — Spatial prior (ET-occurrence atlas). MOST FEASIBLE; targets FP.
+- Build the atlas: for each held-out fold, average the ET masks of the OTHER folds' ET-
+  present cases (in SRI24/BraTS space — verify all cohort cases share the grid confirmed
+  in the geometry check) into a voxel-wise ET-occurrence probability map. Smooth lightly.
+- VERIFY the atlas is sane: it should be near-zero in ventricles/brainstem, higher in
+  white-matter middle/posterior. Render it. Report the ET-occurrence value at the two
+  irreducible cases' (00533/02078) mislocalized seed locations — expect LOW (that's the
+  point: those non-tumor structures sit where ET is improbable).
+- Apply in all 3 integration modes; score on the corrected metric.
+- KEY QUESTION: does the spatial prior reduce absent-case flood rate / FP burden WITHOUT
+  harming detection on present cases? Report the FP-axis delta and the lesion-wise delta.
+ACCEPTANCE: atlas verified sane; comparison table (baseline vs 3 spatial modes) on the
+corrected metric, per stratum + FP axis. STOP.
+
+### Stage P2 — Topological prior (cubical PH). Targets discrimination.
+- On the enhancement/score map, compute cubical persistence (GUDHI or existing thesis
+  tooling). Identify persistent, blob-like components (high-persistence H0/H2 features)
+  vs low-persistence thin structures.
+- Apply in pre-filter mode (seed intensity methods only from persistent blob components)
+  and post-filter mode (drop topologically-implausible predicted components).
+- VERIFY on a known case: on a case where a thin vessel/margin is being segmented as ET,
+  confirm the PH filter assigns it low persistence and suppresses it, while preserving the
+  persistent tumor blob. Show the persistence diagram + the before/after mask.
+- KEY QUESTION: does the topological prior improve dominant-lesion-found rate / lesion-wise
+  detection by discriminating blob-tumor from thin-non-tumor enhancement?
+ACCEPTANCE: PH filter verified on a known confound case; comparison table (baseline vs topo
+modes) on the corrected metric. STOP.
+
+### Stage P3 — Combined + final comparative
+- Test spatial + topological together (best mode of each).
+- Assemble the FULL comparison table: baseline best, each prior × mode, combined —
+  lesion-wise by stratum, dominant-found rate, FP burden, FP flood rate.
+- Statistical rigor: bootstrap CIs over cohort cases; paired tests vs baseline. State
+  which improvements are real vs within noise.
+- Write the honest headline per H1/H2/H3, reporting whichever outcome occurred.
+ACCEPTANCE: full comparative table with CIs; per-hypothesis conclusion. STOP.
+
+---
+
+## 4. Thesis bridge
+
+Each Phase-2 prior prototypes a thesis quadrant on classical machinery before the DL
+version: the topological prior IS the "AT-only (cubical PH segmentation)" quadrant listed
+as TODO in the thesis ROADMAP; the spatial-prior registration machinery is reusable for the
+DG quadrants' deformation/LDDMM work. And the comparative's result — whichever way it lands
+— is the empirical answer to "why does the thesis need geometric/topological methods,"
+grounded in a stratified, honestly-measured study rather than assertion.

@@ -1,0 +1,5 @@
+case_id,method,min_component_size,global_dice,gt_vox,pred_vox,gt_components_ge10,pred_components_ge10,gt_component_sizes_ge10,pred_component_sizes_ge10,stage4_like_per_gt_lesionwise,standard_with_unmatched_pred_zeros,unmatched_pred_zeros,per_gt_scores
+BraTS-GLI-02761-101,variational_spline,10,0.29470282280462556,3264,16539,1,1,3264,16539,0.29470282280462556,0.29470282280462556,0,0.294703
+BraTS-GLI-02549-102,variational_spline,10,0.055714899336298515,4065,140277,1,1,4065,140277,0.055714899336298515,0.055714899336298515,0,0.055715
+BraTS-GLI-02344-100,variational_spline,10,0.0,5435,23604,1,1,5435,23604,0.0,0.0,1,0.000000
+BraTS-GLI-02151-100,variational_spline,10,0.7432533561403241,39885,25592,3,1,39816 40 23,25592,0.24801247553816044,0.24801247553816044,0,0.744037 0.000000 0.000000

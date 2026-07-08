@@ -1,0 +1,912 @@
+COMMAND: C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\.venv\Scripts\python.exe run_all.py --config configs/pipeline.yaml --data-root C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\BraTS2024-BraTS-GLI-TrainingData\training_data1_v2 --cohort cohort/COHORT_MANIFEST_selected.csv --process-only --output-root C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core --clean-root C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\analysis\pre_cohort_run\cohort_100_core\limpieza
+
+Casos seleccionados (100):
+  • BraTS-GLI-00009-101
+  • BraTS-GLI-00046-100
+  • BraTS-GLI-00543-101
+  • BraTS-GLI-00548-100
+  • BraTS-GLI-00549-100
+  • BraTS-GLI-02061-100
+  • BraTS-GLI-02086-100
+  • BraTS-GLI-02093-106
+  • BraTS-GLI-02101-101
+  • BraTS-GLI-02123-101
+  • BraTS-GLI-02137-100
+  • BraTS-GLI-02139-103
+  • BraTS-GLI-02143-100
+  • BraTS-GLI-02143-101
+  • BraTS-GLI-02151-100
+  • BraTS-GLI-02153-101
+  • BraTS-GLI-02171-101
+  • BraTS-GLI-02181-102
+  • BraTS-GLI-02184-101
+  • BraTS-GLI-02185-100
+  • BraTS-GLI-02192-101
+  • BraTS-GLI-02194-101
+  • BraTS-GLI-02196-100
+  • BraTS-GLI-02198-101
+  • BraTS-GLI-02205-100
+  • BraTS-GLI-02206-104
+  • BraTS-GLI-02208-100
+  • BraTS-GLI-02216-100
+  • BraTS-GLI-02217-100
+  • BraTS-GLI-02220-102
+  • BraTS-GLI-02221-100
+  • BraTS-GLI-02227-100
+  • BraTS-GLI-02229-100
+  • BraTS-GLI-02230-100
+  • BraTS-GLI-02238-102
+  • BraTS-GLI-02243-101
+  • BraTS-GLI-02245-100
+  • BraTS-GLI-02245-103
+  • BraTS-GLI-02247-100
+  • BraTS-GLI-02247-103
+  • BraTS-GLI-02248-102
+  • BraTS-GLI-02285-100
+  • BraTS-GLI-02300-101
+  • BraTS-GLI-02306-100
+  • BraTS-GLI-02307-101
+  • BraTS-GLI-02344-100
+  • BraTS-GLI-02382-100
+  • BraTS-GLI-02498-101
+  • BraTS-GLI-02549-102
+  • BraTS-GLI-02553-101
+  • BraTS-GLI-02558-101
+  • BraTS-GLI-02561-101
+  • BraTS-GLI-02635-100
+  • BraTS-GLI-02664-100
+  • BraTS-GLI-02699-100
+  • BraTS-GLI-02701-100
+  • BraTS-GLI-02744-100
+  • BraTS-GLI-02744-101
+  • BraTS-GLI-02746-100
+  • BraTS-GLI-02753-100
+  • BraTS-GLI-02755-101
+  • BraTS-GLI-02761-101
+  • BraTS-GLI-02789-101
+  • BraTS-GLI-02793-100
+  • BraTS-GLI-02793-101
+  • BraTS-GLI-02799-100
+  • BraTS-GLI-02801-100
+  • BraTS-GLI-02801-101
+  • BraTS-GLI-02808-100
+  • BraTS-GLI-02817-101
+  • BraTS-GLI-02828-100
+  • BraTS-GLI-02833-101
+  • BraTS-GLI-02835-100
+  • BraTS-GLI-02836-101
+  • BraTS-GLI-02851-100
+  • BraTS-GLI-02866-100
+  • BraTS-GLI-02866-101
+  • BraTS-GLI-02895-101
+  • BraTS-GLI-02897-101
+  • BraTS-GLI-02901-100
+  • BraTS-GLI-02905-100
+  • BraTS-GLI-02917-101
+  • BraTS-GLI-02934-101
+  • BraTS-GLI-02947-100
+  • BraTS-GLI-02983-101
+  • BraTS-GLI-02984-101
+  • BraTS-GLI-02985-101
+  • BraTS-GLI-02992-101
+  • BraTS-GLI-02996-101
+  • BraTS-GLI-03009-100
+  • BraTS-GLI-03010-100
+  • BraTS-GLI-03019-101
+  • BraTS-GLI-03020-100
+  • BraTS-GLI-03025-101
+  • BraTS-GLI-03026-101
+  • BraTS-GLI-03027-100
+  • BraTS-GLI-03027-101
+  • BraTS-GLI-03059-100
+  • BraTS-GLI-03060-102
+  • BraTS-GLI-03063-100
+
+Checkpoint config_hash=f1a0460238666855
+  preproc_hash=54773ff7fe035cef
+  run=100  skipped=0
+
+============================================================
+PASO 1  LIMPIEZA  (Wiener + N4 + normalización percentil)
+============================================================
+
+  [BraTS-GLI-00009-101]
+[BraTS-GLI-00009-101] limpiando...
+  ok t1n -> BraTS-GLI-00009-101\BraTS-GLI-00009-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-00009-101\BraTS-GLI-00009-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-00009-101\BraTS-GLI-00009-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-00009-101\BraTS-GLI-00009-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-00009-101\BraTS-GLI-00009-101-seg.nii.gz
+
+  [BraTS-GLI-00046-100]
+[BraTS-GLI-00046-100] limpiando...
+  ok t1n -> BraTS-GLI-00046-100\BraTS-GLI-00046-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-00046-100\BraTS-GLI-00046-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-00046-100\BraTS-GLI-00046-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-00046-100\BraTS-GLI-00046-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-00046-100\BraTS-GLI-00046-100-seg.nii.gz
+
+  [BraTS-GLI-00543-101]
+[BraTS-GLI-00543-101] limpiando...
+  ok t1n -> BraTS-GLI-00543-101\BraTS-GLI-00543-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-00543-101\BraTS-GLI-00543-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-00543-101\BraTS-GLI-00543-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-00543-101\BraTS-GLI-00543-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-00543-101\BraTS-GLI-00543-101-seg.nii.gz
+
+  [BraTS-GLI-00548-100]
+[BraTS-GLI-00548-100] limpiando...
+  ok t1n -> BraTS-GLI-00548-100\BraTS-GLI-00548-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-00548-100\BraTS-GLI-00548-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-00548-100\BraTS-GLI-00548-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-00548-100\BraTS-GLI-00548-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-00548-100\BraTS-GLI-00548-100-seg.nii.gz
+
+  [BraTS-GLI-00549-100]
+[BraTS-GLI-00549-100] limpiando...
+  ok t1n -> BraTS-GLI-00549-100\BraTS-GLI-00549-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-00549-100\BraTS-GLI-00549-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-00549-100\BraTS-GLI-00549-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-00549-100\BraTS-GLI-00549-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-00549-100\BraTS-GLI-00549-100-seg.nii.gz
+
+  [BraTS-GLI-02061-100]
+[BraTS-GLI-02061-100] limpiando...
+  ok t1n -> BraTS-GLI-02061-100\BraTS-GLI-02061-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02061-100\BraTS-GLI-02061-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02061-100\BraTS-GLI-02061-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02061-100\BraTS-GLI-02061-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02061-100\BraTS-GLI-02061-100-seg.nii.gz
+
+  [BraTS-GLI-02086-100]
+[BraTS-GLI-02086-100] limpiando...
+  ok t1n -> BraTS-GLI-02086-100\BraTS-GLI-02086-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02086-100\BraTS-GLI-02086-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02086-100\BraTS-GLI-02086-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02086-100\BraTS-GLI-02086-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02086-100\BraTS-GLI-02086-100-seg.nii.gz
+
+  [BraTS-GLI-02093-106]
+[BraTS-GLI-02093-106] limpiando...
+  ok t1n -> BraTS-GLI-02093-106\BraTS-GLI-02093-106-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02093-106\BraTS-GLI-02093-106-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02093-106\BraTS-GLI-02093-106-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02093-106\BraTS-GLI-02093-106-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02093-106\BraTS-GLI-02093-106-seg.nii.gz
+
+  [BraTS-GLI-02101-101]
+[BraTS-GLI-02101-101] limpiando...
+  ok t1n -> BraTS-GLI-02101-101\BraTS-GLI-02101-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02101-101\BraTS-GLI-02101-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02101-101\BraTS-GLI-02101-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02101-101\BraTS-GLI-02101-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02101-101\BraTS-GLI-02101-101-seg.nii.gz
+
+  [BraTS-GLI-02123-101]
+[BraTS-GLI-02123-101] limpiando...
+  ok t1n -> BraTS-GLI-02123-101\BraTS-GLI-02123-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02123-101\BraTS-GLI-02123-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02123-101\BraTS-GLI-02123-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02123-101\BraTS-GLI-02123-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02123-101\BraTS-GLI-02123-101-seg.nii.gz
+
+  [BraTS-GLI-02137-100]
+[BraTS-GLI-02137-100] limpiando...
+  ok t1n -> BraTS-GLI-02137-100\BraTS-GLI-02137-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02137-100\BraTS-GLI-02137-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02137-100\BraTS-GLI-02137-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02137-100\BraTS-GLI-02137-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02137-100\BraTS-GLI-02137-100-seg.nii.gz
+
+  [BraTS-GLI-02139-103]
+[BraTS-GLI-02139-103] limpiando...
+  ok t1n -> BraTS-GLI-02139-103\BraTS-GLI-02139-103-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02139-103\BraTS-GLI-02139-103-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02139-103\BraTS-GLI-02139-103-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02139-103\BraTS-GLI-02139-103-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02139-103\BraTS-GLI-02139-103-seg.nii.gz
+
+  [BraTS-GLI-02143-100]
+[BraTS-GLI-02143-100] limpiando...
+  ok t1n -> BraTS-GLI-02143-100\BraTS-GLI-02143-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02143-100\BraTS-GLI-02143-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02143-100\BraTS-GLI-02143-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02143-100\BraTS-GLI-02143-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02143-100\BraTS-GLI-02143-100-seg.nii.gz
+
+  [BraTS-GLI-02143-101]
+[BraTS-GLI-02143-101] limpiando...
+  ok t1n -> BraTS-GLI-02143-101\BraTS-GLI-02143-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02143-101\BraTS-GLI-02143-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02143-101\BraTS-GLI-02143-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02143-101\BraTS-GLI-02143-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02143-101\BraTS-GLI-02143-101-seg.nii.gz
+
+  [BraTS-GLI-02151-100]
+[BraTS-GLI-02151-100] limpiando...
+  ok t1n -> BraTS-GLI-02151-100\BraTS-GLI-02151-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02151-100\BraTS-GLI-02151-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02151-100\BraTS-GLI-02151-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02151-100\BraTS-GLI-02151-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02151-100\BraTS-GLI-02151-100-seg.nii.gz
+
+  [BraTS-GLI-02153-101]
+[BraTS-GLI-02153-101] limpiando...
+  ok t1n -> BraTS-GLI-02153-101\BraTS-GLI-02153-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02153-101\BraTS-GLI-02153-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02153-101\BraTS-GLI-02153-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02153-101\BraTS-GLI-02153-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02153-101\BraTS-GLI-02153-101-seg.nii.gz
+
+  [BraTS-GLI-02171-101]
+[BraTS-GLI-02171-101] limpiando...
+  ok t1n -> BraTS-GLI-02171-101\BraTS-GLI-02171-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02171-101\BraTS-GLI-02171-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02171-101\BraTS-GLI-02171-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02171-101\BraTS-GLI-02171-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02171-101\BraTS-GLI-02171-101-seg.nii.gz
+
+  [BraTS-GLI-02181-102]
+[BraTS-GLI-02181-102] limpiando...
+  ok t1n -> BraTS-GLI-02181-102\BraTS-GLI-02181-102-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02181-102\BraTS-GLI-02181-102-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02181-102\BraTS-GLI-02181-102-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02181-102\BraTS-GLI-02181-102-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02181-102\BraTS-GLI-02181-102-seg.nii.gz
+
+  [BraTS-GLI-02184-101]
+[BraTS-GLI-02184-101] limpiando...
+  ok t1n -> BraTS-GLI-02184-101\BraTS-GLI-02184-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02184-101\BraTS-GLI-02184-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02184-101\BraTS-GLI-02184-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02184-101\BraTS-GLI-02184-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02184-101\BraTS-GLI-02184-101-seg.nii.gz
+
+  [BraTS-GLI-02185-100]
+[BraTS-GLI-02185-100] limpiando...
+  ok t1n -> BraTS-GLI-02185-100\BraTS-GLI-02185-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02185-100\BraTS-GLI-02185-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02185-100\BraTS-GLI-02185-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02185-100\BraTS-GLI-02185-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02185-100\BraTS-GLI-02185-100-seg.nii.gz
+
+  [BraTS-GLI-02192-101]
+[BraTS-GLI-02192-101] limpiando...
+  ok t1n -> BraTS-GLI-02192-101\BraTS-GLI-02192-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02192-101\BraTS-GLI-02192-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02192-101\BraTS-GLI-02192-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02192-101\BraTS-GLI-02192-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02192-101\BraTS-GLI-02192-101-seg.nii.gz
+
+  [BraTS-GLI-02194-101]
+[BraTS-GLI-02194-101] limpiando...
+  ok t1n -> BraTS-GLI-02194-101\BraTS-GLI-02194-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02194-101\BraTS-GLI-02194-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02194-101\BraTS-GLI-02194-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02194-101\BraTS-GLI-02194-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02194-101\BraTS-GLI-02194-101-seg.nii.gz
+
+  [BraTS-GLI-02196-100]
+[BraTS-GLI-02196-100] limpiando...
+  ok t1n -> BraTS-GLI-02196-100\BraTS-GLI-02196-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02196-100\BraTS-GLI-02196-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02196-100\BraTS-GLI-02196-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02196-100\BraTS-GLI-02196-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02196-100\BraTS-GLI-02196-100-seg.nii.gz
+
+  [BraTS-GLI-02198-101]
+[BraTS-GLI-02198-101] limpiando...
+  ok t1n -> BraTS-GLI-02198-101\BraTS-GLI-02198-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02198-101\BraTS-GLI-02198-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02198-101\BraTS-GLI-02198-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02198-101\BraTS-GLI-02198-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02198-101\BraTS-GLI-02198-101-seg.nii.gz
+
+  [BraTS-GLI-02205-100]
+[BraTS-GLI-02205-100] limpiando...
+  ok t1n -> BraTS-GLI-02205-100\BraTS-GLI-02205-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02205-100\BraTS-GLI-02205-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02205-100\BraTS-GLI-02205-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02205-100\BraTS-GLI-02205-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02205-100\BraTS-GLI-02205-100-seg.nii.gz
+
+  [BraTS-GLI-02206-104]
+[BraTS-GLI-02206-104] limpiando...
+  ok t1n -> BraTS-GLI-02206-104\BraTS-GLI-02206-104-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02206-104\BraTS-GLI-02206-104-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02206-104\BraTS-GLI-02206-104-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02206-104\BraTS-GLI-02206-104-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02206-104\BraTS-GLI-02206-104-seg.nii.gz
+
+  [BraTS-GLI-02208-100]
+[BraTS-GLI-02208-100] limpiando...
+  ok t1n -> BraTS-GLI-02208-100\BraTS-GLI-02208-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02208-100\BraTS-GLI-02208-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02208-100\BraTS-GLI-02208-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02208-100\BraTS-GLI-02208-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02208-100\BraTS-GLI-02208-100-seg.nii.gz
+
+  [BraTS-GLI-02216-100]
+[BraTS-GLI-02216-100] limpiando...
+  ok t1n -> BraTS-GLI-02216-100\BraTS-GLI-02216-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02216-100\BraTS-GLI-02216-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02216-100\BraTS-GLI-02216-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02216-100\BraTS-GLI-02216-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02216-100\BraTS-GLI-02216-100-seg.nii.gz
+
+  [BraTS-GLI-02217-100]
+[BraTS-GLI-02217-100] limpiando...
+  ok t1n -> BraTS-GLI-02217-100\BraTS-GLI-02217-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02217-100\BraTS-GLI-02217-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02217-100\BraTS-GLI-02217-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02217-100\BraTS-GLI-02217-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02217-100\BraTS-GLI-02217-100-seg.nii.gz
+
+  [BraTS-GLI-02220-102]
+[BraTS-GLI-02220-102] limpiando...
+  ok t1n -> BraTS-GLI-02220-102\BraTS-GLI-02220-102-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02220-102\BraTS-GLI-02220-102-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02220-102\BraTS-GLI-02220-102-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02220-102\BraTS-GLI-02220-102-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02220-102\BraTS-GLI-02220-102-seg.nii.gz
+
+  [BraTS-GLI-02221-100]
+[BraTS-GLI-02221-100] limpiando...
+  ok t1n -> BraTS-GLI-02221-100\BraTS-GLI-02221-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02221-100\BraTS-GLI-02221-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02221-100\BraTS-GLI-02221-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02221-100\BraTS-GLI-02221-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02221-100\BraTS-GLI-02221-100-seg.nii.gz
+
+  [BraTS-GLI-02227-100]
+[BraTS-GLI-02227-100] limpiando...
+  ok t1n -> BraTS-GLI-02227-100\BraTS-GLI-02227-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02227-100\BraTS-GLI-02227-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02227-100\BraTS-GLI-02227-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02227-100\BraTS-GLI-02227-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02227-100\BraTS-GLI-02227-100-seg.nii.gz
+
+  [BraTS-GLI-02229-100]
+[BraTS-GLI-02229-100] limpiando...
+  ok t1n -> BraTS-GLI-02229-100\BraTS-GLI-02229-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02229-100\BraTS-GLI-02229-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02229-100\BraTS-GLI-02229-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02229-100\BraTS-GLI-02229-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02229-100\BraTS-GLI-02229-100-seg.nii.gz
+
+  [BraTS-GLI-02230-100]
+[BraTS-GLI-02230-100] limpiando...
+  ok t1n -> BraTS-GLI-02230-100\BraTS-GLI-02230-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02230-100\BraTS-GLI-02230-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02230-100\BraTS-GLI-02230-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02230-100\BraTS-GLI-02230-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02230-100\BraTS-GLI-02230-100-seg.nii.gz
+
+  [BraTS-GLI-02238-102]
+[BraTS-GLI-02238-102] limpiando...
+  ok t1n -> BraTS-GLI-02238-102\BraTS-GLI-02238-102-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02238-102\BraTS-GLI-02238-102-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02238-102\BraTS-GLI-02238-102-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02238-102\BraTS-GLI-02238-102-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02238-102\BraTS-GLI-02238-102-seg.nii.gz
+
+  [BraTS-GLI-02243-101]
+[BraTS-GLI-02243-101] limpiando...
+  ok t1n -> BraTS-GLI-02243-101\BraTS-GLI-02243-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02243-101\BraTS-GLI-02243-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02243-101\BraTS-GLI-02243-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02243-101\BraTS-GLI-02243-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02243-101\BraTS-GLI-02243-101-seg.nii.gz
+
+  [BraTS-GLI-02245-100]
+[BraTS-GLI-02245-100] limpiando...
+  ok t1n -> BraTS-GLI-02245-100\BraTS-GLI-02245-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02245-100\BraTS-GLI-02245-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02245-100\BraTS-GLI-02245-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02245-100\BraTS-GLI-02245-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02245-100\BraTS-GLI-02245-100-seg.nii.gz
+
+  [BraTS-GLI-02245-103]
+[BraTS-GLI-02245-103] limpiando...
+  ok t1n -> BraTS-GLI-02245-103\BraTS-GLI-02245-103-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02245-103\BraTS-GLI-02245-103-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02245-103\BraTS-GLI-02245-103-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02245-103\BraTS-GLI-02245-103-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02245-103\BraTS-GLI-02245-103-seg.nii.gz
+
+  [BraTS-GLI-02247-100]
+[BraTS-GLI-02247-100] limpiando...
+  ok t1n -> BraTS-GLI-02247-100\BraTS-GLI-02247-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02247-100\BraTS-GLI-02247-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02247-100\BraTS-GLI-02247-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02247-100\BraTS-GLI-02247-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02247-100\BraTS-GLI-02247-100-seg.nii.gz
+
+  [BraTS-GLI-02247-103]
+[BraTS-GLI-02247-103] limpiando...
+  ok t1n -> BraTS-GLI-02247-103\BraTS-GLI-02247-103-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02247-103\BraTS-GLI-02247-103-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02247-103\BraTS-GLI-02247-103-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02247-103\BraTS-GLI-02247-103-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02247-103\BraTS-GLI-02247-103-seg.nii.gz
+
+  [BraTS-GLI-02248-102]
+[BraTS-GLI-02248-102] limpiando...
+  ok t1n -> BraTS-GLI-02248-102\BraTS-GLI-02248-102-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02248-102\BraTS-GLI-02248-102-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02248-102\BraTS-GLI-02248-102-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02248-102\BraTS-GLI-02248-102-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02248-102\BraTS-GLI-02248-102-seg.nii.gz
+
+  [BraTS-GLI-02285-100]
+[BraTS-GLI-02285-100] limpiando...
+  ok t1n -> BraTS-GLI-02285-100\BraTS-GLI-02285-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02285-100\BraTS-GLI-02285-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02285-100\BraTS-GLI-02285-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02285-100\BraTS-GLI-02285-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02285-100\BraTS-GLI-02285-100-seg.nii.gz
+
+  [BraTS-GLI-02300-101]
+[BraTS-GLI-02300-101] limpiando...
+  ok t1n -> BraTS-GLI-02300-101\BraTS-GLI-02300-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02300-101\BraTS-GLI-02300-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02300-101\BraTS-GLI-02300-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02300-101\BraTS-GLI-02300-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02300-101\BraTS-GLI-02300-101-seg.nii.gz
+
+  [BraTS-GLI-02306-100]
+[BraTS-GLI-02306-100] limpiando...
+  ok t1n -> BraTS-GLI-02306-100\BraTS-GLI-02306-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02306-100\BraTS-GLI-02306-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02306-100\BraTS-GLI-02306-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02306-100\BraTS-GLI-02306-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02306-100\BraTS-GLI-02306-100-seg.nii.gz
+
+  [BraTS-GLI-02307-101]
+[BraTS-GLI-02307-101] limpiando...
+  ok t1n -> BraTS-GLI-02307-101\BraTS-GLI-02307-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02307-101\BraTS-GLI-02307-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02307-101\BraTS-GLI-02307-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02307-101\BraTS-GLI-02307-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02307-101\BraTS-GLI-02307-101-seg.nii.gz
+
+  [BraTS-GLI-02344-100]
+[BraTS-GLI-02344-100] limpiando...
+  ok t1n -> BraTS-GLI-02344-100\BraTS-GLI-02344-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02344-100\BraTS-GLI-02344-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02344-100\BraTS-GLI-02344-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02344-100\BraTS-GLI-02344-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02344-100\BraTS-GLI-02344-100-seg.nii.gz
+
+  [BraTS-GLI-02382-100]
+[BraTS-GLI-02382-100] limpiando...
+  ok t1n -> BraTS-GLI-02382-100\BraTS-GLI-02382-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02382-100\BraTS-GLI-02382-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02382-100\BraTS-GLI-02382-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02382-100\BraTS-GLI-02382-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02382-100\BraTS-GLI-02382-100-seg.nii.gz
+
+  [BraTS-GLI-02498-101]
+[BraTS-GLI-02498-101] limpiando...
+  ok t1n -> BraTS-GLI-02498-101\BraTS-GLI-02498-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02498-101\BraTS-GLI-02498-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02498-101\BraTS-GLI-02498-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02498-101\BraTS-GLI-02498-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02498-101\BraTS-GLI-02498-101-seg.nii.gz
+
+  [BraTS-GLI-02549-102]
+[BraTS-GLI-02549-102] limpiando...
+  ok t1n -> BraTS-GLI-02549-102\BraTS-GLI-02549-102-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02549-102\BraTS-GLI-02549-102-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02549-102\BraTS-GLI-02549-102-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02549-102\BraTS-GLI-02549-102-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02549-102\BraTS-GLI-02549-102-seg.nii.gz
+
+  [BraTS-GLI-02553-101]
+[BraTS-GLI-02553-101] limpiando...
+  ok t1n -> BraTS-GLI-02553-101\BraTS-GLI-02553-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02553-101\BraTS-GLI-02553-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02553-101\BraTS-GLI-02553-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02553-101\BraTS-GLI-02553-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02553-101\BraTS-GLI-02553-101-seg.nii.gz
+
+  [BraTS-GLI-02558-101]
+[BraTS-GLI-02558-101] limpiando...
+  ok t1n -> BraTS-GLI-02558-101\BraTS-GLI-02558-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02558-101\BraTS-GLI-02558-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02558-101\BraTS-GLI-02558-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02558-101\BraTS-GLI-02558-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02558-101\BraTS-GLI-02558-101-seg.nii.gz
+
+  [BraTS-GLI-02561-101]
+[BraTS-GLI-02561-101] limpiando...
+  ok t1n -> BraTS-GLI-02561-101\BraTS-GLI-02561-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02561-101\BraTS-GLI-02561-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02561-101\BraTS-GLI-02561-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02561-101\BraTS-GLI-02561-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02561-101\BraTS-GLI-02561-101-seg.nii.gz
+
+  [BraTS-GLI-02635-100]
+[BraTS-GLI-02635-100] limpiando...
+  ok t1n -> BraTS-GLI-02635-100\BraTS-GLI-02635-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02635-100\BraTS-GLI-02635-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02635-100\BraTS-GLI-02635-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02635-100\BraTS-GLI-02635-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02635-100\BraTS-GLI-02635-100-seg.nii.gz
+
+  [BraTS-GLI-02664-100]
+[BraTS-GLI-02664-100] limpiando...
+  ok t1n -> BraTS-GLI-02664-100\BraTS-GLI-02664-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02664-100\BraTS-GLI-02664-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02664-100\BraTS-GLI-02664-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02664-100\BraTS-GLI-02664-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02664-100\BraTS-GLI-02664-100-seg.nii.gz
+
+  [BraTS-GLI-02699-100]
+[BraTS-GLI-02699-100] limpiando...
+  ok t1n -> BraTS-GLI-02699-100\BraTS-GLI-02699-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02699-100\BraTS-GLI-02699-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02699-100\BraTS-GLI-02699-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02699-100\BraTS-GLI-02699-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02699-100\BraTS-GLI-02699-100-seg.nii.gz
+
+  [BraTS-GLI-02701-100]
+[BraTS-GLI-02701-100] limpiando...
+  ok t1n -> BraTS-GLI-02701-100\BraTS-GLI-02701-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02701-100\BraTS-GLI-02701-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02701-100\BraTS-GLI-02701-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02701-100\BraTS-GLI-02701-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02701-100\BraTS-GLI-02701-100-seg.nii.gz
+
+  [BraTS-GLI-02744-100]
+[BraTS-GLI-02744-100] limpiando...
+  ok t1n -> BraTS-GLI-02744-100\BraTS-GLI-02744-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02744-100\BraTS-GLI-02744-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02744-100\BraTS-GLI-02744-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02744-100\BraTS-GLI-02744-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02744-100\BraTS-GLI-02744-100-seg.nii.gz
+
+  [BraTS-GLI-02744-101]
+[BraTS-GLI-02744-101] limpiando...
+  ok t1n -> BraTS-GLI-02744-101\BraTS-GLI-02744-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02744-101\BraTS-GLI-02744-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02744-101\BraTS-GLI-02744-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02744-101\BraTS-GLI-02744-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02744-101\BraTS-GLI-02744-101-seg.nii.gz
+
+  [BraTS-GLI-02746-100]
+[BraTS-GLI-02746-100] limpiando...
+  ok t1n -> BraTS-GLI-02746-100\BraTS-GLI-02746-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02746-100\BraTS-GLI-02746-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02746-100\BraTS-GLI-02746-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02746-100\BraTS-GLI-02746-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02746-100\BraTS-GLI-02746-100-seg.nii.gz
+
+  [BraTS-GLI-02753-100]
+[BraTS-GLI-02753-100] limpiando...
+  ok t1n -> BraTS-GLI-02753-100\BraTS-GLI-02753-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02753-100\BraTS-GLI-02753-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02753-100\BraTS-GLI-02753-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02753-100\BraTS-GLI-02753-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02753-100\BraTS-GLI-02753-100-seg.nii.gz
+
+  [BraTS-GLI-02755-101]
+[BraTS-GLI-02755-101] limpiando...
+  ok t1n -> BraTS-GLI-02755-101\BraTS-GLI-02755-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02755-101\BraTS-GLI-02755-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02755-101\BraTS-GLI-02755-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02755-101\BraTS-GLI-02755-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02755-101\BraTS-GLI-02755-101-seg.nii.gz
+
+  [BraTS-GLI-02761-101]
+[BraTS-GLI-02761-101] limpiando...
+  ok t1n -> BraTS-GLI-02761-101\BraTS-GLI-02761-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02761-101\BraTS-GLI-02761-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02761-101\BraTS-GLI-02761-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02761-101\BraTS-GLI-02761-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02761-101\BraTS-GLI-02761-101-seg.nii.gz
+
+  [BraTS-GLI-02789-101]
+[BraTS-GLI-02789-101] limpiando...
+  ok t1n -> BraTS-GLI-02789-101\BraTS-GLI-02789-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02789-101\BraTS-GLI-02789-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02789-101\BraTS-GLI-02789-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02789-101\BraTS-GLI-02789-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02789-101\BraTS-GLI-02789-101-seg.nii.gz
+
+  [BraTS-GLI-02793-100]
+[BraTS-GLI-02793-100] limpiando...
+  ok t1n -> BraTS-GLI-02793-100\BraTS-GLI-02793-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02793-100\BraTS-GLI-02793-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02793-100\BraTS-GLI-02793-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02793-100\BraTS-GLI-02793-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02793-100\BraTS-GLI-02793-100-seg.nii.gz
+
+  [BraTS-GLI-02793-101]
+[BraTS-GLI-02793-101] limpiando...
+  ok t1n -> BraTS-GLI-02793-101\BraTS-GLI-02793-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02793-101\BraTS-GLI-02793-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02793-101\BraTS-GLI-02793-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02793-101\BraTS-GLI-02793-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02793-101\BraTS-GLI-02793-101-seg.nii.gz
+
+  [BraTS-GLI-02799-100]
+[BraTS-GLI-02799-100] limpiando...
+  ok t1n -> BraTS-GLI-02799-100\BraTS-GLI-02799-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02799-100\BraTS-GLI-02799-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02799-100\BraTS-GLI-02799-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02799-100\BraTS-GLI-02799-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02799-100\BraTS-GLI-02799-100-seg.nii.gz
+
+  [BraTS-GLI-02801-100]
+[BraTS-GLI-02801-100] limpiando...
+  ok t1n -> BraTS-GLI-02801-100\BraTS-GLI-02801-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02801-100\BraTS-GLI-02801-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02801-100\BraTS-GLI-02801-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02801-100\BraTS-GLI-02801-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02801-100\BraTS-GLI-02801-100-seg.nii.gz
+
+  [BraTS-GLI-02801-101]
+[BraTS-GLI-02801-101] limpiando...
+  ok t1n -> BraTS-GLI-02801-101\BraTS-GLI-02801-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02801-101\BraTS-GLI-02801-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02801-101\BraTS-GLI-02801-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02801-101\BraTS-GLI-02801-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02801-101\BraTS-GLI-02801-101-seg.nii.gz
+
+  [BraTS-GLI-02808-100]
+[BraTS-GLI-02808-100] limpiando...
+  ok t1n -> BraTS-GLI-02808-100\BraTS-GLI-02808-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02808-100\BraTS-GLI-02808-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02808-100\BraTS-GLI-02808-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02808-100\BraTS-GLI-02808-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02808-100\BraTS-GLI-02808-100-seg.nii.gz
+
+  [BraTS-GLI-02817-101]
+[BraTS-GLI-02817-101] limpiando...
+  ok t1n -> BraTS-GLI-02817-101\BraTS-GLI-02817-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02817-101\BraTS-GLI-02817-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02817-101\BraTS-GLI-02817-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02817-101\BraTS-GLI-02817-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02817-101\BraTS-GLI-02817-101-seg.nii.gz
+
+  [BraTS-GLI-02828-100]
+[BraTS-GLI-02828-100] limpiando...
+  ok t1n -> BraTS-GLI-02828-100\BraTS-GLI-02828-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02828-100\BraTS-GLI-02828-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02828-100\BraTS-GLI-02828-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02828-100\BraTS-GLI-02828-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02828-100\BraTS-GLI-02828-100-seg.nii.gz
+
+  [BraTS-GLI-02833-101]
+[BraTS-GLI-02833-101] limpiando...
+  ok t1n -> BraTS-GLI-02833-101\BraTS-GLI-02833-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02833-101\BraTS-GLI-02833-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02833-101\BraTS-GLI-02833-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02833-101\BraTS-GLI-02833-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02833-101\BraTS-GLI-02833-101-seg.nii.gz
+
+  [BraTS-GLI-02835-100]
+[BraTS-GLI-02835-100] limpiando...
+  ok t1n -> BraTS-GLI-02835-100\BraTS-GLI-02835-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02835-100\BraTS-GLI-02835-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02835-100\BraTS-GLI-02835-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02835-100\BraTS-GLI-02835-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02835-100\BraTS-GLI-02835-100-seg.nii.gz
+
+  [BraTS-GLI-02836-101]
+[BraTS-GLI-02836-101] limpiando...
+  ok t1n -> BraTS-GLI-02836-101\BraTS-GLI-02836-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02836-101\BraTS-GLI-02836-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02836-101\BraTS-GLI-02836-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02836-101\BraTS-GLI-02836-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02836-101\BraTS-GLI-02836-101-seg.nii.gz
+
+  [BraTS-GLI-02851-100]
+[BraTS-GLI-02851-100] limpiando...
+  ok t1n -> BraTS-GLI-02851-100\BraTS-GLI-02851-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02851-100\BraTS-GLI-02851-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02851-100\BraTS-GLI-02851-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02851-100\BraTS-GLI-02851-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02851-100\BraTS-GLI-02851-100-seg.nii.gz
+
+  [BraTS-GLI-02866-100]
+[BraTS-GLI-02866-100] limpiando...
+  ok t1n -> BraTS-GLI-02866-100\BraTS-GLI-02866-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02866-100\BraTS-GLI-02866-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02866-100\BraTS-GLI-02866-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02866-100\BraTS-GLI-02866-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02866-100\BraTS-GLI-02866-100-seg.nii.gz
+
+  [BraTS-GLI-02866-101]
+[BraTS-GLI-02866-101] limpiando...
+  ok t1n -> BraTS-GLI-02866-101\BraTS-GLI-02866-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02866-101\BraTS-GLI-02866-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02866-101\BraTS-GLI-02866-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02866-101\BraTS-GLI-02866-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02866-101\BraTS-GLI-02866-101-seg.nii.gz
+
+  [BraTS-GLI-02895-101]
+[BraTS-GLI-02895-101] limpiando...
+  ok t1n -> BraTS-GLI-02895-101\BraTS-GLI-02895-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02895-101\BraTS-GLI-02895-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02895-101\BraTS-GLI-02895-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02895-101\BraTS-GLI-02895-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02895-101\BraTS-GLI-02895-101-seg.nii.gz
+
+  [BraTS-GLI-02897-101]
+[BraTS-GLI-02897-101] limpiando...
+  ok t1n -> BraTS-GLI-02897-101\BraTS-GLI-02897-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02897-101\BraTS-GLI-02897-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02897-101\BraTS-GLI-02897-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02897-101\BraTS-GLI-02897-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02897-101\BraTS-GLI-02897-101-seg.nii.gz
+
+  [BraTS-GLI-02901-100]
+[BraTS-GLI-02901-100] limpiando...
+  ok t1n -> BraTS-GLI-02901-100\BraTS-GLI-02901-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02901-100\BraTS-GLI-02901-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02901-100\BraTS-GLI-02901-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02901-100\BraTS-GLI-02901-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02901-100\BraTS-GLI-02901-100-seg.nii.gz
+
+  [BraTS-GLI-02905-100]
+[BraTS-GLI-02905-100] limpiando...
+  ok t1n -> BraTS-GLI-02905-100\BraTS-GLI-02905-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02905-100\BraTS-GLI-02905-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02905-100\BraTS-GLI-02905-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02905-100\BraTS-GLI-02905-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02905-100\BraTS-GLI-02905-100-seg.nii.gz
+
+  [BraTS-GLI-02917-101]
+[BraTS-GLI-02917-101] limpiando...
+  ok t1n -> BraTS-GLI-02917-101\BraTS-GLI-02917-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02917-101\BraTS-GLI-02917-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02917-101\BraTS-GLI-02917-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02917-101\BraTS-GLI-02917-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02917-101\BraTS-GLI-02917-101-seg.nii.gz
+
+  [BraTS-GLI-02934-101]
+[BraTS-GLI-02934-101] limpiando...
+  ok t1n -> BraTS-GLI-02934-101\BraTS-GLI-02934-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02934-101\BraTS-GLI-02934-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02934-101\BraTS-GLI-02934-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02934-101\BraTS-GLI-02934-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02934-101\BraTS-GLI-02934-101-seg.nii.gz
+
+  [BraTS-GLI-02947-100]
+[BraTS-GLI-02947-100] limpiando...
+  ok t1n -> BraTS-GLI-02947-100\BraTS-GLI-02947-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02947-100\BraTS-GLI-02947-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02947-100\BraTS-GLI-02947-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02947-100\BraTS-GLI-02947-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02947-100\BraTS-GLI-02947-100-seg.nii.gz
+
+  [BraTS-GLI-02983-101]
+[BraTS-GLI-02983-101] limpiando...
+  ok t1n -> BraTS-GLI-02983-101\BraTS-GLI-02983-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02983-101\BraTS-GLI-02983-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02983-101\BraTS-GLI-02983-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02983-101\BraTS-GLI-02983-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02983-101\BraTS-GLI-02983-101-seg.nii.gz
+
+  [BraTS-GLI-02984-101]
+[BraTS-GLI-02984-101] limpiando...
+  ok t1n -> BraTS-GLI-02984-101\BraTS-GLI-02984-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02984-101\BraTS-GLI-02984-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02984-101\BraTS-GLI-02984-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02984-101\BraTS-GLI-02984-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02984-101\BraTS-GLI-02984-101-seg.nii.gz
+
+  [BraTS-GLI-02985-101]
+[BraTS-GLI-02985-101] limpiando...
+  ok t1n -> BraTS-GLI-02985-101\BraTS-GLI-02985-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02985-101\BraTS-GLI-02985-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02985-101\BraTS-GLI-02985-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02985-101\BraTS-GLI-02985-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02985-101\BraTS-GLI-02985-101-seg.nii.gz
+
+  [BraTS-GLI-02992-101]
+[BraTS-GLI-02992-101] limpiando...
+  ok t1n -> BraTS-GLI-02992-101\BraTS-GLI-02992-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02992-101\BraTS-GLI-02992-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02992-101\BraTS-GLI-02992-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02992-101\BraTS-GLI-02992-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02992-101\BraTS-GLI-02992-101-seg.nii.gz
+
+  [BraTS-GLI-02996-101]
+[BraTS-GLI-02996-101] limpiando...
+  ok t1n -> BraTS-GLI-02996-101\BraTS-GLI-02996-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-02996-101\BraTS-GLI-02996-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-02996-101\BraTS-GLI-02996-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-02996-101\BraTS-GLI-02996-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-02996-101\BraTS-GLI-02996-101-seg.nii.gz
+
+  [BraTS-GLI-03009-100]
+[BraTS-GLI-03009-100] limpiando...
+  ok t1n -> BraTS-GLI-03009-100\BraTS-GLI-03009-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03009-100\BraTS-GLI-03009-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03009-100\BraTS-GLI-03009-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03009-100\BraTS-GLI-03009-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03009-100\BraTS-GLI-03009-100-seg.nii.gz
+
+  [BraTS-GLI-03010-100]
+[BraTS-GLI-03010-100] limpiando...
+  ok t1n -> BraTS-GLI-03010-100\BraTS-GLI-03010-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03010-100\BraTS-GLI-03010-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03010-100\BraTS-GLI-03010-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03010-100\BraTS-GLI-03010-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03010-100\BraTS-GLI-03010-100-seg.nii.gz
+
+  [BraTS-GLI-03019-101]
+[BraTS-GLI-03019-101] limpiando...
+  ok t1n -> BraTS-GLI-03019-101\BraTS-GLI-03019-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03019-101\BraTS-GLI-03019-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03019-101\BraTS-GLI-03019-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03019-101\BraTS-GLI-03019-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03019-101\BraTS-GLI-03019-101-seg.nii.gz
+
+  [BraTS-GLI-03020-100]
+[BraTS-GLI-03020-100] limpiando...
+  ok t1n -> BraTS-GLI-03020-100\BraTS-GLI-03020-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03020-100\BraTS-GLI-03020-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03020-100\BraTS-GLI-03020-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03020-100\BraTS-GLI-03020-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03020-100\BraTS-GLI-03020-100-seg.nii.gz
+
+  [BraTS-GLI-03025-101]
+[BraTS-GLI-03025-101] limpiando...
+  ok t1n -> BraTS-GLI-03025-101\BraTS-GLI-03025-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03025-101\BraTS-GLI-03025-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03025-101\BraTS-GLI-03025-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03025-101\BraTS-GLI-03025-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03025-101\BraTS-GLI-03025-101-seg.nii.gz
+
+  [BraTS-GLI-03026-101]
+[BraTS-GLI-03026-101] limpiando...
+  ok t1n -> BraTS-GLI-03026-101\BraTS-GLI-03026-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03026-101\BraTS-GLI-03026-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03026-101\BraTS-GLI-03026-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03026-101\BraTS-GLI-03026-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03026-101\BraTS-GLI-03026-101-seg.nii.gz
+
+  [BraTS-GLI-03027-100]
+[BraTS-GLI-03027-100] limpiando...
+  ok t1n -> BraTS-GLI-03027-100\BraTS-GLI-03027-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03027-100\BraTS-GLI-03027-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03027-100\BraTS-GLI-03027-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03027-100\BraTS-GLI-03027-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03027-100\BraTS-GLI-03027-100-seg.nii.gz
+
+  [BraTS-GLI-03027-101]
+[BraTS-GLI-03027-101] limpiando...
+  ok t1n -> BraTS-GLI-03027-101\BraTS-GLI-03027-101-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03027-101\BraTS-GLI-03027-101-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03027-101\BraTS-GLI-03027-101-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03027-101\BraTS-GLI-03027-101-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03027-101\BraTS-GLI-03027-101-seg.nii.gz
+
+  [BraTS-GLI-03059-100]
+[BraTS-GLI-03059-100] limpiando...
+  ok t1n -> BraTS-GLI-03059-100\BraTS-GLI-03059-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03059-100\BraTS-GLI-03059-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03059-100\BraTS-GLI-03059-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03059-100\BraTS-GLI-03059-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03059-100\BraTS-GLI-03059-100-seg.nii.gz
+
+  [BraTS-GLI-03060-102]
+[BraTS-GLI-03060-102] limpiando...
+  ok t1n -> BraTS-GLI-03060-102\BraTS-GLI-03060-102-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03060-102\BraTS-GLI-03060-102-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03060-102\BraTS-GLI-03060-102-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03060-102\BraTS-GLI-03060-102-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03060-102\BraTS-GLI-03060-102-seg.nii.gz
+
+  [BraTS-GLI-03063-100]
+[BraTS-GLI-03063-100] limpiando...
+  ok t1n -> BraTS-GLI-03063-100\BraTS-GLI-03063-100-t1n.nii.gz
+  ok t1c -> BraTS-GLI-03063-100\BraTS-GLI-03063-100-t1c.nii.gz
+  ok t2w -> BraTS-GLI-03063-100\BraTS-GLI-03063-100-t2w.nii.gz
+  ok t2f -> BraTS-GLI-03063-100\BraTS-GLI-03063-100-t2f.nii.gz
+  ok seg (copiada) -> BraTS-GLI-03063-100\BraTS-GLI-03063-100-seg.nii.gz
+

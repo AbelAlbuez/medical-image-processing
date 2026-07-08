@@ -1,0 +1,2 @@
+case_id,method,voxels_old,voxels_new,voxel_delta_new_minus_old,hash_old,hash_new,mtime_old,mtime_new
+BraTS-GLI-02116-100,variational_spline,37588,46954,9366,4fe259f80e44987c0981115a78e313b805aee0620522036cd4681ff47cfa3b2c,7b30fb1891e2c05f8c72c96f84aba363a7de0e2715a3ffabc7cb63c4754fef51,2026-07-05T23:11:24.473637,2026-07-06T09:47:42.603512

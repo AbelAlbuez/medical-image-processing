@@ -1,0 +1,5 @@
+run_source,n,mean_dice,median_dice,n_gt_0_4,n_gt_0_2,n_le_0_01,n_le_0_001
+all,100,0.065454,0.0,8,12,79,70
+initial_pre_wrapper_crash,28,0.11115714285714286,0.0,4,5,19,17
+resume1_post_wrapper_crash,69,0.04958405797101449,0.0,4,7,57,52
+resume2_final_three,3,0.0039000000000000003,0.0034,0,0,3,1

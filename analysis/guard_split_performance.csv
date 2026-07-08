@@ -1,0 +1,11 @@
+method,n_evolved,mean_dice_evolved,n_fallback,mean_dice_fallback
+bspline,14,0.5297571428571428,6,0.3674
+fast_marching,0,,0,
+gmm_2d,0,,0,
+gmm_T1c,0,,0,
+level_set,12,0.5020583333333334,8,0.38556250000000003
+otsu_T1c,0,,0,
+rango_doble,0,,0,
+spline,20,0.44997999999999994,0,
+sustraccion,0,,0,
+variational_spline,14,0.5664357142857143,6,0.3674

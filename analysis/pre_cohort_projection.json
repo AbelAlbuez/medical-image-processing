@@ -1,0 +1,16 @@
+{
+  "mean_total_wall_s": 44.913999999999994,
+  "projected_100_wall_min": 74.85666666666665,
+  "projected_100_wall_hours": 1.247611111111111,
+  "projected_100_cleanup_min": 16.411944444444444,
+  "projected_100_segmentation_min": 48.603388888888894,
+  "projected_100_viz_min": 2.831944444444445,
+  "projected_100_poisson_min": 3.172611111111111,
+  "mean_output_mb": 19.91548792521159,
+  "projected_100_output_gb": 1.9448718676964443,
+  "projected_100_cleaned_gb": 1.8692404652635257,
+  "projected_100_masks_gb": 0.01320764422416687,
+  "projected_100_figures_gb": 0.06127910067637762,
+  "free_c_gb": 19.064353942871094,
+  "fits_32gb_margin_gb": 30.055128132303555
+}

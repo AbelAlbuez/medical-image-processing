@@ -1,0 +1,13 @@
+{
+  "case_id": "BraTS-GLI-02061-100",
+  "skip_seg_wall_s": 12.606,
+  "skip_seg_cleanup_s": 10.646,
+  "done_marker_after_skip_seg": false,
+  "resume_wall_s": 32.566,
+  "resume_cleanup_s": 10.6881,
+  "resume_segmentation_s": 19.954,
+  "resume_run_cases": [
+    "BraTS-GLI-02061-100"
+  ],
+  "resume_skipped_cases": []
+}

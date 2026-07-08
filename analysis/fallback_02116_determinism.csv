@@ -1,0 +1,4 @@
+case_id,method,hash,voxels,dice_ET,guard_branch,guard_reason,run,bit_identical_to_run1
+BraTS-GLI-02116-100,variational_spline,258164f486bda9d5b11ae25fd7fd0e53a7408a50adba37c5d5f091c91bebdab0,37589,0.4481,collapse-detected,low_seed_overlap,1,True
+BraTS-GLI-02116-100,variational_spline,258164f486bda9d5b11ae25fd7fd0e53a7408a50adba37c5d5f091c91bebdab0,37589,0.4481,collapse-detected,low_seed_overlap,2,True
+BraTS-GLI-02116-100,variational_spline,258164f486bda9d5b11ae25fd7fd0e53a7408a50adba37c5d5f091c91bebdab0,37589,0.4481,collapse-detected,low_seed_overlap,3,True

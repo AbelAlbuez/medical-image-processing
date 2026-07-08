@@ -1,0 +1,8 @@
+vol_bin,focality,n,mean_dice,median_dice,n_gt_0_4,n_le_0_01
+absent,unifocal,33,0.0,0.0,0,33
+large,multifocal,15,0.33320666666666665,0.3703,7,3
+large,unifocal,2,0.42665,0.42665,1,1
+medium,multifocal,16,0.017281249999999998,0.0008500000000000001,0,11
+medium,unifocal,3,0.11680000000000001,0.0557,0,1
+small,multifocal,16,0.00419375,0.0,0,15
+small,unifocal,15,0.0,0.0,0,15

@@ -35,7 +35,6 @@ BraTS-GLI-02102-100,bspline,variational_spline
 BraTS-GLI-02102-100,level_set,spline
 BraTS-GLI-02102-100,level_set,variational_spline
 BraTS-GLI-02102-100,spline,variational_spline
-BraTS-GLI-02108-100,bspline,level_set
 BraTS-GLI-02116-100,bspline,level_set
 BraTS-GLI-02116-100,bspline,variational_spline
 BraTS-GLI-02116-100,level_set,variational_spline

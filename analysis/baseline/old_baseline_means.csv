@@ -1,0 +1,11 @@
+metodo,mean_dice
+variational_spline,0.50475
+otsu_T1c,0.48545
+gmm_T1c,0.48096
+bspline,0.472625
+level_set,0.45546
+spline,0.44998
+sustraccion,0.44671
+gmm_2d,0.3738
+rango_doble,0.23818
+fast_marching,0.184575

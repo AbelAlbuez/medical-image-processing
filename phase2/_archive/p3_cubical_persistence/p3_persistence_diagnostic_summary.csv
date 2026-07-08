@@ -1,0 +1,4 @@
+comparison,score,n_true_components,n_confound_components,true_median,true_p25,true_p75,confound_median,confound_p25,confound_p75,auc_true_higher_than_confound,mannwhitney_p,diagnostic_verdict
+absent_fp,ph_h0_max_persistence,183,675,0.5830797553062439,0.20420154929161066,0.895440399646759,1.0,1.0,1.0,0.12627403359643796,1.1656288686194862e-75,persistence_overlaps_or_confound_high_wrap_up
+peri_cavity_fp_n4,ph_h0_max_persistence,183,4,0.5830797553062439,0.20420154929161066,0.895440399646759,1.0,1.0,1.0,0.08196721311475409,0.004172477326644381,persistence_overlaps_or_confound_high_wrap_up
+all_confound,ph_h0_max_persistence,183,679,0.5830797553062439,0.20420154929161066,0.895440399646759,1.0,1.0,1.0,0.12601302139919685,4.5140953584683973e-76,persistence_overlaps_or_confound_high_wrap_up

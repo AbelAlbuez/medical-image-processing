@@ -1,0 +1,6 @@
+case_id,fold,method,mode,shape_threshold,vol_bin,gt_vox,pred_vox,flood_gt_10000_vox,correct_absent_pred_lt_10_vox,lesionwise_dice_mean,lesion_tp,lesion_fn,lesion_fp,dominant_found
+BraTS-GLI-02498-101,2,otsu_T1c,shape_post_filter,0.5396369041183476,small,404,0,False,,0.0,0,4,0,False
+BraTS-GLI-02498-101,2,gmm_T1c,shape_post_filter,0.5396369041183476,small,404,0,False,,0.0,0,4,0,False
+BraTS-GLI-02498-101,2,sustraccion,shape_post_filter,0.5396369041183476,small,404,9002,False,,0.0067228595726192,3,1,143,True
+BraTS-GLI-02498-101,2,gmm_2d,shape_post_filter,0.5396369041183476,small,404,20183,True,,0.004469545558094978,3,1,121,True
+BraTS-GLI-02498-101,2,variational_spline,shape_post_filter,0.5396369041183476,small,404,0,False,,0.0,0,4,0,False

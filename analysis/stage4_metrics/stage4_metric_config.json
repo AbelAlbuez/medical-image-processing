@@ -1,0 +1,17 @@
+{
+  "absent_tolerance_vox": 10,
+  "flood_threshold_vox": 10000,
+  "large_fp_threshold_vox": 1000,
+  "min_component_size_vox": 10,
+  "lesionwise_formula": "sum(Dice over positive-overlap Hungarian matched components) / (TP positive matches + FN unmatched GT components + FP unmatched prediction components); GT and prediction components smaller than 10 voxels are filtered first.",
+  "n_process_cases": 100,
+  "n_absent": 33,
+  "n_present": 67,
+  "outputs": {
+    "case_metrics": "C:\\Users\\LENOVO LOQ\\Downloads\\brats-final (3)\\brats-final\\analysis\\stage4_metrics\\stage4_case_metrics.csv",
+    "present_by_vol_bin": "C:\\Users\\LENOVO LOQ\\Downloads\\brats-final (3)\\brats-final\\analysis\\stage4_metrics\\stage4_present_by_vol_bin.csv",
+    "absent_fp_summary": "C:\\Users\\LENOVO LOQ\\Downloads\\brats-final (3)\\brats-final\\analysis\\stage4_metrics\\stage4_absent_fp_summary.csv",
+    "method_ranking": "C:\\Users\\LENOVO LOQ\\Downloads\\brats-final (3)\\brats-final\\analysis\\stage4_metrics\\stage4_method_ranking_detection_vs_fp.csv",
+    "overlap_check": "C:\\Users\\LENOVO LOQ\\Downloads\\brats-final (3)\\brats-final\\analysis\\stage4_metrics\\stage4_overlap_global_dice_check.csv"
+  }
+}

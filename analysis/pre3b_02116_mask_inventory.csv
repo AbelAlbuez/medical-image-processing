@@ -1,0 +1,16 @@
+path,mtime,bytes
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\limpieza\BraTS-GLI-02116-100\BraTS-GLI-02116-100-seg.nii.gz,2026-06-04T14:54:41.896674,37937
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\limpieza\BraTS-GLI-02116-100\BraTS-GLI-02116-100-t1c.nii.gz,2026-06-04T14:54:35.778736,5692662
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\limpieza\BraTS-GLI-02116-100\BraTS-GLI-02116-100-t1n.nii.gz,2026-06-04T14:54:32.479072,5646037
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\limpieza\BraTS-GLI-02116-100\BraTS-GLI-02116-100-t2f.nii.gz,2026-06-04T14:54:41.896674,5636897
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\limpieza\BraTS-GLI-02116-100\BraTS-GLI-02116-100-t2w.nii.gz,2026-06-04T14:54:38.379616,5841507
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\segmentacion\BraTS-GLI-02116-100\BraTS-GLI-02116-100-et_bspline.nii.gz,2026-07-05T23:11:24.488185,25642
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\segmentacion\BraTS-GLI-02116-100\BraTS-GLI-02116-100-et_fast_marching.nii.gz,2026-07-05T23:11:24.512669,8409
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\segmentacion\BraTS-GLI-02116-100\BraTS-GLI-02116-100-et_gmm_2d.nii.gz,2026-07-05T23:11:24.408168,29596
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\segmentacion\BraTS-GLI-02116-100\BraTS-GLI-02116-100-et_gmm_T1c.nii.gz,2026-07-05T23:11:24.372572,25657
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\segmentacion\BraTS-GLI-02116-100\BraTS-GLI-02116-100-et_level_set.nii.gz,2026-07-05T23:11:24.459239,25642
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\segmentacion\BraTS-GLI-02116-100\BraTS-GLI-02116-100-et_otsu_T1c.nii.gz,2026-07-05T23:11:24.355667,22760
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\segmentacion\BraTS-GLI-02116-100\BraTS-GLI-02116-100-et_rango_doble.nii.gz,2026-07-05T23:11:24.444229,147099
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\segmentacion\BraTS-GLI-02116-100\BraTS-GLI-02116-100-et_spline.nii.gz,2026-07-05T23:11:24.501348,18071
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\segmentacion\BraTS-GLI-02116-100\BraTS-GLI-02116-100-et_sustraccion.nii.gz,2026-07-05T23:11:24.392009,48393
+C:\Users\LENOVO LOQ\Downloads\brats-final (3)\brats-final\output\segmentacion\BraTS-GLI-02116-100\BraTS-GLI-02116-100-et_variational_spline.nii.gz,2026-07-05T23:11:24.473637,25642

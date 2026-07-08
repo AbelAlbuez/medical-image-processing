@@ -1,0 +1,11 @@
+method,oracle_without_method,delta_full_minus_without,sole_best_cases,sole_above_075_cases,mean_dice,recommendation,rationale
+otsu_T1c,0.6217750000000001,0.0102749999999998,3,2,0.4854,KEEP,positive leave-one-out oracle value or sole-best case
+sustraccion,0.6226,0.0094499999999998,4,0,0.4467,KEEP,positive leave-one-out oracle value or sole-best case
+gmm_2d,0.6232150000000001,0.0088349999999998,3,0,0.3738,KEEP,positive leave-one-out oracle value or sole-best case
+variational_spline,0.624685,0.0073649999999998,4,1,0.5067,KEEP,positive leave-one-out oracle value or sole-best case
+gmm_T1c,0.6248549999999999,0.0071949999999999,4,0,0.481,KEEP,positive leave-one-out oracle value or sole-best case
+bspline,0.6320499999999999,0.0,0,0,0.481,CUT,zero leave-one-out delta and no sole-best cases
+level_set,0.6320499999999999,0.0,0,0,0.4555,CUT,zero leave-one-out delta and no sole-best cases
+spline,0.6320499999999999,0.0,0,0,0.45,CUT,zero leave-one-out delta and no sole-best cases
+rango_doble,0.6320499999999999,0.0,0,0,0.2382,CUT,zero leave-one-out delta and no sole-best cases
+fast_marching,0.6320499999999999,0.0,0,0,0.1846,CUT,zero leave-one-out delta and no sole-best cases

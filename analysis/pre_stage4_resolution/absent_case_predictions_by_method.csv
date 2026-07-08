@@ -1,0 +1,6 @@
+metodo,n_absent_cases,empty_pred_count,nonempty_pred_count,large_pred_gt_1000_count,huge_pred_gt_10000_count,median_pred_vox,mean_pred_vox,max_pred_vox,mean_dice
+gmm_2d,33,0,33,33,33,94636.0,126784.66666666667,802975,0.0
+gmm_T1c,33,0,33,33,32,18837.0,265415.42424242425,1420869,0.0
+otsu_T1c,33,0,33,33,31,13935.0,137762.9696969697,740909,0.0
+sustraccion,33,0,33,33,31,76915.0,73092.84848484848,135522,0.0
+variational_spline,33,0,33,33,32,18837.0,53906.63636363636,278959,0.0
