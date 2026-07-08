@@ -1,0 +1,5 @@
+case_id,method,mechanism_class,gt_components,pred_recon_status,surface_hd95_vs_gt_recon,surface_asd_vs_gt_recon,surface_chamfer_vs_gt_recon,interpretation
+BraTS-GLI-00533-100,gmm_T1c,resection-margin / cavity-adjacent non-tumor enhancement,1,ok,63.952599726377194,21.340239526194814,823.9543059647353,cavity_or_vascular_confound_reconstructs_as_highly_separate_surface
+BraTS-GLI-00533-100,variational_spline,resection-margin / cavity-adjacent non-tumor enhancement,1,ok,64.62093690773581,21.08356876243581,832.1684128030815,cavity_or_vascular_confound_reconstructs_as_highly_separate_surface
+BraTS-GLI-02078-100,gmm_T1c,midline vascular/dural-like non-tumor enhancement near resection region,2,ok,83.81820063593001,34.38920042368144,1881.994348908787,cavity_or_vascular_confound_reconstructs_as_highly_separate_surface
+BraTS-GLI-02078-100,variational_spline,midline vascular/dural-like non-tumor enhancement near resection region,2,ok,83.86203901410217,34.49361690706193,1884.7961252522146,cavity_or_vascular_confound_reconstructs_as_highly_separate_surface

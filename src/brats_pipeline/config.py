@@ -25,6 +25,38 @@ SUBREGIONES_BRATS = {
 }
 
 BIMODALIDAD_MIN = 5.0 / 9.0
+SEED = int(os.environ.get("BRATS_SEED", "0"))
+
+# WARNING: Stage 3A guard repair. These thresholds are pinned by the frozen
+# regression fixture, including boundary case BraTS-GLI-02116-100. They allow a
+# seed-divergent deformable mask only when the evolved contour is compact,
+# enhancing, and not a volume blow-up. Changing them changes study numerics.
+ENABLE_EVIDENCE_GUARD = os.environ.get("BRATS_ENABLE_EVIDENCE_GUARD", "1") not in {"0", "false", "False"}
+GUARD_MIN_LCC_FRACTION = float(os.environ.get("BRATS_GUARD_MIN_LCC_FRACTION", "0.90"))
+GUARD_MIN_ENHANCEMENT_RATIO = float(os.environ.get("BRATS_GUARD_MIN_ENHANCEMENT_RATIO", "0.90"))
+GUARD_MAX_VOLUME_MULTIPLE = float(os.environ.get("BRATS_GUARD_MAX_VOLUME_MULTIPLE", "2.50"))
+
+# WARNING: Stage 3B best-iterate selection was rejected for the study baseline.
+# OFF preserves the iter-N behavior. Do not enable it in default configs unless
+# the sacred-case gate and frozen baselines are intentionally re-run.
+ENABLE_BEST_ITERATE = os.environ.get("BRATS_ENABLE_BEST_ITERATE", "0") not in {"0", "false", "False"}
+BEST_ITERATE_W_LCC = float(os.environ.get("BRATS_BEST_ITERATE_W_LCC", "1.0"))
+BEST_ITERATE_W_ENHANCEMENT = float(os.environ.get("BRATS_BEST_ITERATE_W_ENHANCEMENT", "1.0"))
+BEST_ITERATE_W_VOLUME_STABILITY = float(os.environ.get("BRATS_BEST_ITERATE_W_VOLUME_STABILITY", "1.0"))
+BEST_ITERATE_PATIENCE = int(os.environ.get("BRATS_BEST_ITERATE_PATIENCE", "8"))
+
+# Method parameters surfaced through configs/pipeline.yaml by run_all.py.
+AUTO_PCT = float(os.environ.get("BRATS_AUTO_PCT", "90.0"))
+SIGMA = float(os.environ.get("BRATS_SIGMA", "0.5"))
+POISSON_THRESHOLD = float(os.environ.get("BRATS_POISSON_THRESHOLD", "0.75"))
+FAST_MARCHING_TIME_THRESHOLD = float(os.environ.get("BRATS_FAST_MARCHING_TIME_THRESHOLD", "35.0"))
+VARIATIONAL_SPLINE_ITERS = int(os.environ.get("BRATS_VARIATIONAL_SPLINE_ITERS", "35"))
+VARIATIONAL_SPLINE_SMOOTHING = int(os.environ.get("BRATS_VARIATIONAL_SPLINE_SMOOTHING", "3"))
+BSPLINE_CHANVESE_ITERS = int(os.environ.get("BRATS_BSPLINE_CHANVESE_ITERS", "35"))
+BSPLINE_CHANVESE_SMOOTHING = int(os.environ.get("BRATS_BSPLINE_CHANVESE_SMOOTHING", "2"))
+LEVEL_SET_ITERS = int(os.environ.get("BRATS_LEVEL_SET_ITERS", "120"))
+N4_SHRINK = int(os.environ.get("BRATS_N4_SHRINK", "4"))
+WIENER_SIZE = int(os.environ.get("BRATS_WIENER_SIZE", "3"))
 
 # Esquema de normalización por tarea
 NORM_CLASICA     = "zscore"

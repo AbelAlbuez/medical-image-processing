@@ -6,9 +6,12 @@ __pycache__/
 BraTS2024-BraTS-GLI-TrainingData/
 images/
 output/
+analysis/stage5_runner_validation/run_*/
+analysis/pre_cohort_run/
 report_final.zip
+cohort/pool_*.csv
+cohort/smoke.csv
 
 .vscode/
 .agents/
 .claude/
-

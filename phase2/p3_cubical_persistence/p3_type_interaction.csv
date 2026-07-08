@@ -1,0 +1,3 @@
+construction_type,n_methods,mean_absent_flood_rate,best_absent_flood_rate,mean_absent_median_fp_vox,mean_large_retention_vs_detection_baseline,n_methods_preserve_large_90pct,best_method_by_fp_with_90pct_gate
+deformable/region-based,1,0.9696969696969697,0.9696969696969697,18837.0,1.0,1,variational_spline
+intensity/statistical,4,0.9318181818181819,0.9090909090909091,42471.25,0.8367187822294073,3,sustraccion

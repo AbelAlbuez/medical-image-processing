@@ -47,7 +47,14 @@ def _run_case(case_id: str):
         sigma=0.5,
         verbose=False,
     )
-    return {row.metodo: float(row.dice_ET) for row in df.itertuples(index=False)}
+    return {
+        row.metodo: {
+            "dice_ET": float(row.dice_ET),
+            "guard_branch": getattr(row, "guard_branch", ""),
+            "guard_reason": getattr(row, "guard_reason", ""),
+        }
+        for row in df.itertuples(index=False)
+    }
 
 
 def test_regression_fixture_dice_matches_baseline():
@@ -58,9 +65,22 @@ def test_regression_fixture_dice_matches_baseline():
         expected = spec["dice_ET"]
         assert set(observed) == set(expected)
         for method, expected_dice in expected.items():
-            assert abs(observed[method] - expected_dice) <= tol, (
+            assert abs(observed[method]["dice_ET"] - expected_dice) <= tol, (
                 case_id,
                 method,
-                observed[method],
+                observed[method]["dice_ET"],
                 expected_dice,
+            )
+        for method, expected_guard in spec.get("guard", {}).items():
+            assert observed[method]["guard_branch"] == expected_guard["guard_branch"], (
+                case_id,
+                method,
+                observed[method]["guard_branch"],
+                expected_guard["guard_branch"],
+            )
+            assert observed[method]["guard_reason"] == expected_guard["guard_reason"], (
+                case_id,
+                method,
+                observed[method]["guard_reason"],
+                expected_guard["guard_reason"],
             )

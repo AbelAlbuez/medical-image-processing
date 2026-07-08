@@ -1,0 +1,6 @@
+method,n_case_methods,median_largest_gap_k,frac_gap_k_eq_1,median_largest_gap,median_top_score,median_second_score
+gmm_2d,100,8.0,0.14,0.12579944729804993,1.0,1.0
+gmm_T1c,100,1.0,1.0,,1.0,
+otsu_T1c,100,1.0,1.0,,1.0,
+sustraccion,99,8.0,0.20202020202020202,0.09724712371826172,1.0,1.0
+variational_spline,100,1.0,1.0,,1.0,

@@ -18,6 +18,8 @@ Métodos:
 from __future__ import annotations
 from typing import Dict, Optional, Tuple
 
+import random
+import time
 import numpy as np
 from scipy import ndimage
 from skimage.filters import threshold_multiotsu
@@ -391,6 +393,7 @@ def correr_pipeline_et(
     case_id: str = "",
     auto_pct: float = 90.0,
     sigma: float = 0.5,
+    methods: Optional[list] = None,
     verbose: bool = True,
 ) -> Tuple[Dict[str, np.ndarray], np.ndarray, object]:
     """
@@ -405,6 +408,26 @@ def correr_pipeline_et(
                    activa el método 'semilla' que puede dar Dice 0.5-0.8.
     """
     import pandas as pd
+
+    pipeline_t0 = time.perf_counter()
+    # WARNING: determinism fix. Keep both global seeds at pipeline entry so
+    # GMM/Chan-Vese helper calls cannot inherit state from earlier cases.
+    # Tests assert bit-identical masks across subprocess runs.
+    np.random.seed(config.SEED)
+    random.seed(config.SEED)
+    selected_methods = set(methods) if methods is not None else None
+
+    def want(name: str) -> bool:
+        return selected_methods is None or name in selected_methods
+
+    method_times = {}
+
+    def timed(name: str, fn):
+        t0 = time.perf_counter()
+        try:
+            return fn()
+        finally:
+            method_times[name] = time.perf_counter() - t0
 
     arr_t1c = io_utils.a_numpy(t1c).astype(np.float32)
     arr_t1n = io_utils.a_numpy(t1n).astype(np.float32)
@@ -426,64 +449,101 @@ def correr_pipeline_et(
         print(f"\n  [{case_id}] GT-ET: {gt_et.sum()} vóxeles")
 
     # ── Métodos automáticos ────────────────────────────────────────
-    pred_otsu = metodo_otsu(arr_t1c)
-    if verbose:
+    pred_otsu = timed("otsu_T1c", lambda: metodo_otsu(arr_t1c)) if want("otsu_T1c") else None
+    if verbose and pred_otsu is not None:
         print(f"  otsu         : pred={pred_otsu.sum():7d} vox")
 
-    pred_gmm = metodo_gmm(arr_t1c)
-    if verbose:
+    pred_gmm = timed("gmm_T1c", lambda: metodo_gmm(arr_t1c)) if want("gmm_T1c") else None
+    if verbose and pred_gmm is not None:
         print(f"  gmm_T1c      : pred={pred_gmm.sum():7d} vox")
 
-    pred_sust, mapa_dif, umbral = metodo_sustraccion(
-        arr_t1c_raw, arr_t1n_raw, auto_pct=auto_pct, sigma=sigma)
-    if verbose:
-        print(f"  sustraccion  : pred={pred_sust.sum():7d} vox  umbral={umbral:.3f}")
+    if want("sustraccion"):
+        pred_sust, mapa_dif, umbral = timed(
+            "sustraccion",
+            lambda: metodo_sustraccion(
+                arr_t1c_raw, arr_t1n_raw, auto_pct=auto_pct, sigma=sigma),
+        )
+        if verbose and want("sustraccion"):
+            print(f"  sustraccion  : pred={pred_sust.sum():7d} vox  umbral={umbral:.3f}")
+    elif want("gmm_2d"):
+        _, mapa_dif, umbral = metodo_sustraccion(
+            arr_t1c_raw, arr_t1n_raw, auto_pct=auto_pct, sigma=sigma)
+        pred_sust = None
+    else:
+        pred_sust = None
+        mapa_dif = _mapa_diferencia(arr_t1c_raw, arr_t1n_raw, sigma)
 
-    pred_gmm2d = metodo_gmm_2d(arr_t1c, arr_t1c_raw, arr_t1n_raw)
-    if verbose:
+    pred_gmm2d = timed(
+        "gmm_2d",
+        lambda: metodo_gmm_2d(arr_t1c, arr_t1c_raw, arr_t1n_raw),
+    ) if want("gmm_2d") else None
+    if verbose and pred_gmm2d is not None:
         print(f"  gmm_2d       : pred={pred_gmm2d.sum():7d} vox")
 
     # ── Método 5: Rango doble ─────────────────────────────────────
-    pred_rango = metodo_rango_doble(arr_t1c_raw, arr_t1n_raw)
-    if verbose:
+    pred_rango = timed(
+        "rango_doble",
+        lambda: metodo_rango_doble(arr_t1c_raw, arr_t1n_raw),
+    ) if want("rango_doble") else None
+    if verbose and pred_rango is not None:
         print(f"  rango_doble  : pred={pred_rango.sum():7d} vox  [mapa en rango ET]")
 
-    mascaras: Dict[str, np.ndarray] = {
-        "otsu_T1c":    pred_otsu,
-        "gmm_T1c":     pred_gmm,
-        "sustraccion": pred_sust,
-        "gmm_2d":      pred_gmm2d,
-        "rango_doble": pred_rango,
-    }
+    mascaras: Dict[str, np.ndarray] = {}
+    for nombre, pred in [
+        ("otsu_T1c", pred_otsu),
+        ("gmm_T1c", pred_gmm),
+        ("sustraccion", pred_sust),
+        ("gmm_2d", pred_gmm2d),
+        ("rango_doble", pred_rango),
+    ]:
+        if pred is not None:
+            mascaras[nombre] = pred
 
     # ── Métodos de contornos deformables (spline / level set), automáticos ──
-    from .seg_spline_levelset import correr_spline_levelset
-    spl = correr_spline_levelset(arr_t1c, arr_t1c_raw, arr_t1n_raw,
-                                 sigma=sigma, verbose=verbose)
-    mascaras.update(spl)
+    from . import seg_spline_levelset as sls
+    deformable_methods = [
+        name for name in ("level_set", "variational_spline", "bspline", "spline")
+        if want(name)
+    ]
+    guard_info = {}
+    if deformable_methods:
+        spl = sls.correr_spline_levelset(arr_t1c, arr_t1c_raw, arr_t1n_raw,
+                                         sigma=sigma, methods=deformable_methods,
+                                         verbose=verbose)
+        guard_info = dict(sls.GUARD_INFO)
+        method_times.update(getattr(sls, "METHOD_TIMINGS", {}))
+        mascaras.update(spl)
 
     # ── FastMarching: semilla manual o automática ──────────────────
     # Siempre corre FastMarching - con semilla manual si se da, sino automática
     semilla_usada = semilla_zyx
-    if semilla_usada is None:
-        semilla_usada = semilla_automatica(arr_t1c, arr_t1c_raw, arr_t1n_raw)
-        z0,y0,x0 = semilla_usada
-        if verbose:
-            print(f"  semilla auto : z={z0} y={y0} x={x0}  [score=T1c*mapa_dif]")
+    if want("fast_marching"):
+        if semilla_usada is None:
+            semilla_usada = semilla_automatica(arr_t1c, arr_t1c_raw, arr_t1n_raw)
+            z0,y0,x0 = semilla_usada
+            if verbose:
+                print(f"  semilla auto : z={z0} y={y0} x={x0}  [score=T1c*mapa_dif]")
 
-    pred_fm = metodo_fast_marching(
-        arr_t1c_raw, arr_t1n_raw, semilla_usada, tiempo_umbral=35.0)
-    mascaras["fast_marching"] = pred_fm
-    if verbose:
-        z0,y0,x0 = semilla_usada
-        modo = "manual" if semilla_zyx else "auto"
-        print(f"  fast_marching: pred={pred_fm.sum():7d} vox  "
-              f"@ z={z0},y={y0},x={x0}  [{modo}]")
+        pred_fm = timed(
+            "fast_marching",
+            lambda: metodo_fast_marching(
+                arr_t1c_raw, arr_t1n_raw, semilla_usada,
+                tiempo_umbral=config.FAST_MARCHING_TIME_THRESHOLD),
+        )
+        mascaras["fast_marching"] = pred_fm
+        if verbose:
+            z0,y0,x0 = semilla_usada
+            modo = "manual" if semilla_zyx else "auto"
+            print(f"  fast_marching: pred={pred_fm.sum():7d} vox  "
+                  f"@ z={z0},y={y0},x={x0}  [{modo}]")
 
     # Esfera (backup, solo si hay semilla manual)
-    if semilla_zyx is not None:
-        pred_seed = metodo_semilla(
-            arr_t1c, arr_t1c_raw, arr_t1n_raw, semilla_zyx)
+    if semilla_zyx is not None and want("semilla"):
+        pred_seed = timed(
+            "semilla",
+            lambda: metodo_semilla(
+                arr_t1c, arr_t1c_raw, arr_t1n_raw, semilla_zyx),
+        )
         mascaras["semilla"] = pred_seed
         if verbose:
             print(f"  semilla      : pred={pred_seed.sum():7d} vox")
@@ -491,6 +551,7 @@ def correr_pipeline_et(
     # ── Métricas ──────────────────────────────────────────────────
     filas = []
     for nombre, pred in mascaras.items():
+        guard = guard_info.get(nombre, {})
         d = dice(pred, gt_et)
         j = jaccard(pred, gt_et)
         filas.append({
@@ -500,11 +561,20 @@ def correr_pipeline_et(
             "jaccard_ET": round(j, 4),
             "vol_GT":     int(gt_et.sum()),
             "vol_pred":   int(pred.sum()),
+            "guard_branch": guard.get("branch", ""),
+            "guard_reason": guard.get("reason", ""),
+            "tiempo_s": round(float(method_times.get(nombre, 0.0)), 4),
         })
         if verbose:
             print(f"    → Dice={d:.3f}  Jaccard={j:.3f}  [{nombre}]")
 
     df = pd.DataFrame(filas)
+    case_wall_s = time.perf_counter() - pipeline_t0
+    method_total_s = float(sum(method_times.get(nombre, 0.0)
+                               for nombre in mascaras
+                               if not nombre.startswith("_")))
+    df["case_wall_s"] = round(float(case_wall_s), 4)
+    df["shared_preproc_s"] = round(max(0.0, case_wall_s - method_total_s), 4)
 
     # Guardar internos para visualización
     mascaras["_mapa_dif"]  = mapa_dif

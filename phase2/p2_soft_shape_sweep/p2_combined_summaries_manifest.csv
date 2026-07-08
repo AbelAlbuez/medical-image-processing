@@ -1,0 +1,13 @@
+section_order,source_table,source_path,rows,included
+1,baseline_targets_per_axis,phase2\baseline_targets_per_axis.csv,20,True
+2,p1_fixed_detection_cost_operating_points,phase2\p1_spatial_atlas\tradeoff_analysis\p1_fixed_detection_cost_operating_points.csv,3,True
+3,p1_tradeoff_representative_curves,phase2\p1_spatial_atlas\tradeoff_analysis\p1_tradeoff_representative_curves.csv,28,True
+4,p2a_shape_thresholds_by_fold,phase2\p2_shape_prior\p2_shape_thresholds_by_fold.csv,5,True
+5,p2a_shape_filter_summary,phase2\p2_shape_prior\p2_shape_filter_summary.csv,5,True
+6,p2a_shape_key_comparison,phase2\p2_shape_prior\p2_shape_key_comparison_table.csv,5,True
+7,p2a_vs_p1_fixed_detection_comparison,phase2\p2_shape_prior\p2_vs_p1_fixed_detection_comparison.csv,2,True
+8,p2a_peri_cavity_shape_check,phase2\p2_shape_prior\p2_peri_cavity_shape_check.csv,4,True
+9,p2b_soft_shape_sweep_summary,phase2\p2_soft_shape_sweep\p2_soft_shape_sweep_summary.csv,60,True
+10,p2b_soft_shape_operating_points,phase2\p2_soft_shape_sweep\p2_soft_shape_operating_points.csv,6,True
+11,p2b_soft_shape_verdict,phase2\p2_soft_shape_sweep\p2_soft_shape_verdict.csv,1,True
+12,p2b_soft_shape_case_metrics,phase2\p2_soft_shape_sweep\p2_soft_shape_case_metrics.csv,6000,True

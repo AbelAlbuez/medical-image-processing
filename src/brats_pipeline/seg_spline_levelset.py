@@ -27,10 +27,12 @@ from __future__ import annotations
 from typing import Optional, Tuple
 
 import numpy as np
+import time
 from scipy import ndimage
 from scipy.interpolate import splprep, splev
 
 import SimpleITK as sitk
+from skimage.segmentation import morphsnakes as _morphsnakes
 from skimage.segmentation import (
     morphological_chan_vese,
     morphological_geodesic_active_contour,
@@ -40,6 +42,7 @@ from skimage.segmentation import (
 from skimage.measure import find_contours
 from skimage.draw import polygon as draw_polygon
 
+from . import config
 from .seg_et_pipeline import _mapa_diferencia, _morfologia, _cerebro, metodo_gmm
 
 
@@ -57,6 +60,26 @@ MAX_SEED = 250_000
 # vóxeles: una semilla dispersa da una caja enorme y vuelve la evolución lentísima.
 # Si la caja supera este volumen, la semilla no es un tumor compacto -> usar semilla.
 MAX_BBOX = 2_500_000
+LAST_POST_INFO = {}
+GUARD_INFO = {}
+METHOD_TIMINGS = {}
+
+
+def _reset_morphsnakes_curvop(start: str = "first") -> None:
+    """Reset skimage's stateful Chan-Vese smoothing cycle.
+
+    WARNING: scikit-image stores the morphological Chan-Vese curvature operator
+    as a mutable module-level cycle. Without resetting it before each call, two
+    identical runs in the same process can return different masks. This is the
+    determinism fix pinned by ``tests/test_determinism.py``.
+    """
+    ops = [
+        lambda u: _morphsnakes.sup_inf(_morphsnakes.inf_sup(u)),
+        lambda u: _morphsnakes.inf_sup(_morphsnakes.sup_inf(u)),
+    ]
+    if start == "second":
+        ops = [ops[1], ops[0]]
+    _morphsnakes._curvop = _morphsnakes._fcycle(ops)  # noqa: SLF001
 
 
 def _semilla_degenerada(roi: np.ndarray) -> bool:
@@ -175,6 +198,154 @@ def _orientar_chanvese(ls: np.ndarray, img: np.ndarray) -> np.ndarray:
     return ls.astype(np.uint8)
 
 
+def _largest_component_fraction(mask: np.ndarray) -> float:
+    if not mask.any():
+        return 0.0
+    lab, n = ndimage.label(mask > 0, structure=_ST)
+    if n == 0:
+        return 0.0
+    sizes = ndimage.sum(mask > 0, lab, range(1, n + 1))
+    return float(np.max(sizes) / float(mask.sum()))
+
+
+def _evidence_accepts_evolved(pred: np.ndarray, init: np.ndarray,
+                              mapa: np.ndarray) -> Tuple[bool, dict]:
+    """Return whether the Stage 3A evidence guard accepts seed-divergent growth.
+
+    WARNING: this is not a generic cleanup guard. It is a frozen study rule that
+    preserves the evolved 02116 mask instead of forcing the ROI fallback. Any
+    change must be treated as a numerical-method change and baseline refreeze.
+    """
+    a_init = float(init.sum()) if init is not None else 0.0
+    a_pred = float(pred.sum())
+    pred_vals = mapa[pred > 0]
+    init_vals = mapa[init > 0] if init is not None else np.array([], dtype=mapa.dtype)
+    pred_enh = float(pred_vals.mean()) if pred_vals.size else 0.0
+    init_enh = float(init_vals.mean()) if init_vals.size else 0.0
+    lcc_fraction = _largest_component_fraction(pred)
+    volume_multiple = a_pred / max(a_init, 1.0)
+    enhancement_ratio = pred_enh / max(init_enh, 1e-6)
+    accepted = (
+        config.ENABLE_EVIDENCE_GUARD
+        and lcc_fraction >= config.GUARD_MIN_LCC_FRACTION
+        and enhancement_ratio >= config.GUARD_MIN_ENHANCEMENT_RATIO
+        and volume_multiple <= config.GUARD_MAX_VOLUME_MULTIPLE
+    )
+    return accepted, {
+        "evidence_lcc_fraction": lcc_fraction,
+        "evidence_pred_enhancement": pred_enh,
+        "evidence_init_enhancement": init_enh,
+        "evidence_enhancement_ratio": enhancement_ratio,
+        "evidence_volume_multiple": volume_multiple,
+        "evidence_accept": bool(accepted),
+    }
+
+
+def _chanvese_iterate_score(pred: np.ndarray, init: np.ndarray, mapa: np.ndarray,
+                            prev_voxels: int = None) -> Tuple[bool, float, dict]:
+    a_init = float(init.sum()) if init is not None else 0.0
+    a_pred = float(pred.sum())
+    pred_vals = mapa[pred > 0]
+    init_vals = mapa[init > 0] if init is not None else np.array([], dtype=mapa.dtype)
+    pred_enh = float(pred_vals.mean()) if pred_vals.size else 0.0
+    init_enh = float(init_vals.mean()) if init_vals.size else 0.0
+    enhancement_ratio = pred_enh / max(init_enh, 1e-6)
+    volume_multiple = a_pred / max(a_init, 1.0)
+    lcc_fraction = _largest_component_fraction(pred)
+    volume_stability = 0.0
+    if prev_voxels is not None and prev_voxels > 0:
+        volume_stability = max(0.0, 1.0 - abs(a_pred - prev_voxels) / float(prev_voxels))
+
+    acceptable = bool(a_pred > 0 and init is not None and init.any())
+    if acceptable:
+        inter = float(np.logical_and(pred > 0, init > 0).sum())
+        if a_pred < 0.40 * a_init:
+            acceptable = False
+        elif a_pred > config.GUARD_MAX_VOLUME_MULTIPLE * a_init:
+            acceptable = False
+        elif inter < 0.40 * a_pred:
+            acceptable = (
+                lcc_fraction >= config.GUARD_MIN_LCC_FRACTION
+                and enhancement_ratio >= config.GUARD_MIN_ENHANCEMENT_RATIO
+                and volume_multiple <= config.GUARD_MAX_VOLUME_MULTIPLE
+            )
+
+    score = (
+        config.BEST_ITERATE_W_LCC * lcc_fraction
+        + config.BEST_ITERATE_W_ENHANCEMENT * min(enhancement_ratio, 1.5)
+        + config.BEST_ITERATE_W_VOLUME_STABILITY * volume_stability
+    )
+    return acceptable, float(score), {
+        "best_lcc_fraction": lcc_fraction,
+        "best_pred_enhancement": pred_enh,
+        "best_init_enhancement": init_enh,
+        "best_enhancement_ratio": enhancement_ratio,
+        "best_volume_multiple": volume_multiple,
+        "best_volume_stability": volume_stability,
+    }
+
+
+def _select_best_chanvese_iterate(img: np.ndarray, init: np.ndarray, mapa: np.ndarray,
+                                  sl: Tuple[slice, slice, slice], iters: int,
+                                  smoothing: int, lambda1: float = 1.0,
+                                  lambda2: float = 1.0) -> Tuple[np.ndarray, dict]:
+    snapshots = {}
+    callback_count = {"i": 0}
+
+    def callback(u):
+        snapshots[callback_count["i"]] = np.array(u, copy=True)
+        callback_count["i"] += 1
+
+    _reset_morphsnakes_curvop("first")
+    final = morphological_chan_vese(
+        img, num_iter=iters, init_level_set=init,
+        smoothing=smoothing, lambda1=lambda1, lambda2=lambda2,
+        iter_callback=callback).astype(np.uint8)
+
+    best_ls = final
+    best_score = -np.inf
+    best_info = {"best_iter": iters, "best_score": float("nan"), "best_acceptable": False}
+    prev_voxels = None
+    drops = 0
+    for iteration in sorted(snapshots):
+        ls = _orientar_chanvese(snapshots[iteration].astype(np.uint8), img)
+        pred = np.zeros_like(mapa, dtype=np.uint8)
+        pred[sl] = ls
+        acceptable, score, info = _chanvese_iterate_score(pred, init=np.pad(
+            init, [(sl[i].start, mapa.shape[i] - sl[i].stop) for i in range(3)],
+            mode="constant"), mapa=mapa, prev_voxels=prev_voxels)
+        voxels = int(pred.sum())
+        prev_voxels = voxels
+        if iteration > 0 and acceptable and score > best_score:
+            best_ls = ls
+            best_score = score
+            best_info = {
+                "best_iter": int(iteration),
+                "best_score": float(score),
+                "best_acceptable": True,
+                "best_voxels": voxels,
+                **info,
+            }
+            drops = 0
+        elif iteration > 0 and best_score > -np.inf and score < best_score:
+            drops += 1
+            if drops >= config.BEST_ITERATE_PATIENCE:
+                break
+        else:
+            drops = 0
+
+    if not best_info["best_acceptable"]:
+        best_ls = init
+        best_info = {
+            "best_iter": 0,
+            "best_score": float("nan"),
+            "best_acceptable": False,
+            "best_voxels": int(init.sum()),
+            "best_fallback": "roi_no_acceptable_iterate",
+        }
+    return best_ls.astype(np.uint8), best_info
+
+
 def _post(pred: np.ndarray, mapa: np.ndarray, cerebro: np.ndarray,
           init: np.ndarray = None, pct_realce: float = 80.0) -> np.ndarray:
     """Post-proceso común con salvaguardas, partiendo de la semilla GMM `init`.
@@ -186,9 +357,21 @@ def _post(pred: np.ndarray, mapa: np.ndarray, cerebro: np.ndarray,
         a la semilla GMM cruda — así un modelo deformable degenerado nunca
         puntúa por debajo de la base GMM.
     """
+    global LAST_POST_INFO
     raw = (pred > 0).astype(np.uint8)
     restr = _restringir_realce(raw, mapa, cerebro, pct_realce)
-    pred = restr if (raw.sum() > 0 and restr.sum() >= 0.5 * raw.sum()) else raw
+    used_restriction = bool(raw.sum() > 0 and restr.sum() >= 0.5 * raw.sum())
+    pred = restr if used_restriction else raw
+    fallback_reason = ""
+    evidence_accepted_seed_divergence = False
+    evidence_info = {
+        "evidence_lcc_fraction": 0.0,
+        "evidence_pred_enhancement": 0.0,
+        "evidence_init_enhancement": 0.0,
+        "evidence_enhancement_ratio": 0.0,
+        "evidence_volume_multiple": 0.0,
+        "evidence_accept": False,
+    }
 
     if init is not None and init.any():
         a_init = float(init.sum())
@@ -196,13 +379,41 @@ def _post(pred: np.ndarray, mapa: np.ndarray, cerebro: np.ndarray,
         inter = float(np.logical_and(pred > 0, init > 0).sum())
         # Revertir si: colapsó, se fugó en volumen, o se fue a OTRA región
         # (área parecida pero poco solape con la semilla GMM).
-        if (a_pred == 0 or a_pred < 0.40 * a_init or a_pred > 2.5 * a_init
-                or inter < 0.40 * a_pred):
+        if a_pred == 0:
+            fallback_reason = "empty_prediction"
+        elif a_pred < 0.40 * a_init:
+            fallback_reason = "collapsed_small"
+        elif a_pred > config.GUARD_MAX_VOLUME_MULTIPLE * a_init:
+            fallback_reason = "leaked_large"
+        elif inter < 0.40 * a_pred:
+            evidence_accept, evidence_info = _evidence_accepts_evolved(pred, init, mapa)
+            if evidence_accept:
+                evidence_accepted_seed_divergence = True
+            else:
+                fallback_reason = "low_seed_overlap"
+        if fallback_reason:
             pred = (init > 0).astype(np.uint8)
 
     if pred.any():
         pred = ndimage.binary_fill_holes(pred).astype(np.uint8)
         pred = _morfologia(pred, erosion=0, dilatacion=0, keep_largest=True)
+    equals_init = bool(init is not None and init.any()
+                       and pred.shape == init.shape
+                       and np.array_equal(pred > 0, init > 0))
+    LAST_POST_INFO = {
+        "branch": "collapse-detected" if fallback_reason else
+                  "ROI-fallback" if equals_init else "evolved",
+        "reason": fallback_reason if fallback_reason else
+                  "final_equals_init_no_collapse" if equals_init else
+                  "accepted_evidence_seed_divergence" if evidence_accepted_seed_divergence else
+                  "accepted",
+        "used_restriction": used_restriction,
+        "raw_voxels": int(raw.sum()),
+        "restricted_voxels": int(restr.sum()),
+        "final_voxels": int(pred.sum()),
+        "init_voxels": int(init.sum()) if init is not None else 0,
+        **evidence_info,
+    }
     return pred.astype(np.uint8)
 
 
@@ -216,7 +427,7 @@ def metodo_level_set(arr_t1c: np.ndarray,
                      prop: float = 0.8,
                      curv: float = 3.0,
                      adv: float = 1.5,
-                     iters: int = 120,
+                     iters: int = None,
                      roi: np.ndarray = None,
                      mapa: np.ndarray = None) -> np.ndarray:
     """
@@ -231,6 +442,7 @@ def metodo_level_set(arr_t1c: np.ndarray,
         return roi
     if _semilla_degenerada(roi):
         return _post((roi > 0).astype(np.uint8), mapa, cerebro, init=roi)
+    iters = config.LEVEL_SET_ITERS if iters is None else iters
 
     sl = _bbox(roi, margin=12, shape=mapa.shape)
     mapa_c = mapa[sl].astype(np.float32)
@@ -269,8 +481,8 @@ def metodo_variational_spline(arr_t1c: np.ndarray,
                               arr_t1c_raw: np.ndarray,
                               arr_t1n_raw: np.ndarray,
                               sigma: float = 0.5,
-                              iters: int = 35,
-                              smoothing: int = 3,
+                              iters: int = None,
+                              smoothing: int = None,
                               roi: np.ndarray = None,
                               mapa: np.ndarray = None) -> np.ndarray:
     """
@@ -285,20 +497,32 @@ def metodo_variational_spline(arr_t1c: np.ndarray,
         return roi
     if _semilla_degenerada(roi):
         return _post((roi > 0).astype(np.uint8), mapa, cerebro, init=roi)
+    iters = config.VARIATIONAL_SPLINE_ITERS if iters is None else iters
+    smoothing = config.VARIATIONAL_SPLINE_SMOOTHING if smoothing is None else smoothing
 
     sl = _bbox(roi, margin=12, shape=mapa.shape)
     img = mapa[sl].astype(np.float32)
     img = (img - img.min()) / (np.ptp(img) + 1e-6)
     init = roi[sl].astype(np.uint8)
 
-    ls = morphological_chan_vese(
-        img, num_iter=iters, init_level_set=init,
-        smoothing=smoothing, lambda1=1.0, lambda2=1.0).astype(np.uint8)
-    ls = _orientar_chanvese(ls, img)
+    best_info = {}
+    if config.ENABLE_BEST_ITERATE:
+        ls, best_info = _select_best_chanvese_iterate(
+            img, init, mapa, sl, iters=iters, smoothing=smoothing,
+            lambda1=1.0, lambda2=1.0)
+    else:
+        _reset_morphsnakes_curvop("first")
+        ls = morphological_chan_vese(
+            img, num_iter=iters, init_level_set=init,
+            smoothing=smoothing, lambda1=1.0, lambda2=1.0).astype(np.uint8)
+        ls = _orientar_chanvese(ls, img)
 
     pred = np.zeros_like(mapa, dtype=np.uint8)
     pred[sl] = ls
-    return _post(pred, mapa, cerebro, init=roi, pct_realce=80.0)
+    out = _post(pred, mapa, cerebro, init=roi, pct_realce=80.0)
+    if best_info:
+        LAST_POST_INFO.update(best_info)
+    return out
 
 
 # ================================================================== #
@@ -350,6 +574,8 @@ def metodo_bspline(arr_t1c: np.ndarray,
         return roi
     if _semilla_degenerada(roi):
         return _post((roi > 0).astype(np.uint8), mapa, cerebro, init=roi)
+    iters = config.BSPLINE_CHANVESE_ITERS
+    smoothing = config.BSPLINE_CHANVESE_SMOOTHING
 
     sl = _bbox(roi, margin=12, shape=mapa.shape)
     img = mapa[sl].astype(np.float32)
@@ -357,9 +583,10 @@ def metodo_bspline(arr_t1c: np.ndarray,
     init = roi[sl].astype(np.uint8)
 
     # Base: level set variacional de región (robusto, no se infla como MorphGAC).
+    _reset_morphsnakes_curvop("second")
     ls = morphological_chan_vese(
-        img, num_iter=35, init_level_set=init,
-        smoothing=2, lambda1=1.0, lambda2=1.0).astype(np.uint8)
+        img, num_iter=iters, init_level_set=init,
+        smoothing=smoothing, lambda1=1.0, lambda2=1.0).astype(np.uint8)
     ls = _orientar_chanvese(ls, img)
 
     # Regularización B-spline del contorno por corte axial.
@@ -459,8 +686,12 @@ def correr_spline_levelset(arr_t1c: np.ndarray,
                            arr_t1c_raw: np.ndarray,
                            arr_t1n_raw: np.ndarray,
                            sigma: float = 0.5,
+                           methods = None,
                            verbose: bool = True) -> dict:
+    global LAST_POST_INFO, GUARD_INFO, METHOD_TIMINGS
     out = {}
+    GUARD_INFO = {}
+    METHOD_TIMINGS = {}
     # Semilla híbrida (incluye un ajuste GMM costoso): se calcula UNA vez y se
     # comparte entre los 4 métodos, en vez de recomputarla por método.
     roi, mapa = roi_et_auto(arr_t1c, arr_t1c_raw, arr_t1n_raw, sigma)
@@ -473,14 +704,28 @@ def correr_spline_levelset(arr_t1c: np.ndarray,
         ("bspline",            metodo_bspline),
         ("spline",             metodo_spline),
     ]
+    selected = set(methods) if methods is not None else {nombre for nombre, _ in metodos}
     for nombre, fn in metodos:
+        if nombre not in selected:
+            continue
+        LAST_POST_INFO = {}
+        t_method = time.perf_counter()
         try:
             pred = fn(arr_t1c, arr_t1c_raw, arr_t1n_raw, sigma=sigma,
                       roi=roi, mapa=mapa)
+            GUARD_INFO[nombre] = dict(LAST_POST_INFO) if LAST_POST_INFO else {
+                "branch": "ROI-fallback" if np.array_equal(pred > 0, roi > 0) else "evolved",
+                "reason": "no_post_info",
+            }
         except Exception as e:
             if verbose:
                 print(f"  [!] {nombre} falló: {e}")
             pred = np.zeros_like(arr_t1c, dtype=np.uint8)
+            GUARD_INFO[nombre] = {
+                "branch": "collapse-detected",
+                "reason": f"exception:{type(e).__name__}",
+            }
+        METHOD_TIMINGS[nombre] = time.perf_counter() - t_method
         out[nombre] = pred
         if verbose:
             print(f"  {nombre:18s}: pred={int(pred.sum()):7d} vox")

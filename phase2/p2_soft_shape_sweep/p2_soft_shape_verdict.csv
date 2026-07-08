@@ -1,0 +1,2 @@
+verdict_category,selected_method,selected_threshold,absent_flood_rate,absent_median_fp_vox,large_lesionwise_mean,large_detection_ratio,p1_flood_at_90pct,p1_median_fp_at_90pct,p1_large_detection_ratio,clears_clean_bar
+a_soft_shape_usable_prior,otsu_T1c,0.01,0.7878787878787878,13772.0,0.16503766733855146,0.9364475338184004,0.8181818181818182,18518.0,0.9224548939128728,True

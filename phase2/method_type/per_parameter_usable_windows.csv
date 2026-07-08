@@ -1,0 +1,6 @@
+method,construction_type,baseline_own_flood_rate,baseline_own_median_fp_vox,first_threshold_flood_below_own_baseline,first_threshold_flood_below_otsu_baseline,first_threshold_large_detection_below_90pct,has_clean_usable_window_vs_otsu,has_loose_usable_window_vs_own_baseline,clean_window_threshold_min,clean_window_threshold_max,loose_window_threshold_min,loose_window_threshold_max,source
+otsu_T1c,intensity/statistical,0.9393939393939394,13935.0,0.001,0.001,0.02,True,True,0.001,0.01,0.001,0.01,phase2/p2_soft_shape_sweep/p2_soft_shape_sweep_summary.csv
+gmm_T1c,intensity/statistical,0.9696969696969696,18837.0,0.02,0.02,0.02,False,False,,,,,phase2/p2_soft_shape_sweep/p2_soft_shape_sweep_summary.csv
+gmm_2d,intensity/statistical,1.0,94636.0,0.001,0.2,0.0,False,False,,,,,phase2/p2_soft_shape_sweep/p2_soft_shape_sweep_summary.csv
+sustraccion,intensity/statistical,0.9393939393939394,76915.0,0.001,0.001,0.0,False,False,,,,,phase2/p2_soft_shape_sweep/p2_soft_shape_sweep_summary.csv
+variational_spline,deformable/region-based,0.9696969696969696,18837.0,0.001,0.001,0.05,False,True,,,0.001,0.02,phase2/p2_soft_shape_sweep/p2_soft_shape_sweep_summary.csv

@@ -1,0 +1,5 @@
+case_id,method,pred_vox,gt_et_vox,n_components_ge10,n_fp_components_ge10,fp_component_vox_total,overlap_gt_vox_total
+BraTS-GLI-00533-100,gmm_T1c,15501,31750,1,1,15501,0
+BraTS-GLI-00533-100,variational_spline,15501,31750,1,1,15501,0
+BraTS-GLI-02078-100,gmm_T1c,13220,21072,1,1,13220,0
+BraTS-GLI-02078-100,variational_spline,13220,21072,1,1,13220,0

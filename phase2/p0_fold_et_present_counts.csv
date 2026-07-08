@@ -1,0 +1,6 @@
+heldout_fold,heldout_cases,heldout_et_present,heldout_absent,train_cases,train_et_present,train_absent,train_small,train_medium,train_large
+0,20,13,7,80,54,26,24,16,14
+1,20,13,7,80,54,26,25,15,14
+2,20,13,7,80,54,26,25,15,14
+3,20,14,6,80,53,27,25,15,13
+4,20,14,6,80,53,27,25,15,13

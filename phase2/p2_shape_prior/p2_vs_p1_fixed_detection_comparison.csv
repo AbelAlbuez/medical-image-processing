@@ -1,0 +1,3 @@
+prior,method,selection,absent_flood_rate,absent_median_fp_vox,large_lesionwise,large_detection_ratio,large_dominant_found_rate
+P1 spatial post-filter,variational_spline,P1 fixed 90pct detection operating point,0.8181818181818182,18518.0,0.1625716320653309,0.9224548939128728,0.7647058823529411
+P2 shape post-filter,otsu_T1c,best_fp_no_90pct_detection_candidate,0.0,0.0,0.013103546465144434,0.07435141304068206,0.058823529411764705

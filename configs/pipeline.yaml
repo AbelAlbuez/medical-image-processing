@@ -1,0 +1,41 @@
+methods:
+  - otsu_T1c
+  - gmm_T1c
+  - sustraccion
+  - gmm_2d
+  - variational_spline
+
+methods_legacy:
+  - bspline
+  - level_set
+  - spline
+  - rango_doble
+  - fast_marching
+
+seed: 0
+auto_pct: 90.0
+sigma: 0.5
+poisson_threshold: 0.75
+dice_3d_cutoff: 0.75
+
+normalization_scheme: percentil
+n4_shrink: 4
+wiener_size: 3
+
+enable_evidence_guard: true
+guard_min_lcc_fraction: 0.90
+guard_min_enhancement_ratio: 0.90
+guard_max_volume_multiple: 2.50
+
+enable_best_iterate: false
+best_iterate_w_lcc: 1.0
+best_iterate_w_enhancement: 1.0
+best_iterate_w_volume_stability: 1.0
+best_iterate_patience: 8
+
+variational_spline_iters: 35
+variational_spline_smoothing: 3
+bspline_chanvese_iters: 35
+bspline_chanvese_smoothing: 2
+level_set_iters: 120
+fast_marching_time_threshold: 35.0

@@ -1,0 +1,5 @@
+baseline_method,target_scope,n,lesionwise_dice_mean,lesionwise_dice_median,global_dice_mean,global_dice_median,hd95_median_defined,lesion_tp,lesion_fn,lesion_fp,absent_flood_gt_10000_rate,absent_fp_volume_median,absent_fp_volume_max
+otsu_T1c,present_small,31,0.00016016367460127055,0.0,0.0003407286142693385,0.0,108.46013084147063,8.0,58.0,23.0,,,
+otsu_T1c,present_medium,19,0.0030580804641909994,0.00018062496383208781,0.00782671472633909,0.0003759869657851861,82.66801074176153,10.0,45.0,9.0,,,
+otsu_T1c,present_large,17,0.16503766733855146,0.18985570967197418,0.3186186447067982,0.3596713739446485,49.47726750741192,13.0,46.0,4.0,,,
+otsu_T1c,absent,33,,,,,,,,,0.9393939393939394,13935.0,740909.0
