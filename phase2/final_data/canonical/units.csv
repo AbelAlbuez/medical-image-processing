@@ -1,0 +1,5 @@
+quantity,value_voxels,value_mL,source
+voxel_volume,1.0,0.001,NIfTI spacing from BraTS2024-BraTS-GLI-TrainingData\training_data1_v2\BraTS-GLI-00006-100\BraTS-GLI-00006-100-seg.nii.gz
+flood_threshold,10000.0,10.0,phase2.metrics.DEFAULT_CONFIG.flood_threshold_vox; NIfTI spacing from BraTS2024-BraTS-GLI-TrainingData\training_data1_v2\BraTS-GLI-00006-100\BraTS-GLI-00006-100-seg.nii.gz
+small_upper_cutoff_p33,1883.0,1.883,cohort/COHORT_MANIFEST.md p33/p66
+large_lower_cutoff_p66,11018.0,11.018,cohort/COHORT_MANIFEST.md p33/p66

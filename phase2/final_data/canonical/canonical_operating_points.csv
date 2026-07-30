@@ -1,0 +1,21 @@
+regime,method,setting,status,flood_rate,median_FP_mL,large_dice,notes,flood_rate_ci95_low,flood_rate_ci95_high,median_FP_volume_ci95_low,median_FP_volume_ci95_high,large_dice_ci95_low,large_dice_ci95_high
+R1_INTENSITY_BASELINE,otsu_T1c,stage4_baseline_core5,locked,0.9393939393939394,13.935,0.1650376673385514,four_regime_master_comparison.csv,0.8484848484848485,1.0,13528.0,17160.0,0.08403093969712189,0.265213248735274
+R2_SPATIAL_LOCATION_PRIOR,otsu_T1c,post_filter@0.001,post_hoc,0.8181818181818182,13.841000000000001,0.151934120873407,four_regime_master_comparison.csv,,,,,,
+R3_SHAPE_PROXY_GEOMETRY,otsu_T1c,shape_score_threshold@0.01,post_hoc,0.7878787878787878,13.772,0.1650376673385514,four_regime_master_comparison.csv,,,,,,
+R4_PERSISTENT_HOMOLOGY,otsu_T1c,train_fold_top_k_persistent_components,exploratory,0.9393939393939394,13.935,0.1650376673385514,four_regime_master_comparison.csv; reconciled from p3_key_comparison_vs_baseline.csv,,,,,,
+R1_INTENSITY_BASELINE,gmm_T1c,stage4_baseline_core5,locked,0.9696969696969696,18.837,0.1706676623760037,four_regime_master_comparison.csv,0.9090909090909091,1.0,15792.0,21903.0,0.09041452040358251,0.2764553568484295
+R2_SPATIAL_LOCATION_PRIOR,gmm_T1c,post_filter@0.001,post_hoc,0.8181818181818182,18.512,0.1563565407088711,four_regime_master_comparison.csv,,,,,,
+R3_SHAPE_PROXY_GEOMETRY,gmm_T1c,shape_score_threshold@0,post_hoc,0.9696969696969696,18.837,0.1706676623760037,four_regime_master_comparison.csv,,,,,,
+R4_PERSISTENT_HOMOLOGY,gmm_T1c,train_fold_top_k_persistent_components,exploratory,0.9696969696969696,18.837,0.1706676623760037,four_regime_master_comparison.csv; reconciled from p3_key_comparison_vs_baseline.csv,,,,,,
+R1_INTENSITY_BASELINE,sustraccion,stage4_baseline_core5,locked,0.9393939393939394,76.915,0.0086725241888095,four_regime_master_comparison.csv,0.8484848484848485,1.0,65089.0,86466.0,0.0053644151615170185,0.013355448058299578
+R2_SPATIAL_LOCATION_PRIOR,sustraccion,post_filter@0.02,post_hoc,0.0,0.31,0.044669117032968,four_regime_master_comparison.csv,,,,,,
+R3_SHAPE_PROXY_GEOMETRY,sustraccion,shape_score_threshold@0.0,post_hoc,0.9393939393939394,76.152,0.0086725241888095,four_regime_master_comparison.csv; filled from p2_soft_shape_operating_points.csv; master valid flag false but canonical validity rule passes,,,,,,
+R4_PERSISTENT_HOMOLOGY,sustraccion,train_fold_top_k_persistent_components,exploratory,0.9090909090909092,64.675,0.1720585317816585,four_regime_master_comparison.csv; reconciled from p3_key_comparison_vs_baseline.csv,,,,,,
+R1_INTENSITY_BASELINE,gmm_2d,stage4_baseline_core5,locked,1.0,94.636,0.0042083640030742,four_regime_master_comparison.csv,1.0,1.0,87608.0,120007.0,0.002530779608284326,0.005981873862979443
+R2_SPATIAL_LOCATION_PRIOR,gmm_2d,pre_filter@0.05,post_hoc,0.0,0.129,0.0071877855590334,four_regime_master_comparison.csv,,,,,,
+R3_SHAPE_PROXY_GEOMETRY,gmm_2d,shape_score_threshold@0.0,post_hoc,1.0,94.636,0.0042083640030742,four_regime_master_comparison.csv; filled from p2_soft_shape_operating_points.csv; master valid flag false but canonical validity rule passes,,,,,,
+R4_PERSISTENT_HOMOLOGY,gmm_2d,train_fold_top_k_persistent_components,exploratory,0.9090909090909092,72.438,0.0820828135200666,four_regime_master_comparison.csv; reconciled from p3_key_comparison_vs_baseline.csv; master valid flag false but canonical validity rule passes,,,,,,
+R1_INTENSITY_BASELINE,variational_spline,stage4_baseline_core5,locked,0.9696969696969696,18.837,0.1762380286972449,four_regime_master_comparison.csv,0.9090909090909091,1.0,15997.0,21903.0,0.09501380087291604,0.2777587988006416
+R2_SPATIAL_LOCATION_PRIOR,variational_spline,post_filter@0.001,post_hoc,0.8181818181818182,18.518,0.1625716320653309,four_regime_master_comparison.csv,,,,,,
+R3_SHAPE_PROXY_GEOMETRY,variational_spline,shape_score_threshold@0.02,post_hoc,0.7272727272727273,14.118,0.1632205671168562,four_regime_master_comparison.csv,,,,,,
+R4_PERSISTENT_HOMOLOGY,variational_spline,train_fold_top_k_persistent_components,exploratory,0.9696969696969696,18.837,0.1762380286972449,four_regime_master_comparison.csv; reconciled from p3_key_comparison_vs_baseline.csv,,,,,,
